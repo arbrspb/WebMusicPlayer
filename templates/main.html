@@ -255,26 +255,21 @@
     }
 <!-- Пауза -->
 
-function pauseTrackHost() {
+    function pauseTrackHost() {
   fetch('/pause')
     .then(response => response.json())
     .then(data => {
       console.log("Host mode, paused:", data);
       if (data.track) {
+        // Используем data.title для отображения, если оно есть
         let trackName = data.title || data.track.split(/[/\\]+/).pop();
         trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-        // Отображаем состояние паузы – не очищаем трек
         document.getElementById("now_playing").innerText = "Пауза: " + trackName;
         document.getElementById("genre").innerText = data.genre || "N/A";
-        // Можно обновить ползунок, если нужно:
-        document.getElementById("seekSlider").max = data.duration;
-        document.getElementById("seekSlider").value = data.current_time;
-        document.getElementById("time_display").innerText = formatTime(data.current_time/1000) + " / " + formatTime(data.duration/1000);
       }
     })
     .catch(err => console.log(err));
 }
-
 
 <!-- Пауза -->
 
@@ -392,43 +387,38 @@ function playTrackPlyr(trackPath) {
     }
 
     /******************* ОБНОВЛЕНИЕ СТАТУСА *******************/
-function updateStatusHost() {
-  fetch('/status')
-    .then(response => response.json())
-    .then(data => {
-      console.log("Host status:", data);
-      if (data.status === "playing") {
-        let trackName = data.title || data.track.split(/[/\\]+/).pop();
-        trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-        document.getElementById("now_playing").innerText = "Сейчас играет: " + trackName;
-        document.getElementById("genre").innerText = data.genre || "N/A";
-        const ct = (data.current_time || 0) / 1000;
-        const dur = (data.duration || 0) / 1000;
-        document.getElementById("seekSlider").max = dur;
-        document.getElementById("seekSlider").value = ct;
-        document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
-      } else if (data.status === "paused") {
-        // Обработка состояния паузы: оставляем информацию на экране
-        let trackName = data.title || data.track.split(/[/\\]+/).pop();
-        trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-        document.getElementById("now_playing").innerText = "Пауза: " + trackName;
-        document.getElementById("genre").innerText = data.genre || "N/A";
-        // Если хотите обновлять позицию, можно оставить
-        const ct = (data.current_time || 0) / 1000;
-        const dur = (data.duration || 0) / 1000;
-        document.getElementById("seekSlider").max = dur;
-        document.getElementById("seekSlider").value = ct;
-        document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
-      } else {
-        document.getElementById("now_playing").innerText = "Не играет";
-        document.getElementById("genre").innerText = "N/A";
-        document.getElementById("time_display").innerText = "0:00 / 0:00";
-        document.getElementById("seekSlider").value = 0;
-      }
-    })
-    .catch(err => console.log(err));
-}
+    function updateStatusHost() {
+      fetch('/status')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host status:", data);
+        if (data.status === "playing") {
+          // Если поле title существует, используем его для отображения, иначе берём последний сегмент из track
+              let trackName = data.title || data.track.split(/[/\\]+/).pop();
+              trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
+              document.getElementById("now_playing").innerText = "Сейчас играет: " + trackName;
+              document.getElementById("genre").innerText = data.genre || "N/A";
+          // Остальной код для установки времени, слайдера и т.д.
 
+            const ct = (data.current_time || 0) / 1000;
+            const dur = (data.duration || 0) / 1000;
+            document.getElementById("seekSlider").max = dur;
+            document.getElementById("seekSlider").value = ct;
+            document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
+          } else {
+            document.getElementById("now_playing").innerText = "Не играет";
+            document.getElementById("genre").innerText = "N/A";
+            document.getElementById("time_display").innerText = "0:00 / 0:00";
+            document.getElementById("seekSlider").value = 0;
+          }
+        })
+        .catch(err => console.log(err));
+    }
+    if (playbackMode === "host") {
+      setInterval(updateStatusHost, 1000);
+    } else if (playbackMode === "plyr") {
+      setInterval(updateStatusPlyr, 1000);
+    }
 
 
     /******************* ОБРАБОТЧИКИ УПРАВЛЕНИЯ *******************/

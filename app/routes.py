@@ -384,15 +384,36 @@ def register_routes(app):
         if global_state["current_player"] is not None:
             try:
                 global_state["current_player"].pause()
+                global_state["paused"] = True  # Устанавливаем флаг, что сейчас на паузе
             except Exception as ex:
                 logger.error("Ошибка при приостановке плеера: %s", ex)
                 return jsonify({"error": str(ex)}), 500
+        # Не обнуляем глобальное состояние текущего трека – оно сохраняется.
+        current_time = global_state["current_player"].get_time() if global_state["current_player"] else 0
+        duration = global_state["current_player"].get_length() if global_state["current_player"] else 0
         return jsonify({
             "status": "paused",
+            "current_time": current_time,
+            "duration": duration,
             "track": global_state["current_track"].get("path", ""),
             "title": global_state["current_track"].get("title", ""),
             "genre": global_state["current_track"].get("genre", "")
         })
+
+    @app.route("/stop")
+    def stop_track():
+        if global_state["current_player"] is not None:
+            try:
+                global_state["current_player"].stop()
+            except Exception as ex:
+                logger.error("Ошибка при остановке плеера: %s", ex)
+                return jsonify({"error": str(ex)}), 500
+            global_state["current_player"] = None
+        # Очищаем глобальное состояние текущего трека
+        global_state["current_track"]["path"] = None
+        global_state["current_track"]["title"] = None
+        global_state["current_track"]["genre"] = None
+        return jsonify({"status": "stopped"})
 
     @app.route("/next")
     def next_track():

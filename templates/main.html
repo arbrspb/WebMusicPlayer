@@ -145,7 +145,7 @@
               <button id="prev_btn" class="btn btn-secondary player-btn">Предыдущий</button>
               <button id="play_btn" class="btn btn-primary player-btn">Play</button>
               <button id="stop_btn" class="btn btn-danger player-btn">Stop</button>
-              <button id="pause_button" class="btn btn-success player-btn" onclick="pauseTrackHost()">Пауза</button>   <!-- Пауза -->
+              <button id="pause_button" class="btn btn-success player-btn">Пауза</button>
               <button id="next_btn" class="btn btn-secondary player-btn">Следующий</button>
               <button id="recommend_btn" class="btn btn-info player-btn">Похожий</button>
             </div>
@@ -255,24 +255,56 @@
     }
 <!-- Пауза -->
 
-function pauseTrackHost() {
-  fetch('/pause')
-    .then(response => response.json())
-    .then(data => {
-      console.log("Host mode, paused:", data);
-      if (data.track) {
-        let trackName = data.title || data.track.split(/[/\\]+/).pop();
-        trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-        // При показе паузы оставляем данные на экране
-        document.getElementById("now_playing").innerText = "Пауза: " + trackName;
-        document.getElementById("genre").innerText = data.genre || "N/A";
-        document.getElementById("seekSlider").max = data.duration / 1000;
-        document.getElementById("seekSlider").value = data.current_time / 1000;
-        document.getElementById("time_display").innerText = formatTime(data.current_time/1000) + " / " + formatTime(data.duration/1000);
+function pauseTrack() {
+  // Проверяем, в каком режиме находимся
+  if (playbackMode === "host") {
+    // Режим host: запрос к серверу для перевода плеера в паузу
+    fetch('/pause')
+      .then(response => response.json())
+      .then(data => {
+        console.log("Host mode paused:", data);
+        if (data.track) {
+          let trackName = data.title || data.track.split(/[/\\]+/).pop();
+          trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
+          document.getElementById("now_playing").innerText = "Пауза: " + trackName;
+          document.getElementById("genre").innerText = data.genre || "N/A";
+          const ct = (data.current_time || 0) / 1000;
+          const dur = (data.duration || 0) / 1000;
+          document.getElementById("seekSlider").max = dur;
+          document.getElementById("seekSlider").value = ct;
+          document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
+        }
+      })
+      .catch(err => console.log(err));
+  } else if (playbackMode === "plyr") {
+    // Режим plyr: работаем напрямую с HTML5 аудиоэлементом
+    let audioElem = document.getElementById("audioPlayerPlyr");
+    if (audioElem) {
+      // Если плеер не на паузе, вызываем pause()
+      if (!audioElem.paused) {
+        audioElem.pause();
+        console.log("Plyr mode: audio paused");
       }
-    })
-    .catch(err => console.log(err));
+      // Обновляем UI. Предположим, что имя трека сохранено в глобальной переменной window.currentTrackTitle,
+      // или же можно задать другое способ получения названия.
+      let trackName = window.currentTrackTitle || "Трек";
+      document.getElementById("now_playing").innerText = "Пауза: " + trackName;
+      document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
+
+      // Обновляем ползунок положения и время проигрывания
+      let currentTime = audioElem.currentTime;
+      let duration = audioElem.duration || 0;
+      document.getElementById("seekSlider").max = duration;
+      document.getElementById("seekSlider").value = currentTime;
+      document.getElementById("time_display").innerText = formatTime(currentTime) + " / " + formatTime(duration);
+    } else {
+      console.log("Аудиоэлемент для plyr не найден.");
+    }
+  } else {
+    console.log("Unknown playback mode: " + playbackMode);
+  }
 }
+
 
 
 <!-- Пауза -->
@@ -658,6 +690,10 @@ if (playbackMode === "host") {
     if (playbackMode === "plyr") {
       playerPlyr = new Plyr('#audioPlayerPlyr');
     }
+  </script>
+
+  <script>
+  document.getElementById("pause_button").addEventListener("click", pauseTrack);
   </script>
 
 </body>

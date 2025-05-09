@@ -4,5 +4,5 @@
     "default_volume": 100,
     "scan_mode": "new",
     "sound_quality": "high",
-    "selected_device": 1
+    "selected_device": 0
 }

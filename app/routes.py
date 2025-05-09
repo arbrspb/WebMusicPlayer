@@ -281,54 +281,12 @@ def register_routes(app):
 
     @app.route("/play")
     def play_track():
-        logger.info("Запущен маршрут /play")
-        path = request.args.get("path")
-        if not path:
-            logger.error("Нет переданного параметра path")
-            return jsonify({"error": "No path provided"}), 400
+        # ... ваш существующий код для подготовки пути, плейлиста и т.п.
 
-        # Декодируем входной путь и нормализуем его
-        decoded_path = unescape(unquote_plus(path))
-        norm_rel_path = os.path.normpath(decoded_path)
+        # Перед воспроизведением сбрасываем флаг паузы
+        global_state["paused"] = False
 
-        # Получаем "чистое" название трека (без .mp3)
-        track_title = get_track_title(norm_rel_path)
-
-        MUSIC_DIR = load_config().get("music_dir", DEFAULT_CONFIG["music_dir"])
-        full_path = os.path.normpath(os.path.join(MUSIC_DIR, norm_rel_path))
-
-        if not os.path.isfile(full_path):
-            logger.error("Файл не найден: %s", full_path)
-            return jsonify({"error": "File not found", "full_path": full_path}), 404
-
-        folder = os.path.dirname(norm_rel_path)
-        global_state["current_playlist_directory"] = folder
-        session['current_folder'] = folder
-
-        try:
-            playlist = sorted(
-                f for f in os.listdir(os.path.join(MUSIC_DIR, folder))
-                if f.lower().endswith(".mp3")
-            )
-        except Exception as e:
-            logger.error("Ошибка формирования плейлиста: %s", e)
-            playlist = []
-        global_state["current_playlist"] = playlist
-
-        file_name = os.path.basename(norm_rel_path)
-        if file_name in playlist:
-            global_state["current_index"] = playlist.index(file_name)
-        else:
-            global_state["current_index"] = 0
-
-        if global_state["current_player"] is not None:
-            try:
-                global_state["current_player"].stop() #global_state["current_player"].stop()
-            except Exception as ex:
-                logger.error("Ошибка при остановке текущего плеера: %s", ex)
-
-        config = load_config()
-        mode = config.get("playback_mode", "host")
+        # Настройка плеера для режима host (пример)
         if mode == "host":
             try:
                 instance = vlc.Instance()
@@ -336,21 +294,11 @@ def register_routes(app):
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
                 global_state["current_player"].audio_set_volume(config.get("default_volume", 70))
-                vlc_devices = get_active_vlc_devices_default()
-                selected_index = config.get("selected_device", 0)
-                if vlc_devices and selected_index >= len(vlc_devices):
-                    logger.warning("Выбранный индекс устройства превышает число устройств. Сбрасываем на 0.")
-                    selected_index = 0
-                if vlc_devices:
-                    device_id = vlc_devices[selected_index]['id']
-                    logger.info("Устанавливается устройство с ID: %s", device_id)
-                    global_state["current_player"].audio_output_device_set(None, device_id)
-                else:
-                    logger.info("Устройство не установлено, используется устройство по умолчанию.")
+                # ... установка аудиоустройства и запуск воспроизведения:
                 global_state["current_player"].play()
                 play_url = None
             except Exception as e:
-                logger.error("Error playing file (host): %s", str(e))
+                # обработка ошибки
                 return jsonify({"error": str(e)}), 500
         elif mode == "plyr":
             play_url = url_for("stream", path=decoded_path)
@@ -358,19 +306,15 @@ def register_routes(app):
         else:
             return jsonify({"error": "Неверный режим воспроизведения"}), 400
 
-        # Получаем жанр из базы результатов scan_results.db, используя нормализованный путь
-        genre = get_scanned_genre(norm_rel_path)
-
-        # Обновляем глобальное состояние
+        # После успешного запуска обновляем глобальное состояние текущего трека
         global_state["current_track"]["path"] = norm_rel_path
         global_state["current_track"]["title"] = track_title
         global_state["current_track"]["genre"] = genre
-        session['current_track'] = norm_rel_path
 
         response = {
             "status": "playing",
-            "track": track_title,  # возвращаем чистое имя вместо norm_rel_path
             "track": norm_rel_path,
+            "title": track_title,
             "genre": genre
         }
         if play_url:
@@ -378,7 +322,8 @@ def register_routes(app):
 
         logger.info("Формируется ответ: %s", response)
         return jsonify(response)
-# Пауза
+
+    # Пауза
     @app.route("/pause")
     def pause_track():
         if global_state["current_player"] is not None:

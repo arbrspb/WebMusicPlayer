@@ -1,0 +1,8 @@
+{
+    "music_dir": "\\\\192.168.1.120\\Music",
+    "playback_mode": "plyr",
+    "default_volume": 100,
+    "scan_mode": "new",
+    "sound_quality": "high",
+    "selected_device": 1
+}

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Настройки</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Подключение кастомного CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- Переопределение отступа для страницы настроек -->
+  <style>
+    body {
+      padding-top: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Навигационная панель -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <!--<a class="navbar-brand" href="/">My Music Player</a>-->
+      <!--<a class="navbar-brand" href="/browse?path={{ current_folder }}">My Music Player</a>-->
+        <span class="navbar-brand">My Music Player</span>
+      <div class="collapse navbar-collapse">
+         <ul class="navbar-nav me-auto">
+           <li class="nav-item"><a class="nav-link" href="/">Главная</a></li>
+           <li class="nav-item"><a class="nav-link active" href="/settings">Настройки</a></li>
+         </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <h3>Настройки</h3>
+
+    <!-- Общие настройки -->
+    <form method="POST" action="/settings">
+      <div class="mb-3">
+        <label for="music_dir" class="form-label">Путь к библиотеке музыки</label>
+        <input type="text" class="form-control" id="music_dir" name="music_dir" value="{{ config.music_dir }}">
+        <div class="form-text">Например: \\\\192.168.1.120\\Music</div>
+      </div>
+      <div class="mb-3">
+        <label for="playback_mode" class="form-label">Режим воспроизведения</label>
+        <select class="form-select" id="playback_mode" name="playback_mode">
+          <option value="host" {% if config.playback_mode=='host' %}selected{% endif %}>На компьютере-хосте (VLC)</option>
+          <option value="plyr" {% if config.playback_mode=='plyr' %}selected{% endif %}>Plyr.js</option>
+        </select>
+
+      <div class="mb-3">
+        <label for="default_volume" class="form-label">Громкость по умолчанию</label>
+        <input type="number" class="form-control" id="default_volume" name="default_volume" value="{{ config.default_volume }}">
+      </div>
+      <div class="mb-3">
+        <label for="sound_quality" class="form-label">Качество звука</label>
+        <select class="form-select" id="sound_quality" name="sound_quality">
+          <option value="high" {% if config.sound_quality=='high' %}selected{% endif %}>Высокое</option>
+          <option value="medium" {% if config.sound_quality=='medium' %}selected{% endif %}>Среднее</option>
+          <option value="low" {% if config.sound_quality=='low' %}selected{% endif %}>Низкое</option>
+        </select>
+        <div class="form-text">
+          Выберите качество звука для воспроизведения. По умолчанию – максимальное (Высокое).
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+    </form>
+
+    <!-- Блок выбора аудиоустройства (только для режима host) -->
+    {% if config.playback_mode == 'host' %}
+    <hr>
+    <h4>Выбор аудиоустройства для режима воспроизведения на хосте</h4>
+    <form method="POST" action="/set_device">
+      <div class="mb-3">
+        <label for="device" class="form-label">Аудиоустройство</label>
+        <select name="device" id="device" class="form-select">
+          {% for dev in devices %}
+            <option value="{{ loop.index0 }}" {% if loop.index0 == config.selected_device %}selected{% endif %}>{{ dev.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить аудиоустройство</button>
+    </form>
+    {% endif %}
+
+    <hr>
+    <h4>Дополнительное</h4>
+    <div class="custom-btn-group">
+      <button type="button" class="btn btn-secondary" onclick="startScan();">
+        Сканировать библиотеку
+      </button>
+      <button type="button" class="btn btn-warning" onclick="stopScan();">
+        Остановить сканирование
+      </button>
+      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#scanSettingsModal">
+        Настройки сканирования
+      </button>
+      <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#genreSettingsModal">
+        Редактировать жанровые настройки
+      </button>
+      <button type="button" id="retrain-btn" class="btn btn-success">
+        Переобучить модель
+      </button>
+    </div>
+    <div id="progress-container" style="display: none;">
+      <progress id="progress-bar" value="0" max="100" style="width: 300px;"></progress>
+      <span id="progress-text">0%</span>
+    </div>
+    <div id="scanProgress" class="mt-2"></div>
+  </div>
+
+<!-- Модальное окно для выбора режима сканирования -->
+	<div class="modal fade" id="scanSettingsModal" tabindex="-1" aria-labelledby="scanSettingsModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="scanSettingsModalLabel">Выбрать режим сканирования</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+		  </div>
+		  <div class="modal-body">
+			 <select class="form-select" id="scanModeSelect">
+				<option value="new">Начать заново (очистить результаты)</option>
+				<option value="continue">Продолжить (дополнить новые записи)</option>
+			 </select>
+		  </div>
+		  <div class="modal-footer">
+			 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+			 <button type="button" class="btn btn-primary" id="saveScanModeBtn">Сохранить</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+<!-- Модальное окно для выбора режима сканирования -->
+
+  <!-- Модальное окно для редактирования жанровых настроек -->
+  <div class="modal fade" id="genreSettingsModal" tabindex="-1" aria-labelledby="genreSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="genreSettingsForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="genreSettingsModalLabel">Редактировать жанровые настройки</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="genreSettingsInput" class="form-label">Введите пары ключ:значение через запятую</label>
+              <input type="text" id="genreSettingsInput" class="form-control">
+              <div class="form-text">
+                Пример: club house:Club House, hiphop:Hip-Hop, future:Future House, русские ремиксы:Русские Ремиксы
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-primary" onclick="saveGenreSettings();">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Подключаем Bootstrap Bundle JS (включая Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Основной скриптовый блок для обработки настроек и плеера -->
+  <script>
+    /***************** ГЛОБАЛЫЕ ПЕРЕМЕННЫЕ *****************/
+    const playbackMode = "{{ config.playback_mode }}".trim();  // "host" или "plyr"
+    // Формируем playlist без применения urlencode, чтобы избежать двойного кодирования
+    const playlist = [
+      {% for file in files %}
+        "{{ current_path }}/{{ file }}"{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+    let currentIndex = 0;
+    let playerPlyr = null; // Для режима plyr – инициализация Plyr должна быть выполнена заранее (например, при загрузке страницы)
+
+    /***************** Функция форматирования времени *****************/
+    function formatTime(seconds) {
+      const totalSec = Math.floor(seconds);
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return mins + ":" + (secs < 10 ? "0" : "") + secs;
+    }
+
+    /***************** Функции для режима HOST (VLC) *****************/
+    function playTrackHost(trackPath) {
+      fetch('/play?path=' + encodeURIComponent(trackPath))
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host mode, playing:", data);
+          if (data.track) {
+            document.getElementById("now_playing").innerText = "Сейчас играет: " + data.track;
+            document.getElementById("genre").innerText = data.genre || "N/A";
+          }
+        })
+        .catch(err => console.log(err));
+    }
+    function nextTrackHost() {
+      fetch('/next')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host mode, next:", data);
+          if (data.track) {
+            document.getElementById("now_playing").innerText = "Сейчас играет: " + data.track;
+            document.getElementById("genre").innerText = data.genre || "N/A";
+          }
+        })
+        .catch(err => console.log(err));
+    }
+    function prevTrackHost() {
+      fetch('/prev')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host mode, prev:", data);
+          if (data.track) {
+            document.getElementById("now_playing").innerText = "Сейчас играет: " + data.track;
+            document.getElementById("genre").innerText = data.genre || "N/A";
+          }
+        })
+        .catch(err => console.log(err));
+    }
+    function setVolumeHost(vol) {
+      fetch('/volume', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ volume: vol })
+      })
+      .then(response => response.json())
+      .then(data => console.log("Volume set (host):", data))
+      .catch(err => console.log(err));
+    }
+    function seekHost(newTimeSec) {
+      fetch('/seek', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ time: newTimeSec * 1000 })
+      })
+      .then(response => response.json())
+      .then(data => console.log("Seek (host):", data))
+      .catch(err => console.log(err));
+    }
+
+    /***************** Функции для режима PLYR *****************/
+    function playTrackPlyr(trackPath) {
+      fetch('/play?path=' + encodeURIComponent(trackPath))
+        .then(response => response.json())
+        .then(data => {
+          let fileName = data.track ? data.track.split(/[/\\]+/).pop() : trackPath.split(/[/\\]+/).pop();
+          fileName = decodeURIComponent(fileName).replace(/&amp;/g, '&');
+          if (data.play_url) {
+            playerPlyr.source = {
+              type: 'audio',
+              title: fileName,
+              sources: [
+                { src: data.play_url, type: 'audio/mp3' }
+              ]
+            };
+            playerPlyr.play();
+          }
+          document.getElementById("now_playing").innerText = "Сейчас играет: " + data.track;
+          document.getElementById("genre").innerText = data.genre || "N/A";
+          const idx = playlist.indexOf(trackPath);
+          if (idx !== -1) { currentIndex = idx; }
+        })
+        .catch(err => console.log(err));
+    }
+
+    function nextTrackPlyr() {
+      fetch('/next')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Plyr mode, next:", data);
+          if (data.track) {
+            playTrackPlyr(data.track);
+          }
+        })
+        .catch(err => console.log(err));
+    }
+
+    function prevTrackPlyr() {
+      fetch('/prev')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Plyr mode, prev:", data);
+          if (data.track) {
+            playTrackPlyr(data.track);
+          }
+        })
+        .catch(err => console.log(err));
+    }
+
+    function setVolumePlyr(vol) {
+      if (playerPlyr) {
+        playerPlyr.volume = vol / 100;
+      }
+    }
+
+    function seekPlyr(newTimeSec) {
+      if (playerPlyr) {
+        playerPlyr.currentTime = newTimeSec;
+      }
+    }
+
+    /***************** ЕДИНАЯ ФУНКЦИЯ ВОСПРОИЗВЕДЕНИЯ *****************/
+    function playTrack(trackPath) {
+      if (playbackMode === "host") {
+        playTrackHost(trackPath);
+      } else if (playbackMode === "plyr") {
+        playTrackPlyr(trackPath);
+      }
+    }
+
+    /***************** Функции обновления статуса *****************/
+    function updateStatusHost() {
+      fetch('/status')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host status:", data);
+          if (data.status === "playing") {
+            document.getElementById("now_playing").innerText = "Сейчас играет: " + data.track;
+            document.getElementById("genre").innerText = data.genre || "N/A";
+            const ct = (data.current_time || 0) / 1000;
+            const dur = (data.duration || 0) / 1000;
+            document.getElementById("seekSlider").max = dur;
+            document.getElementById("seekSlider").value = ct;
+            document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
+          } else {
+            document.getElementById("now_playing").innerText = "Не играет";
+            document.getElementById("genre").innerText = "N/A";
+            document.getElementById("time_display").innerText = "0:00 / 0:00";
+            document.getElementById("seekSlider").value = 0;
+          }
+        })
+        .catch(err => console.log(err));
+    }
+
+    function updateStatusPlyr() {
+      if (playerPlyr) {
+        const ct = playerPlyr.currentTime || 0;
+        const dur = playerPlyr.duration || 0;
+        document.getElementById("seekSlider").max = dur;
+        document.getElementById("seekSlider").value = ct;
+        document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
+      }
+    }
+
+    if (playbackMode === "host") {
+      setInterval(updateStatusHost, 1000);
+    } else if (playbackMode === "plyr") {
+      setInterval(updateStatusPlyr, 1000);
+    }
+
+    /***************** Обработчики элементов управления *****************/
+    document.getElementById("play_btn").addEventListener("click", function(){
+      if (playbackMode === "host") {
+        if (document.getElementById("now_playing").innerText === "Не играет" && playlist.length > 0) {
+          currentIndex = 0;
+          playTrackHost(playlist[currentIndex]);
+        }
+      } else if (playbackMode === "plyr") {
+        if (playerPlyr) { playerPlyr.play(); }
+      }
+    });
+
+    document.getElementById("stop_btn").addEventListener("click", function(){
+      if (playbackMode === "host") {
+        fetch('/stop')
+          .then(response => response.json())
+          .then(data => console.log("Stop (host):", data))
+          .catch(err => console.log(err));
+      } else if (playbackMode === "plyr") {
+        if (playerPlyr) { playerPlyr.pause(); playerPlyr.currentTime = 0; }
+      }
+    });
+
+    document.getElementById("next_btn").addEventListener("click", function(){
+      if (playbackMode === "host") {
+        nextTrackHost();
+      } else if (playbackMode === "plyr") {
+        nextTrackPlyr();
+      }
+    });
+
+    document.getElementById("prev_btn").addEventListener("click", function(){
+      if (playbackMode === "host") {
+        prevTrackHost();
+      } else if (playbackMode === "plyr") {
+        prevTrackPlyr();
+      }
+    });
+
+    document.getElementById("seekSlider").addEventListener("change", function(){
+      const newTimeSec = Number(this.value);
+      if (playbackMode === "host") {
+        seekHost(newTimeSec);
+      } else if (playbackMode === "plyr") {
+        seekPlyr(newTimeSec);
+      }
+    });
+
+    if (document.getElementById("volumeSlider")) {
+      document.getElementById("volumeSlider").addEventListener("input", function(){
+        const vol = Number(this.value);
+        if (playbackMode === "host") {
+          setVolumeHost(vol);
+        } else if (playbackMode === "plyr") {
+          setVolumePlyr(vol);
+        }
+        document.getElementById("volume_display").innerText = "Громкость: " + vol + "%";
+      });
+    }
+
+    document.getElementById("recommend_btn").addEventListener("click", function(){
+      fetch('/recommend')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Recommendation response:", data);
+          if (data.redirect) {
+            playTrack(data.redirect);
+          } else if (data.error && data.error.indexOf("Нет установлено жанра") !== -1) {
+            if (confirm("Жанр текущего трека не установлен. Запустить анализ трека?")) {
+              fetch('/analyze')
+                .then(response => response.json())
+                .then(anData => {
+                  if (anData.status === "analyzed") {
+                    alert("Жанр обновлен: " + anData.genre);
+                    fetch('/recommend')
+                      .then(response => response.json())
+                      .then(recData => {
+                        if (recData.redirect) {
+                          playTrack(recData.redirect);
+                        } else {
+                          alert("Похожий трек не найден.");
+                        }
+                      });
+                  }
+                });
+            }
+          } else {
+            alert("Похожий трек не найден: " + (data.error || ""));
+          }
+        })
+        .catch(err => console.log(err));
+    });
+
+    /***************** Функции для Favorites, jsTree и сканирования *****************/
+    function loadFavorites() {
+      fetch('/favorites_list')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("favoritesContent").innerHTML = data.html;
+        })
+        .catch(err => console.log(err));
+    }
+    function removeFavorite(path) {
+      if (confirm("Удалить трек из избранного?")) {
+        fetch('/remove_favorite', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: path })
+        })
+        .then(response => response.json())
+        .then(data => loadFavorites())
+        .catch(err => console.log(err));
+      }
+    }
+    const favoritesModal = document.getElementById("favoritesModal");
+    favoritesModal.addEventListener("show.bs.modal", function () {
+      loadFavorites();
+    });
+
+    // Инициализация jsTree для выбора папки
+    $('#folderModal').on('shown.bs.modal', function () {
+      $('#folderTree').jstree({
+        'core': {
+          'data': {
+            "url": "/get_directories",
+            "dataType": "json",
+            "data": function (node) {
+              return { "id": node.id };
+            }
+          }
+        }
+      });
+    });
+    document.getElementById("selectFolderBtn").addEventListener("click", function(){
+      const tree = $('#folderTree').jstree(true);
+      const selected = tree.get_selected();
+      if (selected.length) {
+        const path = selected[0];
+        window.location.href = "/browse?path=" + encodeURIComponent(path);
+      } else {
+        alert("Пожалуйста, выберите папку.");
+      }
+    });
+    function scanLibrary(){
+      fetch('/scan_library')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Library scanned:", data);
+          alert("Сканирование выполнено.");
+        })
+        .catch(err => console.log(err));
+    }
+  </script>
+  <hr>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Отдельный обработчик для модального окна с жанровыми настройками
+    var genreSettingsModal = document.getElementById("genreSettingsModal");
+    if (genreSettingsModal) {
+      genreSettingsModal.addEventListener('shown.bs.modal', function () {
+        fetch("/custom_keywords")
+          .then(response => response.json())
+          .then(data => {
+            console.log("Custom keywords:", data.keywords);
+            var settingsStr = "";
+            for (const key in data.keywords) {
+              if (data.keywords.hasOwnProperty(key)) {
+                settingsStr += key + ":" + data.keywords[key] + ", ";
+              }
+            }
+            settingsStr = settingsStr.replace(/,\s*$/, "");
+            var input = document.getElementById("genreSettingsInput");
+            if (input) {
+              input.value = settingsStr;
+            }
+          })
+          .catch(err => console.log(err));
+      });
+    }
+  });
+</script>
+<script>
+  function saveGenreSettings() {
+    console.log("saveGenreSettings() вызывается");
+    var input = document.getElementById("genreSettingsInput");
+    if (!input) {
+      console.error("Элемент с id 'genreSettingsInput' не найден");
+      return;
+    }
+    var data = input.value;
+    var newSettings = {};
+    var parts = data.split(",");
+    parts.forEach(function(part) {
+      var pair = part.split(":");
+      if (pair.length === 2) {
+        newSettings[pair[0].trim().toLowerCase()] = pair[1].trim();
+      }
+    });
+    console.log("Новые настройки:", newSettings);
+    fetch("/custom_keywords", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({keywords: newSettings})
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log("Ответ сервера:", result);
+      if (result.status === "saved") {
+        alert("Ключевые слова сохранены");
+        var modalEl = document.getElementById("genreSettingsModal");
+        var modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) {
+          modalInstance = new bootstrap.Modal(modalEl);
+        }
+        modalInstance.hide();
+      } else {
+        alert("Ошибка сохранения: " + (result.message || "Неизвестная ошибка"));
+      }
+    })
+    .catch(err => {
+      console.error("Ошибка в fetch:", err);
+      alert("Ошибка сохранения: " + err);
+    });
+  }
+</script>
+<script>
+  // Функция для запуска сканирования
+  function startScan() {
+    fetch('/start_scan')
+      .then(response => response.json())
+      .then(data => {
+        console.log("Сканирование запущено:", data);
+        // После запуска, начинаем опрашивать статус сканирования
+        pollScanProgress();
+      })
+      .catch(err => console.log("Ошибка старта сканирования:", err));
+  }
+
+  // Функция для остановки сканирования
+  function stopScan() {
+    fetch('/stop_scan')
+      .then(response => response.json())
+      .then(data => {
+        console.log("Остановка сканирования:", data);
+      })
+      .catch(err => console.log("Ошибка остановки сканирования:", err));
+  }
+
+  // Функция для опроса статуса сканирования
+  function pollScanProgress() {
+    fetch('/scan_progress')
+      .then(response => response.json())
+      .then(data => {
+         document.getElementById("scanProgress").innerText = "Сканировано " + data.scanned + " из " + data.total;
+         if(data.status !== "completed" && data.status !== "stopped")
+             setTimeout(pollScanProgress, 1000);
+         else
+             alert("Сканирование " + data.status);
+      })
+      .catch(err => console.log("Ошибка опроса статуса сканирования:", err));
+  }
+</script>
+<script>
+    document.getElementById("retrain-btn").addEventListener("click", function() {
+      fetch('/retrain', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert("Переобучение запущено.");
+          document.getElementById("progress-container").style.display = "block";
+          checkProgress();
+        })
+        .catch(err => { alert("Ошибка: " + err); });
+    });
+
+    function checkProgress() {
+      fetch('/training_status')
+        .then(response => response.json())
+        .then(data => {
+          let progress = data.progress;
+          document.getElementById("progress-bar").value = progress;
+          document.getElementById("progress-text").innerText = progress + "%";
+          if (progress < 100) {
+            setTimeout(checkProgress, 500); // повторять запрос каждые 500 мс
+          } else {
+            alert("Обучение завершено.");
+          }
+        })
+        .catch(err => { console.error("Ошибка получения статуса:", err); });
+    }
+</script>
+<script>
+  // Обработчик для кнопки "Сохранить" в модальном окне сканирования.
+  document.getElementById('saveScanModeBtn').addEventListener('click', function(){
+    // Получаем выбранное значение из выпадающего списка
+    var scanMode = document.getElementById('scanModeSelect').value;
+    // Сохраняем выбранное значение в localStorage (для использования в функции startScan)
+    localStorage.setItem('scanMode', scanMode);
+
+    // Отправляем AJAX-запрос для обновления сканировочного режима в config.json
+    fetch('/update_scan_config', {
+      method: 'POST',
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({scan_mode: scanMode})
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert("Режим сканирования сохранен: " + data.scan_mode);
+      // Закрываем модальное окно
+      var modalInstance = bootstrap.Modal.getInstance(document.getElementById("scanSettingsModal"));
+      modalInstance.hide();
+    })
+    .catch(err => console.log("Ошибка сохранения настроек сканирования:", err));
+  });
+
+  // Функция для запуска сканирования, учитывая выбранный режим,
+  // передаваемый серверу через параметр "mode"
+  function startScan(){
+    var scanMode = localStorage.getItem('scanMode') || 'new'; // значение по умолчанию "new"
+    fetch('/start_scan?mode=' + scanMode)
+      .then(response => response.json())
+      .then(data => {
+          console.log("Сканирование запущено:", data);
+          pollScanProgress();  // Опрашиваем статус сканирования
+      })
+      .catch(err => console.log("Ошибка старта сканирования:", err));
+  }
+
+  // Функция для остановки сканирования
+  function stopScan(){
+    fetch('/stop_scan')
+      .then(response => response.json())
+      .then(data => console.log("Остановка сканирования:", data))
+      .catch(err => console.log("Ошибка остановки сканирования:", err));
+  }
+
+  // Пример функции опроса статуса сканирования
+  function pollScanProgress() {
+    fetch('/scan_progress')
+      .then(response => response.json())
+      .then(data => {
+         document.getElementById("scanProgress").innerText = "Сканировано " + data.scanned + " из " + data.total;
+         if(data.status !== "completed" && data.status !== "stopped")
+             setTimeout(pollScanProgress, 1000);
+         else
+             alert("Сканирование " + data.status);
+      })
+      .catch(err => console.log("Ошибка опроса статуса сканирования:", err));
+  }
+</script>
+<script>
+  // Функция для загрузки конфигурации сканирования с сервера при загрузке страницы
+  function loadScanConfig(){
+    fetch('/get_scan_config?t=' + Date.now())  // параметр t добавлен для предотвращения кэширования
+      .then(response => response.json())
+      .then(data => {
+        // Устанавливаем выбранное значение в выпадающий список
+        document.getElementById('scanModeSelect').value = data.scan_mode || 'new';
+      })
+      .catch(err => console.log("Ошибка загрузки настроек сканирования:", err));
+  }
+
+  // Вызываем функцию при загрузке страницы
+  window.onload = loadScanConfig;
+</script>
+
+
+</body>
+</html>
+
+
+
+

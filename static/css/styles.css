@@ -1,0 +1,110 @@
+/* Основные стили */
+body {
+  padding-top: 70px !important;
+}
+
+#playlist {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.player-btn {
+  margin: 2px;
+}
+
+/* Уберите лишние отступы для контейнеров */
+.container-fluid {
+  margin-top: 0 !important;
+}
+
+/* Стили для темной темы */
+.dark-theme {
+  background: #343a40 !important;
+  color: #f8f9fa !important;
+}
+
+.dark-theme .navbar,
+.dark-theme .card,
+.dark-theme .modal-content {
+  background: #495057 !important;
+  color: #f8f9fa !important;
+}
+
+.dark-theme .form-control,
+.dark-theme .input-group,
+.dark-theme select {
+  background: #495057 !important;
+  color: #f8f9fa !important;
+  border-color: #6c757d !important;
+}
+
+.dark-theme .form-control::placeholder {
+  color: #ced4da !important;
+}
+
+.dark-theme .btn-outline-light {
+  color: #f8f9fa !important;
+  border-color: #f8f9fa !important;
+}
+/* Новый класс для многострочного отображения длинных названий треков */
+.track-name-wrap {
+  max-width: 150px;       /* или любое нужное вам значение */
+  white-space: normal;    /* разрешает перенос строк */
+  word-break: break-word; /* позволяет разбивать длинные слова */
+}
+
+/* Стили для списка треков в тёмной теме */
+.dark-theme #playlist {
+  background-color: #495057 !important;
+  color: #f8f9fa !important;
+  border: none;
+}
+
+.dark-theme #playlist .list-group-item {
+  background-color: #495057 !important;
+  color: #f8f9fa !important;
+  border: 1px solid #6c757d !important;
+}
+
+.dark-theme #playlist h4 {
+  color: #f8f9fa !important;
+}
+
+/* По умолчанию (на десктопе) кнопки располагаются в строку с отступами */
+.custom-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 10px;       /* вертикальный отступ между строками */
+  column-gap: 5px;    /* горизонтальный отступ между элементами в одной строке */
+}
+
+/* Класс для каждой записи (элемента li) в списке избранного */
+.fav-entry {
+    padding: 0.4rem 0.5rem;
+    margin-bottom: 0.1rem;
+    /* Если хотите задать фиксированную высоту */
+    /* height: 2.5rem; */
+}
+/* Контейнер для кнопок – сдвигаем его вверх */
+.fav-entry .button-container {
+    margin-top: -17px;  /* положение кнопок в избранном вверх или вниз */
+    display: flex;
+    justify-content: flex-end;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

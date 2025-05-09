@@ -402,11 +402,17 @@ def register_routes(app):
         if global_state["current_player"] is not None:
             try:
                 global_state["current_player"].pause()
+                global_state["paused"] = True  # Устанавливаем флаг паузы
             except Exception as ex:
                 logger.error("Ошибка при приостановке плеера: %s", ex)
                 return jsonify({"error": str(ex)}), 500
+        # Возвращаем актуальную позицию, длительность и данные трека – они не очищаются
+        current_time = global_state["current_player"].get_time() if global_state["current_player"] is not None else 0
+        duration = global_state["current_player"].get_length() if global_state["current_player"] is not None else 0
         return jsonify({
             "status": "paused",
+            "current_time": current_time,
+            "duration": duration,
             "track": global_state["current_track"].get("path", ""),
             "title": global_state["current_track"].get("title", ""),
             "genre": global_state["current_track"].get("genre", "")
@@ -694,12 +700,19 @@ def register_routes(app):
             current_time = global_state["current_player"].get_time()
             duration = global_state["current_player"].get_length()
             playing = global_state["current_player"].is_playing()
+            # Если плеер не воспроизводит, но флаг paused установлен, статус именно "paused"
+            if not playing and global_state.get("paused", False):
+                statusState = "paused"
+            elif playing:
+                statusState = "playing"
+            else:
+                statusState = "stopped"
             return jsonify({
-                "status": "playing" if playing else "stopped",
+                "status": statusState,
                 "current_time": current_time,
                 "duration": duration,
                 "track": global_state["current_track"].get("path"),
-                "title": global_state["current_track"].get("title", global_state["current_track"].get("path")), # чистое название без .mp3
+                "title": global_state["current_track"].get("title", global_state["current_track"].get("path")),
                 "genre": global_state["current_track"].get("genre")
             })
         else:

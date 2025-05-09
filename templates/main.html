@@ -226,8 +226,11 @@
       {% endfor %}
     ];
     let currentIndex = 0;
-    let playerPlyr = null; // будет инициализирован, если режим plyr
-    let currentTrackTitle = "";
+    //let playerPlyr = null; // будет инициализирован, если режим plyr
+    window.playerPlyr = null;// будет инициализирован, если режим plyr  новое
+    window.currentTrackTitle = "";
+    window.currentTrackGenre = "";
+
 
     /******************* ФУНКЦИЯ ФОРМАТИРОВАНИЯ ВРЕМЕНИ *******************/
     function formatTime(seconds) {
@@ -254,57 +257,25 @@
         .catch(err => console.log(err));
     }
 <!-- Пауза -->
-
-function pauseTrack() {
-  // Проверяем, в каком режиме находимся
-  if (playbackMode === "host") {
-    // Режим host: запрос к серверу для перевода плеера в паузу
-    fetch('/pause')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Host mode paused:", data);
-        if (data.track) {
-          let trackName = data.title || data.track.split(/[/\\]+/).pop();
-          trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-          document.getElementById("now_playing").innerText = "Пауза: " + trackName;
-          document.getElementById("genre").innerText = data.genre || "N/A";
-          const ct = (data.current_time || 0) / 1000;
-          const dur = (data.duration || 0) / 1000;
-          document.getElementById("seekSlider").max = dur;
-          document.getElementById("seekSlider").value = ct;
-          document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
-        }
-      })
-      .catch(err => console.log(err));
-  } else if (playbackMode === "plyr") {
-    // Режим plyr: работаем напрямую с HTML5 аудиоэлементом
-    let audioElem = document.getElementById("audioPlayerPlyr");
-    if (audioElem) {
-      // Если плеер не на паузе, вызываем pause()
-      if (!audioElem.paused) {
-        audioElem.pause();
-        console.log("Plyr mode: audio paused");
-      }
-      // Обновляем UI. Предположим, что имя трека сохранено в глобальной переменной window.currentTrackTitle,
-      // или же можно задать другое способ получения названия.
-      let trackName = window.currentTrackTitle || "Трек";
-      document.getElementById("now_playing").innerText = "Пауза: " + trackName;
-      document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
-
-      // Обновляем ползунок положения и время проигрывания
-      let currentTime = audioElem.currentTime;
-      let duration = audioElem.duration || 0;
-      document.getElementById("seekSlider").max = duration;
-      document.getElementById("seekSlider").value = currentTime;
-      document.getElementById("time_display").innerText = formatTime(currentTime) + " / " + formatTime(duration);
-    } else {
-      console.log("Аудиоэлемент для plyr не найден.");
+    function pauseTrackHost() {
+      fetch('/pause')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Host mode paused:", data);
+          if (data.track) {
+            let trackName = data.title || data.track.split(/[/\\]+/).pop();
+            trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
+            document.getElementById("now_playing").innerText = "Пауза: " + trackName;
+            document.getElementById("genre").innerText = data.genre || "N/A";
+            const ct = (data.current_time || 0) / 1000;
+            const dur = (data.duration || 0) / 1000;
+            document.getElementById("seekSlider").max = dur;
+            document.getElementById("seekSlider").value = ct;
+            document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
+          }
+        })
+        .catch(err => console.log(err));
     }
-  } else {
-    console.log("Unknown playback mode: " + playbackMode);
-  }
-}
-
 
 
 <!-- Пауза -->
@@ -412,6 +383,37 @@ function playTrackPlyr(trackPath) {
     function setVolumePlyr(vol) {
       if (playerPlyr) { playerPlyr.volume = vol / 100; }
     }
+
+    function pauseTrackPlyr() {
+  console.log("pauseTrackPlyr() вызвана");
+
+  if (window.playerPlyr && typeof window.playerPlyr.pause === "function") {
+    window.playerPlyr.pause();
+    console.log("playerPlyr.pause() вызван успешно");
+  } else {
+    console.log("Экземпляр Plyr не найден, пытаемся получить аудио элемент напрямую");
+    let audioElem = document.getElementById("audioPlayerPlyr");
+    if (audioElem) {
+      audioElem.pause();
+      console.log("audioElem.pause() вызван успешно");
+    } else {
+      console.log("Аудиоэлемент для plyr не найден");
+    }
+  }
+
+  // Обновляем UI – используем глобальные переменные, установленные при воспроизведении
+  let trackName = window.currentTrackTitle || "Трек";
+  document.getElementById("now_playing").innerText = "Пауза: " + trackName;
+  document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
+
+  // Обновляем позицию ползунка и время воспроизведения
+  let currentTime = window.playerPlyr ? window.playerPlyr.currentTime || 0 : 0;
+  let duration = window.playerPlyr ? window.playerPlyr.duration || 0 : 0;
+  document.getElementById("seekSlider").max = duration;
+  document.getElementById("seekSlider").value = currentTime;
+  document.getElementById("time_display").innerText = formatTime(currentTime) + " / " + formatTime(duration);
+}
+
 
     /******************* ЕДИНАЯ ФУНКЦИЯ ВОСПРОИЗВЕДЕНИЯ *******************/
     function playTrack(trackPath) {
@@ -565,6 +567,17 @@ if (playbackMode === "host") {
         })
         .catch(err => console.log(err));
     });
+// Обработчик паузы plyr
+    document.getElementById("pause_button").addEventListener("click", function(){
+  if (playbackMode === "host") {
+    pauseTrackHost();
+  } else if (playbackMode === "plyr") {
+    pauseTrackPlyr();
+  } else {
+    console.log("Неизвестный режим воспроизведения:", playbackMode);
+  }
+});
+
 
     /******************* FAVORITES, jsTree И СКАНИРОВАНИЕ *******************/
 
@@ -688,8 +701,10 @@ if (playbackMode === "host") {
 
     // Инициализация Plyr для режима plyr
     if (playbackMode === "plyr") {
-      playerPlyr = new Plyr('#audioPlayerPlyr');
+      window.playerPlyr = new Plyr('#audioPlayerPlyr');
+      console.log("Plyr инициализирован:", window.playerPlyr);
     }
+
   </script>
 
   <script>

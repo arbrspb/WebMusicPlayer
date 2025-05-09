@@ -638,20 +638,29 @@ def register_routes(app):
 
     @app.route("/status")
     def status():
+        current_track = global_state.get("current_track", {})
         if global_state["current_player"] is not None:
             current_time = global_state["current_player"].get_time()
             duration = global_state["current_player"].get_length()
-            playing = global_state["current_player"].is_playing()
-            return jsonify({
-                "status": "playing" if playing else "stopped",
-                "current_time": current_time,
-                "duration": duration,
-                "track": global_state["current_track"].get("path"),
-                "title": global_state["current_track"].get("title", global_state["current_track"].get("path")), # чистое название без .mp3
-                "genre": global_state["current_track"].get("genre")
-            })
+            # Если флаг паузы установлен, статус явно "paused"
+            if global_state.get("paused", False):
+                statusState = "paused"
+            elif global_state["current_player"].is_playing():
+                statusState = "playing"
+            else:
+                statusState = "stopped"
         else:
-            return jsonify({"status": "stopped"})
+            current_time = 0
+            duration = 0
+            statusState = "stopped"
+        return jsonify({
+            "status": statusState,
+            "current_time": current_time,
+            "duration": duration,
+            "track": current_track.get("path", ""),
+            "title": current_track.get("title", current_track.get("path", "")),
+            "genre": current_track.get("genre", "")
+        })
 
     @app.route("/seek", methods=["POST"])
     def seek():

@@ -253,10 +253,12 @@
         })
         .catch(err => console.log(err));
     }
-<!-- Пауза для обоих режимов host и vlc -->
+<!-- Пауза -->
+
 function pauseTrack() {
-  // Если режим host (VLC)
+  // Проверяем, в каком режиме находимся
   if (playbackMode === "host") {
+    // Режим host: запрос к серверу для перевода плеера в паузу
     fetch('/pause')
       .then(response => response.json())
       .then(data => {
@@ -266,46 +268,46 @@ function pauseTrack() {
           trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
           document.getElementById("now_playing").innerText = "Пауза: " + trackName;
           document.getElementById("genre").innerText = data.genre || "N/A";
-          // Если сервер возвращает current_time и duration в мс – делим на 1000
           const ct = (data.current_time || 0) / 1000;
           const dur = (data.duration || 0) / 1000;
           document.getElementById("seekSlider").max = dur;
           document.getElementById("seekSlider").value = ct;
           document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
-
         }
       })
       .catch(err => console.log(err));
-  }
-
-
-  // Если режим plyr (HTML5-плеер)
-  else if (playbackMode === "plyr") {
-    // Найдите аудиоэлемент для plyr (обратите внимание – убедитесь, что он виден)
+  } else if (playbackMode === "plyr") {
+    // Режим plyr: работаем напрямую с HTML5 аудиоэлементом
     let audioElem = document.getElementById("audioPlayerPlyr");
     if (audioElem) {
+      // Если плеер не на паузе, вызываем pause()
       if (!audioElem.paused) {
         audioElem.pause();
         console.log("Plyr mode: audio paused");
       }
-      // Обновляем UI: используйте сохранённое имя трека из переменной (если оно у вас есть) или задайте значение по умолчанию
+      // Обновляем UI. Предположим, что имя трека сохранено в глобальной переменной window.currentTrackTitle,
+      // или же можно задать другое способ получения названия.
       let trackName = window.currentTrackTitle || "Трек";
       document.getElementById("now_playing").innerText = "Пауза: " + trackName;
       document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
-      // Обновляем положение слайдера и тайм-дисплей
+
+      // Обновляем ползунок положения и время проигрывания
       let currentTime = audioElem.currentTime;
       let duration = audioElem.duration || 0;
       document.getElementById("seekSlider").max = duration;
       document.getElementById("seekSlider").value = currentTime;
       document.getElementById("time_display").innerText = formatTime(currentTime) + " / " + formatTime(duration);
     } else {
-      console.log("Аудиоэлемент для plyr не найден. Проверьте, что контейнер plyr виден (уберите класс d-none, если необходимо).");
+      console.log("Аудиоэлемент для plyr не найден.");
     }
   } else {
-    console.log("Неизвестный режим воспроизведения: " + playbackMode);
+    console.log("Unknown playback mode: " + playbackMode);
   }
 }
-<!-- Пауза для обоих режимов host и vlc -->
+
+
+
+<!-- Пауза -->
 
 function nextTrackHost() {
   fetch('/next')
@@ -688,14 +690,10 @@ if (playbackMode === "host") {
     if (playbackMode === "plyr") {
       playerPlyr = new Plyr('#audioPlayerPlyr');
     }
-
-
   </script>
 
   <script>
-      <!-- Обработчик для паузы -->
-document.getElementById("pause_button").addEventListener("click", pauseTrack);
-      <!-- Обработчик для паузы -->
+  document.getElementById("pause_button").addEventListener("click", pauseTrack);
   </script>
 
 </body>

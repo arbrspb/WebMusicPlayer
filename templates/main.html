@@ -333,6 +333,20 @@ function prevTrackHost() {
     }
 
     /******************* ФУНКЦИИ РЕЖИМА PLYR (Plyr.js) *******************/
+
+    function resumeTrackPlyr() {
+  if (window.playerPlyr && typeof window.playerPlyr.play === "function") {
+    window.playerPlyr.play();
+  } else {
+    let audioElem = document.getElementById("audioPlayerPlyr");
+    if (audioElem) audioElem.play();
+  }
+
+  // Обновляем интерфейс
+  document.getElementById("now_playing").innerText = "Сейчас играет: " + (window.currentTrackTitle || "Трек");
+  document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
+}
+
 function playTrackPlyr(trackPath) {
   fetch('/play?path=' + encodeURIComponent(trackPath))
     .then(response => response.json())
@@ -386,7 +400,7 @@ function playTrackPlyr(trackPath) {
       if (playerPlyr) { playerPlyr.volume = vol / 100; }
     }
 
-    function pauseTrackPlyr() {
+function pauseTrackPlyr() {
   console.log("pauseTrackPlyr() вызвана");
 
   if (window.playerPlyr && typeof window.playerPlyr.pause === "function") {
@@ -403,10 +417,12 @@ function playTrackPlyr(trackPath) {
     }
   }
 
+
+
   // Обновляем UI – используем глобальные переменные, установленные при воспроизведении
   let trackName = window.currentTrackTitle || "Трек";
-  document.getElementById("now_playing").innerText = "Пауза: " + trackName;
   document.getElementById("genre").innerText = window.currentTrackGenre || "N/A";
+  document.getElementById("now_playing").innerText = "Пауза: " + (window.currentTrackTitle || "Трек");
 
   // Обновляем позицию ползунка и время воспроизведения
   let currentTime = window.playerPlyr ? window.playerPlyr.currentTime || 0 : 0;
@@ -570,11 +586,15 @@ if (playbackMode === "host") {
         .catch(err => console.log(err));
     });
 // Обработчик паузы plyr
-    document.getElementById("pause_button").addEventListener("click", function(){
+document.getElementById("pause_button").addEventListener("click", function(){
   if (playbackMode === "host") {
     pauseTrackHost();
   } else if (playbackMode === "plyr") {
-    pauseTrackPlyr();
+    if (window.playerPlyr && !window.playerPlyr.paused) {
+      pauseTrackPlyr(); // Ставим на паузу
+    } else {
+      resumeTrackPlyr(); // Продолжаем воспроизведение
+    }
   } else {
     console.log("Неизвестный режим воспроизведения:", playbackMode);
   }

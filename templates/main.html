@@ -228,8 +228,7 @@
     let currentIndex = 0;
     //let playerPlyr = null; // будет инициализирован, если режим plyr
     window.playerPlyr = null;// будет инициализирован, если режим plyr  новое
-    window.currentTrackTitle = "";
-    window.currentTrackGenre = "";
+
 
 
     /******************* ФУНКЦИЯ ФОРМАТИРОВАНИЯ ВРЕМЕНИ *******************/
@@ -341,8 +340,14 @@ function playTrackPlyr(trackPath) {
       // Используем data.title если оно есть, иначе извлекаем последний сегмент из data.track
       let fileName = data.title || (data.track ? data.track.split(/[/\\]+/).pop() : trackPath.split(/[/\\]+/).pop());
       fileName = decodeURIComponent(fileName).replace(/&amp;/g, '&');
-      currentTrackTitle = fileName;
-      document.getElementById("now_playing").innerText = "Сейчас играет: " + currentTrackTitle;
+
+      // Сохраняем название и жанр глобально
+      window.currentTrackTitle = fileName;
+      window.currentTrackGenre = (data.genre && data.genre.toLowerCase() !== "unknown") ? data.genre : "N/A";
+
+      // Обновляем интерфейс
+      document.getElementById("now_playing").innerText = "Сейчас играет: " + window.currentTrackTitle;
+      document.getElementById("genre").innerText = window.currentTrackGenre;
 
       if (data.play_url) {
         playerPlyr.source = {
@@ -354,9 +359,6 @@ function playTrackPlyr(trackPath) {
         };
         playerPlyr.play();
       }
-
-      document.getElementById("genre").innerText =
-        (data.genre && data.genre.toLowerCase() !== "unknown") ? data.genre : "N/A";
 
       const newIndex = playlist.indexOf(trackPath);
       if (newIndex !== -1) {

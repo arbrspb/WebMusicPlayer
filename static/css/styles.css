@@ -1,4 +1,5 @@
-/* Основные стили */
+/* ===== БАЗОВЫЕ СТИЛИ (Desktop) ===== */
+
 body {
   padding-top: 70px !important;
 }
@@ -12,12 +13,12 @@ body {
   margin: 2px;
 }
 
-/* Уберите лишние отступы для контейнеров */
+/* Убираем лишние отступы для контейнеров */
 .container-fluid {
   margin-top: 0 !important;
 }
 
-/* Стили для темной темы */
+/* Тёмная тема */
 .dark-theme {
   background: #343a40 !important;
   color: #f8f9fa !important;
@@ -46,14 +47,15 @@ body {
   color: #f8f9fa !important;
   border-color: #f8f9fa !important;
 }
-/* Новый класс для многострочного отображения длинных названий треков */
+
+/* Ограничение длины названия трека */
 .track-name-wrap {
-  max-width: 150px;       /* или любое нужное вам значение */
-  white-space: normal;    /* разрешает перенос строк */
-  word-break: break-word; /* позволяет разбивать длинные слова */
+  max-width: 150px;
+  white-space: normal;
+  word-break: break-word;
 }
 
-/* Стили для списка треков в тёмной теме */
+/* Стили для списка треков (тёмная тема) */
 .dark-theme #playlist {
   background-color: #495057 !important;
   color: #f8f9fa !important;
@@ -70,35 +72,91 @@ body {
   color: #f8f9fa !important;
 }
 
-/* По умолчанию (на десктопе) кнопки располагаются в строку с отступами */
+/* Кнопки располагаются в строку */
 .custom-btn-group {
   display: flex;
   flex-wrap: wrap;
-  row-gap: 10px;       /* вертикальный отступ между строками */
-  column-gap: 5px;    /* горизонтальный отступ между элементами в одной строке */
+  row-gap: 10px;
+  column-gap: 5px;
 }
 
-/* Класс для каждой записи (элемента li) в списке избранного */
+/* Стили для элементов избранного */
 .fav-entry {
-    padding: 0.4rem 0.5rem;
-    margin-bottom: 0.1rem;
-    /* Если хотите задать фиксированную высоту */
-    /* height: 2.5rem; */
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 0.1rem;
 }
-/* Контейнер для кнопок – сдвигаем его вверх */
+
 .fav-entry .button-container {
-    margin-top: -17px;  /* положение кнопок в избранном вверх или вниз */
-    display: flex;
-    justify-content: flex-end;
+  margin-top: -17px;
+  display: flex;
+  justify-content: flex-end;
 }
 
+/* ===== МЕДИА ЗАПРОСЫ ДЛЯ ПЛАНШЕТОВ (макс. 992px) ===== */
+@media only screen and (max-width: 992px) {
+  /* Например, уменьшите отступы и размеры для устройств с экранами планшетов */
+  body {
+    padding-top: 60px !important;
+  }
 
+  #playlist {
+    max-height: 60vh; /* можно уменьшить высоту списка треков */
+  }
 
+  .player-btn {
+    margin: 1px;
+    font-size: 0.9em;
+  }
 
+  /* Если у вас есть боковая панель, можно задать другое позиционирование */
+  .sidebar {
+    /* Например, делаем её видимой внизу или изменяем ширину */
+    /* display: block; */
+    /* width: 100%; */
+  }
+}
 
+/* ===== МЕДИА ЗАПРОСЫ ДЛЯ МОБИЛЬНЫХ (макс. 768px) ===== */
+@media only screen and (max-width: 768px) {
+  body {
+    padding-top: 50px !important;
+  }
 
+  #playlist {
+    max-height: 50vh; /* Уменьшаем высоту списка треков */
+  }
 
+  .player-btn {
+    margin: 1px;
+    font-size: 0.8em;
+    padding: 0.3em 0.6em;
+  }
 
+  /* Переопределите расположение элементов управления плеером */
+  .card-body {
+    padding: 1rem;
+  }
+
+  /* Если у вас есть боковая панель, можно скрыть или адаптировать её - например, сделать выпадающим меню */
+  .sidebar {
+    display: none; /* или другое поведение для мобильных */
+  }
+
+  /* Перенастройка кнопок, текста и отступов для узких экранов */
+  #now_playing {
+    font-size: 1em;
+  }
+
+  #genre {
+    font-size: 0.9em;
+  }
+
+  #seekSlider {
+    width: 100%;
+  }
+
+  /* Можно добавить модификаторы для избранного или других элементов, если надо */
+}
 
 
 

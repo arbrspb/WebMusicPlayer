@@ -1,4 +1,4 @@
-# app/__init__.py
+# app/__init__.py 11-05-25
 import os
 from flask import Flask
 from .utils import resource_path

@@ -104,8 +104,8 @@
       </div>
     </div>
 
-<div class="row">
-  <!-- Боковая панель с плейлистом -->
+<!-- Десктопная версия плейлиста (видна для устройств md и выше) -->
+<div class="row d-none d-md-flex">
   <div class="col-md-3">
     <h4>Треки в {{ current_path or 'корневой папке' }}</h4>
     <ul class="list-group" id="playlist">
@@ -116,7 +116,6 @@
           <div>
             <!-- Кнопка Play -->
             <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}'); currentIndex={{ loop.index0 }};">Play</button>
-            <!-- Если трек уже в избранном, кнопка становится красной и отключается -->
             {% if track_path in favorites %}
               <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
             {% else %}
@@ -126,10 +125,39 @@
         </li>
       {% endfor %}
     </ul>
-
     <br>
-    <button id="favorites_btn" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#favoritesModal">Избранное</button>
+    <button id="favorites_btn" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#favoritesModal">
+      Избранное
+    </button>
   </div>
+</div>
+  =
+
+<!-- Мобильная версия плейлиста (видна только на устройствах меньше md) -->
+<div id="mobile-playlist" class="d-md-none">
+  <ul class="list-group" id="playlist-mobile">
+      {% for file in files %}
+        {% set track_path = current_path ~ '/' ~ file %}
+        <li class="list-group-item d-flex justify-content-between align-items-center" data-track="{{ track_path }}">
+          <span class="track-name-wrap">{{ file }}</span>
+          <div>
+            <!-- Кнопка Play -->
+            <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}'); currentIndex={{ loop.index0 }};">Play</button>
+            {% if track_path in favorites %}
+              <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
+            {% else %}
+              <button class="btn btn-sm btn-warning fav-btn" onclick="event.preventDefault(); addFavorite('{{ track_path }}', this);">Fav</button>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+  </ul>
+  <button id="favorites_btn_mobile" class="btn btn-outline-secondary">Избранное</button>
+</div>
+
+<!-- Кнопка для переключения видимости мобильного плейлиста -->
+<button id="toggle-playlist" class="d-md-none">Скрыть плейлист</button>
+
 
       <!-- Панель управления плеером -->
       <div class="col-md-9">
@@ -492,17 +520,19 @@ if (playbackMode === "host") {
 
 
     /******************* ОБРАБОТЧИКИ УПРАВЛЕНИЯ *******************/
-    {#document.getElementById("play_btn").addEventListener("click", function(){#}
-    {#  if (playbackMode === "host") {#}
-    {#    if (document.getElementById("now_playing").innerText === "Не играет" && playlist.length > 0) {#}
-    {#      currentIndex = 0;#}
-    {#      playTrackHost(playlist[currentIndex]);#}
-    {#    }#}
-    {#  } else if (playbackMode === "plyr") {#}
-    {#    if (playerPlyr) { playerPlyr.play(); }#}
-    {#  }#}
-    {#});#}
+ // Скрытие и отображение панели с треками
+    document.getElementById("toggle-playlist").addEventListener("click", function(){
+  const playlistEl = document.getElementById("mobile-playlist");
+  if (playlistEl.classList.contains("hidden")) {
+    playlistEl.classList.remove("hidden");
+    this.textContent = "Скрыть плейлист";
+  } else {
+    playlistEl.classList.add("hidden");
+    this.textContent = "Показать плейлист";
+  }
+});
 
+// Кнопки
     document.getElementById("play_btn").addEventListener("click", function(){
   if (playbackMode === "host") {
     if (document.getElementById("now_playing").innerText === "Не играет" && playlist.length > 0) {

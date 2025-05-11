@@ -280,6 +280,10 @@
             document.getElementById("now_playing").innerText = "Сейчас играет: " + trackName;
             document.getElementById("genre").innerText = data.genre || "N/A";
           }
+          // Применяем сохранённую громкость, если она была изменена пользователем.
+          if (window.currentVolume !== undefined) {
+            setVolumeHost(window.currentVolume);
+          }
         })
         .catch(err => console.log(err));
     }

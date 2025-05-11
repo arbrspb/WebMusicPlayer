@@ -46,6 +46,7 @@ def register_routes(app):
         "current_playlist": [],
         "current_playlist_directory": "",
         "current_index": None,
+        "current_volume": None,
         "scan_thread": None,
         "scan_stop_event": None,
         "scan_progress": {"status": "stopped", "scanned": 0, "total": 0, "results": {}},
@@ -329,7 +330,7 @@ def register_routes(app):
 
         # Получаем конфигурацию и определяем режим воспроизведения
         config = load_config()
-        mode = config.get("playback_mode", "host")  # Не забудьте добавить эту строку!
+        mode = config.get("playback_mode", "host")
 
         if mode == "host":
             try:
@@ -337,7 +338,10 @@ def register_routes(app):
                 global_state["current_player"] = instance.media_player_new()
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
-                global_state["current_player"].audio_set_volume(config.get("default_volume", 70))
+                # Используем сохранённое значение громкости, если оно установлено,
+                # иначе применяем значение из настроек по умолчанию.
+                volume_to_set = global_state.get("current_volume", config.get("default_volume", 70))
+                global_state["current_player"].audio_set_volume(volume_to_set)
                 vlc_devices = get_active_vlc_devices_default()
                 selected_index = config.get("selected_device", 0)
                 if vlc_devices and selected_index >= len(vlc_devices):
@@ -437,8 +441,15 @@ def register_routes(app):
         mode = config.get("playback_mode", "host")
         if mode == "host":
             try:
-                global_state["current_player"] = vlc.MediaPlayer(full_path)
-                global_state["current_player"].audio_set_volume(config.get("default_volume", 70))
+                # Создаем новый экземпляр плеера
+                instance = vlc.Instance()
+                global_state["current_player"] = instance.media_player_new()
+                media = instance.media_new(full_path)
+                global_state["current_player"].set_media(media)
+                # Используем сохранённое значение громкости, если оно имеется,
+                # иначе значение default_volume из настроек.
+                volume_to_set = global_state.get("current_volume", config.get("default_volume", 70))
+                global_state["current_player"].audio_set_volume(volume_to_set)
                 vlc_devices = get_active_vlc_devices_default()
                 selected_index = config.get("selected_device", 0)
                 if vlc_devices and selected_index < len(vlc_devices):
@@ -459,12 +470,10 @@ def register_routes(app):
         except Exception as e:
             genre = "Unknown"
 
-        # Вычисляем "чистое" название трека
         track_title = get_track_title(next_path)
-
         global_state["current_track"]["path"] = next_path
         global_state["current_track"]["genre"] = genre
-        global_state["current_track"]["title"] = track_title  # обновляем чистое название
+        global_state["current_track"]["title"] = track_title
 
         response = {"status": "playing", "track": next_path, "title": track_title, "genre": genre}
         if play_url:
@@ -475,6 +484,8 @@ def register_routes(app):
     def prev_track():
         if not global_state["current_playlist"] or global_state["current_index"] is None:
             return jsonify({"error": "No playlist loaded"}), 400
+
+        # Вычисляем индекс предыдущего трека
         global_state["current_index"] = (global_state["current_index"] - 1) % len(global_state["current_playlist"])
         prev_file = global_state["current_playlist"][global_state["current_index"]]
         prev_path = os.path.join(global_state["current_playlist_directory"], prev_file)
@@ -483,6 +494,7 @@ def register_routes(app):
         if not os.path.isfile(full_path):
             return jsonify({"error": "File not found", "full_path": full_path}), 404
 
+        # Останавливаем предыдущий плеер, если он существует
         if global_state["current_player"] is not None:
             global_state["current_player"].stop()
 
@@ -494,7 +506,10 @@ def register_routes(app):
                 global_state["current_player"] = instance.media_player_new()
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
-                global_state["current_player"].audio_set_volume(config.get("default_volume", 70))
+                # Используем сохранённое значение громкости, если оно установлено,
+                # иначе применяем значение из настроек (default_volume)
+                volume_to_set = global_state.get("current_volume", config.get("default_volume", 70))
+                global_state["current_player"].audio_set_volume(volume_to_set)
                 vlc_devices = get_active_vlc_devices_default()
                 selected_index = config.get("selected_device", 0)
                 if vlc_devices and selected_index < len(vlc_devices):
@@ -518,6 +533,7 @@ def register_routes(app):
         # Вычисляем "чистое" название трека
         track_title = get_track_title(prev_path)
 
+        # Обновляем глобальное состояние текущего трека
         global_state["current_track"]["path"] = prev_path
         global_state["current_track"]["genre"] = genre
         global_state["current_track"]["title"] = track_title
@@ -735,9 +751,11 @@ def register_routes(app):
         vol = int(data.get("volume", config_val.get("default_volume", 70)))
         mode = config_val.get("playback_mode", "host")
         if mode == "host":
+            # Сохраняем значение, выбранное пользователем, в глобальное состояние
+            global_state["current_volume"] = vol
             if global_state["current_player"] is not None:
                 global_state["current_player"].audio_set_volume(vol)
-                logger.debug("Установлена громкость: %d", vol)
+                logger.debug("Установлена громкость (host): %d", vol)
                 return jsonify({"status": "volume set", "volume": vol})
             else:
                 return jsonify({"error": "нет активного трека"}), 400

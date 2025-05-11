@@ -104,8 +104,8 @@
       </div>
     </div>
 
-<!-- Десктопная версия плейлиста (видна для устройств md и выше) -->
-<div class="row d-none d-md-flex">
+<div class="row">
+  <!-- Боковая панель с плейлистом -->
   <div class="col-md-3">
     <h4>Треки в {{ current_path or 'корневой папке' }}</h4>
     <ul class="list-group" id="playlist">
@@ -116,6 +116,7 @@
           <div>
             <!-- Кнопка Play -->
             <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}'); currentIndex={{ loop.index0 }};">Play</button>
+            <!-- Если трек уже в избранном, кнопка становится красной и отключается -->
             {% if track_path in favorites %}
               <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
             {% else %}
@@ -125,39 +126,10 @@
         </li>
       {% endfor %}
     </ul>
+
     <br>
-    <button id="favorites_btn" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#favoritesModal">
-      Избранное
-    </button>
+    <button id="favorites_btn" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#favoritesModal">Избранное</button>
   </div>
-</div>
-  =
-
-<!-- Мобильная версия плейлиста (видна только на устройствах меньше md) -->
-<div id="mobile-playlist" class="d-md-none">
-  <ul class="list-group" id="playlist-mobile">
-      {% for file in files %}
-        {% set track_path = current_path ~ '/' ~ file %}
-        <li class="list-group-item d-flex justify-content-between align-items-center" data-track="{{ track_path }}">
-          <span class="track-name-wrap">{{ file }}</span>
-          <div>
-            <!-- Кнопка Play -->
-            <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}'); currentIndex={{ loop.index0 }};">Play</button>
-            {% if track_path in favorites %}
-              <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
-            {% else %}
-              <button class="btn btn-sm btn-warning fav-btn" onclick="event.preventDefault(); addFavorite('{{ track_path }}', this);">Fav</button>
-            {% endif %}
-          </div>
-        </li>
-      {% endfor %}
-  </ul>
-  <button id="favorites_btn_mobile" class="btn btn-outline-secondary">Избранное</button>
-</div>
-
-<!-- Кнопка для переключения видимости мобильного плейлиста -->
-<button id="toggle-playlist" class="d-md-none">Скрыть плейлист</button>
-
 
       <!-- Панель управления плеером -->
       <div class="col-md-9">
@@ -268,25 +240,32 @@
     }
 
     /******************* ФУНКЦИИ РЕЖИМА HOST (VLC) *******************/
-    function playTrackHost(trackPath) {
-      fetch('/play?path=' + encodeURIComponent(trackPath))
-        .then(response => response.json())
-        .then(data => {
-          console.log("Host mode, playing:", data);
-          if (data.track) {
-            // Используем data.title для отображения, если оно есть
-            let trackName = data.title || data.track.split(/[/\\]+/).pop();
-            trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
-            document.getElementById("now_playing").innerText = "Сейчас играет: " + trackName;
-            document.getElementById("genre").innerText = data.genre || "N/A";
-          }
-          // Применяем сохранённую громкость, если она была изменена пользователем.
-          if (window.currentVolume !== undefined) {
-            setVolumeHost(window.currentVolume);
-          }
-        })
-        .catch(err => console.log(err));
-    }
+function playTrackHost(trackPath) {
+  fetch('/play?path=' + encodeURIComponent(trackPath))
+    .then(response => response.json())
+    .then(data => {
+      console.log("Host mode, playing:", data);
+      if (data.track) {
+        let trackName = data.title || data.track.split(/[/\\]+/).pop();
+        trackName = decodeURIComponent(trackName).replace(/&amp;/g, '&');
+        document.getElementById("now_playing").innerText = "Сейчас играет: " + trackName;
+        document.getElementById("genre").innerText = data.genre || "N/A";
+      }
+      // После создания нового экземпляра плеера (в global_state["current_player"])
+      // применяем сохранённое значение громкости, если оно установлено
+      if (window.currentVolume !== undefined) {
+        // Можно также использовать задержку, если нужно дождаться полной готовности VLC
+        setTimeout(function(){
+          setVolumeHost(window.currentVolume);
+        }, 500);
+      } else {
+        // Если пользователь не менял громкость, никакие действия не требуются, так как VLC уже использует значение из настроек
+      }
+    })
+    .catch(err => console.log(err));
+}
+
+
 <!-- Пауза -->
     function pauseTrackHost() {
       fetch('/pause')
@@ -343,16 +322,52 @@ function prevTrackHost() {
     .catch(err => console.log(err));
 }
 
+function setHostVolumeWithRetry(vol, attempts) {
+  // Если попыток не осталось, прекращаем.
+  if (attempts <= 0) return;
+
+  fetch('/volume', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ volume: vol })
+  })
+    .then(response => {
+      if (!response.ok) {
+        // Если ответ не ок, повторяем через 500 мс.
+        console.log("Не удалось установить громкость, повторная попытка. Осталось попыток: " + (attempts - 1));
+        setTimeout(() => setHostVolumeWithRetry(vol, attempts - 1), 500);
+      } else {
+        response.json().then(data => {
+          console.log("Громкость установлена (host):", data);
+        });
+      }
+    })
+    .catch(err => {
+      console.log("Ошибка при установке громкости, повторяем...", err);
+      setTimeout(() => setHostVolumeWithRetry(vol, attempts - 1), 500);
+    });
+}
+
+
     function setVolumeHost(vol) {
       fetch('/volume', {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ volume: vol })
       })
         .then(response => response.json())
         .then(data => console.log("Volume set (host):", data))
         .catch(err => console.log(err));
     }
+
+    function setVolumePlyr(vol) {
+      if (window.playerPlyr) {
+        window.playerPlyr.volume = vol / 100;
+      }
+    }
+
+
+
     function seekHost(newTimeSec) {
       fetch('/seek', {
         method: "POST",
@@ -383,27 +398,26 @@ function playTrackPlyr(trackPath) {
   fetch('/play?path=' + encodeURIComponent(trackPath))
     .then(response => response.json())
     .then(data => {
-      // Используем data.title если оно есть, иначе извлекаем последний сегмент из data.track
       let fileName = data.title || (data.track ? data.track.split(/[/\\]+/).pop() : trackPath.split(/[/\\]+/).pop());
       fileName = decodeURIComponent(fileName).replace(/&amp;/g, '&');
-
-      // Сохраняем название и жанр глобально
       window.currentTrackTitle = fileName;
       window.currentTrackGenre = (data.genre && data.genre.toLowerCase() !== "unknown") ? data.genre : "N/A";
 
-      // Обновляем интерфейс
       document.getElementById("now_playing").innerText = "Сейчас играет: " + window.currentTrackTitle;
       document.getElementById("genre").innerText = window.currentTrackGenre;
 
       if (data.play_url) {
-        playerPlyr.source = {
+        window.playerPlyr.source = {
           type: 'audio',
           title: fileName,
-          sources: [
-            { src: data.play_url, type: 'audio/mp3' }
-          ]
+          sources: [{ src: data.play_url, type: 'audio/mp3' }]
         };
-        playerPlyr.play();
+        window.playerPlyr.play();
+      }
+
+      // Применяем сохранённое значение громкости, если пользователь его менял
+      if (window.currentVolume !== undefined) {
+        setVolumePlyr(window.currentVolume);
       }
 
       const newIndex = playlist.indexOf(trackPath);
@@ -413,6 +427,8 @@ function playTrackPlyr(trackPath) {
     })
     .catch(err => console.log(err));
 }
+
+
 
     // Функция обновления статуса для plyr: обновляет позицию, время и т.д.
     function updateStatusPlyr() {
@@ -428,9 +444,7 @@ function playTrackPlyr(trackPath) {
     function seekPlyr(newTimeSec) {
       if (playerPlyr) { playerPlyr.currentTime = newTimeSec; }
     }
-    function setVolumePlyr(vol) {
-      if (playerPlyr) { playerPlyr.volume = vol / 100; }
-    }
+
 
 function pauseTrackPlyr() {
   console.log("pauseTrackPlyr() вызвана");
@@ -524,19 +538,17 @@ if (playbackMode === "host") {
 
 
     /******************* ОБРАБОТЧИКИ УПРАВЛЕНИЯ *******************/
- // Скрытие и отображение панели с треками
-    document.getElementById("toggle-playlist").addEventListener("click", function(){
-  const playlistEl = document.getElementById("mobile-playlist");
-  if (playlistEl.classList.contains("hidden")) {
-    playlistEl.classList.remove("hidden");
-    this.textContent = "Скрыть плейлист";
-  } else {
-    playlistEl.classList.add("hidden");
-    this.textContent = "Показать плейлист";
-  }
-});
+    {#document.getElementById("play_btn").addEventListener("click", function(){#}
+    {#  if (playbackMode === "host") {#}
+    {#    if (document.getElementById("now_playing").innerText === "Не играет" && playlist.length > 0) {#}
+    {#      currentIndex = 0;#}
+    {#      playTrackHost(playlist[currentIndex]);#}
+    {#    }#}
+    {#  } else if (playbackMode === "plyr") {#}
+    {#    if (playerPlyr) { playerPlyr.play(); }#}
+    {#  }#}
+    {#});#}
 
-// Кнопки
     document.getElementById("play_btn").addEventListener("click", function(){
   if (playbackMode === "host") {
     if (document.getElementById("now_playing").innerText === "Не играет" && playlist.length > 0) {
@@ -608,17 +620,20 @@ if (playbackMode === "host") {
     });
 
     // Обработчик громкости для host и plyr
-    if (document.getElementById("volumeSlider")) {
-      document.getElementById("volumeSlider").addEventListener("input", function(){
-        const vol = Number(this.value);
-        if (playbackMode === "host") {
-          setVolumeHost(vol);
-        } else if (playbackMode === "plyr") {
-          setVolumePlyr(vol);
-        }
-        document.getElementById("volume_display").innerText = "Громкость: " + vol + "%";
-      });
+if (document.getElementById("volumeSlider")) {
+  document.getElementById("volumeSlider").addEventListener("input", function(){
+    const vol = Number(this.value);
+    // Сохраняем текущее значение громкости
+    window.currentVolume = vol;
+    if (playbackMode === "host") {
+      setVolumeHost(vol);
+    } else if (playbackMode === "plyr") {
+      setVolumePlyr(vol);
     }
+    document.getElementById("volume_display").innerText = "Громкость: " + vol + "%";
+  });
+}
+
     document.getElementById("recommend_btn").addEventListener("click", function(){
       fetch('/recommend')
         .then(response => response.json())

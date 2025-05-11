@@ -152,10 +152,15 @@
             <!-- Показываем ползунок громкости для режимов host и plyr -->
             {% if config.playback_mode == "host" or config.playback_mode == "plyr" %}
             <div class="d-flex align-items-center justify-content-center">
-              <input type="range" id="volumeSlider" class="form-range" min="0" max="100" value="{{ config.default_volume }}" style="width: 50%;">
-              <span id="volume_display" class="ms-2">Громкость: {{ config.default_volume }}%</span>
+              <input type="range" id="volumeSlider" class="form-range" min="0" max="100"
+                     value="{{ session.get('current_volume', config.default_volume) }}"
+                     style="width: 50%;">
+              <span id="volume_display" class="ms-2">
+                Громкость: {{ session.get('current_volume', config.default_volume) }}%
+              </span>
             </div>
             {% endif %}
+
 
             <!-- Режимы плеера: оставляем только host и plyr -->
             {% if config.playback_mode == "plyr" %}

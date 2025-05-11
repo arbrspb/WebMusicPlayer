@@ -893,3 +893,24 @@ def register_routes(app):
             keywords = load_genre_settings()
             return jsonify({"keywords": keywords})
 
+
+    def main_js():
+        # Получаем актуальные значения так же, как в browse()
+        config = load_config()
+        path = request.args.get("path")
+        if not path and 'current_folder' in session:
+            path = session['current_folder']
+        decoded_path = unquote_plus(path) if path else ""
+        MUSIC_DIR = config.get("music_dir", DEFAULT_CONFIG["music_dir"])
+        full_dir = os.path.join(MUSIC_DIR, decoded_path) if decoded_path else MUSIC_DIR
+        try:
+            files = sorted(f for f in os.listdir(full_dir) if f.lower().endswith(".mp3"))
+        except FileNotFoundError:
+            files = []
+        current_path_clean = decoded_path.replace('\\', '/') if decoded_path else ''
+        return render_template(
+            'main.js',
+            config=config,
+            files=files,
+            current_path=current_path_clean
+        ), 200, {'Content-Type': 'application/javascript'}

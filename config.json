@@ -1,8 +1,8 @@
 {
     "music_dir": "\\\\192.168.1.120\\Music",
-    "playback_mode": "plyr",
-    "default_volume": 50,
+    "playback_mode": "host",
+    "default_volume": 59,
     "scan_mode": "new",
-    "sound_quality": "high",
+    "sound_quality": "medium",
     "selected_device": 0
 }

@@ -1,3 +1,4 @@
+<!-- main.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -108,24 +109,24 @@
   <!-- Боковая панель с плейлистом -->
   <div class="col-md-3">
     <h4>Треки в {{ current_path or 'корневой папке' }}</h4>
-    <ul class="list-group" id="playlist">
-      {% for file in files %}
-        {% set track_path = current_path ~ '/' ~ file %}
-        <li class="list-group-item d-flex justify-content-between align-items-center" data-track="{{ track_path }}">
-          <span class="track-name-wrap">{{ file }}</span>
-          <div>
-            <!-- Кнопка Play -->
-            <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}'); currentIndex={{ loop.index0 }};">Play</button>
-            <!-- Если трек уже в избранном, кнопка становится красной и отключается -->
-            {% if track_path in favorites %}
-              <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
-            {% else %}
-              <button class="btn btn-sm btn-warning fav-btn" onclick="event.preventDefault(); addFavorite('{{ track_path }}', this);">Fav</button>
-            {% endif %}
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
+        <ul class="list-group" id="playlist">
+          {% for file in files %}
+            {% set track_path = current_path ~ '/' ~ file %}
+            <li class="list-group-item d-flex justify-content-between align-items-center{% if file == playing_file %} playing{% endif %}"
+                data-track="{{ track_path }}">
+              <span class="track-name-wrap">{{ file }}</span>
+              <div>
+                <!-- Кнопка Play -->
+                <button class="btn btn-sm btn-primary" onclick="playTrack('{{ track_path }}');">Play</button>
+                {% if track_path in favorites %}
+                  <button class="btn btn-sm btn-danger fav-btn" disabled>Fav</button>
+                {% else %}
+                  <button class="btn btn-sm btn-warning fav-btn" onclick="event.preventDefault(); addFavorite('{{ track_path }}', this);">Fav</button>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
 
     <br>
     <button id="favorites_btn" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#favoritesModal">Избранное</button>
@@ -219,17 +220,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
   <script src="https://cdn.plyr.io/3.7.2/plyr.polyfilled.js"></script>
 
-  <script>
-  window.playerConfig = {
-    playbackMode: "{{ config.playback_mode }}",
-    playlist: [
-      {% for file in files %}
-        "{{ current_path }}/{{ file }}"{% if not loop.last %},{% endif %}
-      {% endfor %}
-    ],
-    currentPath: "{{ current_path }}"
-  };
-</script>
+    <script>
+    window.playerConfig = {
+      playbackMode: "{{ config.playback_mode }}",
+      playlist: [
+        {% for file in files %}
+          "{{ current_path }}/{{ file }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      currentPath: "{{ current_path }}",
+      autoplay: "{{ autoplay|default('') }}"
+    };
+    </script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 

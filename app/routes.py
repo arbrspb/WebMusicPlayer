@@ -146,13 +146,15 @@ def register_routes(app):
 
     @app.route("/browse")
     def browse():
+        from urllib.parse import unquote_plus
         path = request.args.get("path")
+        autoplay = request.args.get("autoplay")
         if not path and 'current_folder' in session:
             path = session['current_folder']
         decoded_path = unquote_plus(path) if path else ""
         logger.debug("Decoded path: %s", decoded_path)
 
-        config = load_config()  # получаем конфигурацию
+        config = load_config()
         MUSIC_DIR = config.get("music_dir", DEFAULT_CONFIG["music_dir"])
         full_dir = os.path.join(MUSIC_DIR, decoded_path) if decoded_path else MUSIC_DIR
         logger.debug("Полный путь каталога: %s", full_dir)
@@ -166,20 +168,43 @@ def register_routes(app):
 
         current_path_clean = decoded_path.replace('\\', '/') if decoded_path else ''
         logger.debug("Формируется область воспроизведения для %s", current_path_clean)
-
-        # Добавляем список избранного
+        session['current_folder'] = decoded_path
+        playlist = [f"{current_path_clean}/{fname}" if current_path_clean else fname for fname in files]
         favorites = get_favorites()
+        autoplay_index = None
+        if autoplay:
+            autoplay_norm = autoplay.replace('\\', '/')
+            for idx, item in enumerate(playlist):
+                if item.replace('\\', '/') == autoplay_norm:
+                    autoplay_index = idx
+                    break
+            logger.debug(f"Autoplay param: {autoplay}, найден индекс: {autoplay_index}")
+        # Исправление здесь:
+        playing_file = None
+        current_track = session.get('current_track')
+        if autoplay_index is not None:
+            playing_file = files[autoplay_index]
+        elif isinstance(current_track, dict):
+            playing_file = os.path.basename(current_track.get("path", ""))
+        elif isinstance(current_track, str):
+            playing_file = os.path.basename(current_track)
+        else:
+            playing_file = None
 
-        return render_template("main.html",
-                               files=files,
-                               current_path=current_path_clean,
-                               favorites=favorites,  # передаем избранное в шаблон
-                               devices=global_state["audio_devices"],
-                               selected_device=global_state["selected_device"],
-                               current_track=session.get("current_track"),
-                               current_genre=global_state["current_track"].get("genre"),
-                               config=config,
-                               enumerate=enumerate)
+        return render_template(
+            "main.html",
+            files=files,
+            current_path=current_path_clean,
+            favorites=favorites,
+            devices=global_state["audio_devices"],
+            selected_device=global_state["selected_device"],
+            current_track=session.get("current_track"),
+            current_genre=global_state["current_track"].get("genre"),
+            config=config,
+            enumerate=enumerate,
+            autoplay=autoplay,
+            playing_file=playing_file
+        )
 
     @app.route("/shutdown", methods=["POST"])
     def shutdown():
@@ -671,45 +696,44 @@ def register_routes(app):
         logger.info("Из избранного удалён трек: %s", path)
         return jsonify({"status": "removed", "path": path})
 
-
     @app.route("/recommend")
     def recommend():
-        if (not global_state["current_track"].get("genre") or
-            global_state["current_track"].get("genre").lower() in ["unknown", ""]):
+        # Получаем текущий трек и его жанр из базы (НЕ МЕНЯТЬ)
+        current_path = global_state["current_track"].get("path")
+        genre = global_state["current_track"].get("genre")
+        print("DEBUG genre value:", repr(genre))  # <--- отладка
+        print("DEBUG current_track:", repr(global_state["current_track"])) # <--- отладка
+        # Если вдруг genre это tuple (например, после запроса к БД)
+        if isinstance(genre, tuple):
+            genre = genre[0] if genre else None
+        # Теперь genre точно str или None
+        if not genre or (isinstance(genre, str) and genre.lower() in ["unknown", ""]):
             return jsonify({"error": "Нет установлено жанра текущего трека"}), 400
-        recommended = None
-        con = sqlite3.connect(DB_PATH)
+
+        # Подключаемся к БД scan_results
+        con = sqlite3.connect("scan_results.db")
         cur = con.cursor()
-        cur.execute("SELECT path, genre FROM favorites")
-        favorites = cur.fetchall()
+        # Ищем кандидатов по жанру, кроме текущего трека
+        cur.execute("""SELECT rel_path, confidence
+                       FROM scan_results
+                       WHERE genre = ?
+                         AND rel_path <> ?
+                       ORDER BY confidence DESC""", (genre, current_path))
+        candidates = cur.fetchall()
         con.close()
-        if favorites:
-            same_genre_favs = [row for row in favorites
-                               if row[1] == global_state["current_track"]["genre"] and
-                                  row[0] != global_state["current_track"]["path"]]
-            if same_genre_favs:
-                recommended = same_genre_favs[0][0]
-        if not recommended and global_state["current_playlist"]:
-            for file in global_state["current_playlist"]:
-                candidate = os.path.join(global_state["current_playlist_directory"], file)
-                if candidate == global_state["current_track"]["path"]:
-                    continue
-                MUSIC_DIR = load_config().get("music_dir", DEFAULT_CONFIG["music_dir"])
-                full_candidate = os.path.normpath(os.path.join(MUSIC_DIR, candidate))
-                if os.path.isfile(full_candidate):
-                    candidate_genre = get_genre(full_candidate)
-                    if candidate_genre == global_state["current_track"]["genre"]:
-                        recommended = candidate
-                        break
-        if not recommended and global_state["current_playlist"]:
-            next_index = (global_state["current_index"] + 1) % len(global_state["current_playlist"])
-            recommended = os.path.join(
-                global_state["current_playlist_directory"], global_state["current_playlist"][next_index]
-            )
+        # Порог confidence (например, 0.5)
+        recommended = None
+        for rel_path, confidence in candidates:
+            if confidence and confidence > 0.5:
+                recommended = rel_path
+                break
         if not recommended:
-            return jsonify({"error": "Нет треков для рекомендации"}), 400
-        logger.info("Рекомендован трек: %s", recommended)
-        return jsonify({"redirect": recommended})
+            return jsonify({"error": "Похожий трек не найден"}), 404
+        return jsonify({
+            "redirect": recommended,
+            "filename": os.path.basename(recommended),
+            "folder": os.path.dirname(recommended)
+        })
 
     @app.route("/analyze")
     def analyze_current():

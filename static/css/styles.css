@@ -1,4 +1,4 @@
-/* ===== 11-05-25 =====  */
+/* ===== styles.css =====  */
 /* ===== БАЗОВЫЕ СТИЛИ (Desktop) ===== 11-05-25 */
 
 body {
@@ -213,7 +213,12 @@ body {
     width: 100%;
   }
 }
-
+ /* Жирное выделение/цвет строки текущего трека */
+.list-group-item.playing {
+  font-weight: bold;
+  background: #ffe4ec !important;
+  color: #a4458d !important;
+}
 
 
 

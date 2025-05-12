@@ -53,6 +53,7 @@ function formatTime(seconds) {
 
 // ========== HOST (VLC) ==========
 function playTrackHost(trackPath) {
+  console.log("playlist:", playlist);
   // Обновляем индекс ТОЛЬКО тут, до запроса!
   const idx = playlist.findIndex(p =>
     p.replace(/\\/g, '/').replace(/\/+/g, '/').trim() === trackPath.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
@@ -98,6 +99,7 @@ function pauseTrackHost() {
 }
 
 function nextTrackHost() {
+  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
   fetch('/next')
     .then(response => response.json())
     .then(data => {
@@ -112,6 +114,7 @@ function nextTrackHost() {
 }
 
 function prevTrackHost() {
+  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
   fetch('/prev')
     .then(response => response.json())
     .then(data => {
@@ -187,7 +190,18 @@ function playTrackPlyr(trackPath) {
   );
   if (idx !== -1) currentIndex = idx;
   updateTrackHighlight();
-
+    if (playbackMode === "host") {
+    playTrackHost(trackPath); // внутри playTrackHost не меняем currentIndex!
+    setTimeout(() => {
+      fetch('/status')
+        .then(resp => resp.json())
+        .then(data => {
+          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
+        });
+    }, 500); // задержка чтобы сервер успел переключить трек
+  } else if (playbackMode === "plyr") {
+    playTrackPlyr(trackPath);
+  }
   fetch('/play?path=' + encodeURIComponent(trackPath))
     .then(response => response.json())
     .then(data => {
@@ -322,13 +336,17 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   document.getElementById("next_btn")?.addEventListener("click", function(){
-  if (playlist.length === 0) return;
-
+  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
+    if (playlist.length === 0) return;
   if (playbackMode === "host") {
-    // Шлём команду серверу
     nextTrackHost();
-    // Найти трек, который теперь воспроизводится (через /status)
-    setTimeout(updateCurrentIndexFromStatus, 400); // небольшая задержка, чтобы сервер успел обновить статус
+    setTimeout(() => {
+      fetch('/status')
+        .then(resp => resp.json())
+        .then(data => {
+          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
+        });
+    }, 500);
   } else if (playbackMode === "plyr") {
     let newIndex = (currentIndex + 1) % playlist.length;
     playTrack(playlist[newIndex]);
@@ -337,10 +355,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
 document.getElementById("prev_btn")?.addEventListener("click", function(){
   if (playlist.length === 0) return;
-
   if (playbackMode === "host") {
     prevTrackHost();
-    setTimeout(updateCurrentIndexFromStatus, 400);
+    setTimeout(() => {
+      fetch('/status')
+        .then(resp => resp.json())
+        .then(data => {
+          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
+        });
+    }, 500);
   } else if (playbackMode === "plyr") {
     let newIndex = (currentIndex - 1 + playlist.length) % playlist.length;
     playTrack(playlist[newIndex]);
@@ -538,6 +561,7 @@ function scanLibrary(){
 
 // функция для динамического выделения трека в боковой панели
 function updateTrackHighlight() {
+ console.log("playlist:", playlist);
   document.querySelectorAll('#playlist .list-group-item').forEach(el => el.classList.remove('playing'));
   let nowPath = playlist[currentIndex];
   // Для отладки:
@@ -573,4 +597,15 @@ function updateCurrentIndexFromStatus() {
       }
     })
     .catch(err => console.log('Ошибка при получении статуса для выделения:', err));
+}
+
+function syncCurrentIndexAndHighlight(playingPath) {
+  // playingPath — это "реально играющий" путь (из /status или сервера)
+  // сравниваем всегда по basename, либо по нормализованному относительному пути
+  const playingBase = playingPath.split(/[\\/]/).pop();
+  const idx = playlist.findIndex(p => p.split(/[\\/]/).pop() === playingBase);
+  if (idx !== -1) {
+    currentIndex = idx;
+    updateTrackHighlight();
+  }
 }

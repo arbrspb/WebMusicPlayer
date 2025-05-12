@@ -701,12 +701,9 @@ def register_routes(app):
         # Получаем текущий трек и его жанр из базы (НЕ МЕНЯТЬ)
         current_path = global_state["current_track"].get("path")
         genre = global_state["current_track"].get("genre")
-        print("DEBUG genre value:", repr(genre))  # <--- отладка
-        print("DEBUG current_track:", repr(global_state["current_track"])) # <--- отладка
-        # Если вдруг genre это tuple (например, после запроса к БД)
-        if isinstance(genre, tuple):
+        # Если genre это кортеж (например, ('Drum & Bass', 1.0)), берем первый элемент
+        if isinstance(genre, (tuple, list)):
             genre = genre[0] if genre else None
-        # Теперь genre точно str или None
         if not genre or (isinstance(genre, str) and genre.lower() in ["unknown", ""]):
             return jsonify({"error": "Нет установлено жанра текущего трека"}), 400
 

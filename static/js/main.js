@@ -23,12 +23,9 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 
 // ================== Глобальные переменные и плейлист ==================
-const playbackMode = "{{ config.playback_mode }}".trim(); // host или plyr
-const playlist = [
-  {% for file in files %}
-    "{{ current_path }}/{{ file }}"{% if not loop.last %},{% endif %}
-  {% endfor %}
-];
+const playbackMode = window.playerConfig.playbackMode; // host или plyr
+const playlist = window.playerConfig.playlist;
+const currentPath = window.playerConfig.currentPath;
 let currentIndex = 0;
 window.playerPlyr = null;
 

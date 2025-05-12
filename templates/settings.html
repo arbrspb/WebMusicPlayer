@@ -1,4 +1,4 @@
-<!-- 11-05-25 -->
+<!-- settings.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,22 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Подключение кастомного CSS -->
   <link rel="stylesheet" href="/static/css/styles.css">
-    <!-- Переопределение отступа для страницы настроек  -->
   <style>
-    body {
-      padding-top: 0 !important;
-    }
+    body { padding-top: 0 !important; }
   </style>
 </head>
 <body>
   <!-- Навигационная панель -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <!--<a class="navbar-brand" href="/">My Music Player</a>-->
-      <!--<a class="navbar-brand" href="/browse?path={{ current_folder }}">My Music Player</a>-->
-        <span class="navbar-brand">My Music Player</span>
+      <span class="navbar-brand">My Music Player</span>
       <div class="collapse navbar-collapse">
          <ul class="navbar-nav me-auto">
            <li class="nav-item"><a class="nav-link" href="/">Главная</a></li>
@@ -48,7 +42,7 @@
           <option value="host" {% if config.playback_mode=='host' %}selected{% endif %}>На компьютере-хосте (VLC)</option>
           <option value="plyr" {% if config.playback_mode=='plyr' %}selected{% endif %}>Plyr.js</option>
         </select>
-
+      </div>
       <div class="mb-3">
         <label for="default_volume" class="form-label">Громкость по умолчанию</label>
         <input type="number" class="form-control" id="default_volume" name="default_volume" value="{{ config.default_volume }}">
@@ -110,28 +104,28 @@
     <div id="scanProgress" class="mt-2"></div>
   </div>
 
-<!-- Модальное окно для выбора режима сканирования -->
-	<div class="modal fade" id="scanSettingsModal" tabindex="-1" aria-labelledby="scanSettingsModalLabel" aria-hidden="true">
-	  <div class="modal-dialog">
-		<div class="modal-content">
-		  <div class="modal-header">
-			<h5 class="modal-title" id="scanSettingsModalLabel">Выбрать режим сканирования</h5>
-			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-		  </div>
-		  <div class="modal-body">
-			 <select class="form-select" id="scanModeSelect">
-				<option value="new">Начать заново (очистить результаты)</option>
-				<option value="continue">Продолжить (дополнить новые записи)</option>
-			 </select>
-		  </div>
-		  <div class="modal-footer">
-			 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-			 <button type="button" class="btn btn-primary" id="saveScanModeBtn">Сохранить</button>
-		  </div>
-		</div>
-	  </div>
-	</div>
-<!-- Модальное окно для выбора режима сканирования -->
+  <!-- Модальное окно для выбора режима сканирования -->
+  <div class="modal fade" id="scanSettingsModal" tabindex="-1" aria-labelledby="scanSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="scanSettingsModalLabel">Выбрать режим сканирования</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <select class="form-select" id="scanModeSelect">
+            <option value="new">Начать заново (очистить результаты)</option>
+            <option value="continue">Продолжить (дополнить новые записи)</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" id="saveScanModeBtn">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Модальное окно для выбора режима сканирования -->
 
   <!-- Модальное окно для редактирования жанровых настроек -->
   <div class="modal fade" id="genreSettingsModal" tabindex="-1" aria-labelledby="genreSettingsModalLabel" aria-hidden="true">
@@ -160,223 +154,23 @@
     </div>
   </div>
 
-  <!-- Подключаем Bootstrap Bundle JS (включая Popper) -->
+  <!-- ВАЖНО: до подключения settings.js! -->
+  <script>
+    window.settingsConfig = {
+      musicDir: "{{ config.music_dir }}",
+      playbackMode: "{{ config.playback_mode }}",
+      defaultVolume: "{{ config.default_volume }}",
+      soundQuality: "{{ config.sound_quality }}",
+      selectedDevice: "{{ config.selected_device }}",
+      devices: [
+        {% for dev in devices %}
+          { name: "{{ dev.name }}" }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      isHost: {{ 'true' if config.playback_mode == 'host' else 'false' }}
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-  <hr>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    // Отдельный обработчик для модального окна с жанровыми настройками
-    var genreSettingsModal = document.getElementById("genreSettingsModal");
-    if (genreSettingsModal) {
-      genreSettingsModal.addEventListener('shown.bs.modal', function () {
-        fetch("/custom_keywords")
-          .then(response => response.json())
-          .then(data => {
-            console.log("Custom keywords:", data.keywords);
-            var settingsStr = "";
-            for (const key in data.keywords) {
-              if (data.keywords.hasOwnProperty(key)) {
-                settingsStr += key + ":" + data.keywords[key] + ", ";
-              }
-            }
-            settingsStr = settingsStr.replace(/,\s*$/, "");
-            var input = document.getElementById("genreSettingsInput");
-            if (input) {
-              input.value = settingsStr;
-            }
-          })
-          .catch(err => console.log(err));
-      });
-    }
-  });
-</script>
-<script>
-  function saveGenreSettings() {
-    console.log("saveGenreSettings() вызывается");
-    var input = document.getElementById("genreSettingsInput");
-    if (!input) {
-      console.error("Элемент с id 'genreSettingsInput' не найден");
-      return;
-    }
-    var data = input.value;
-    var newSettings = {};
-    var parts = data.split(",");
-    parts.forEach(function(part) {
-      var pair = part.split(":");
-      if (pair.length === 2) {
-        newSettings[pair[0].trim().toLowerCase()] = pair[1].trim();
-      }
-    });
-    console.log("Новые настройки:", newSettings);
-    fetch("/custom_keywords", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({keywords: newSettings})
-    })
-    .then(response => response.json())
-    .then(result => {
-      console.log("Ответ сервера:", result);
-      if (result.status === "saved") {
-        alert("Ключевые слова сохранены");
-        var modalEl = document.getElementById("genreSettingsModal");
-        var modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (!modalInstance) {
-          modalInstance = new bootstrap.Modal(modalEl);
-        }
-        modalInstance.hide();
-      } else {
-        alert("Ошибка сохранения: " + (result.message || "Неизвестная ошибка"));
-      }
-    })
-    .catch(err => {
-      console.error("Ошибка в fetch:", err);
-      alert("Ошибка сохранения: " + err);
-    });
-  }
-</script>
-<script>
-  // Функция для запуска сканирования
-  function startScan() {
-    fetch('/start_scan')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Сканирование запущено:", data);
-        // После запуска, начинаем опрашивать статус сканирования
-        pollScanProgress();
-      })
-      .catch(err => console.log("Ошибка старта сканирования:", err));
-  }
-
-  // Функция для остановки сканирования
-  function stopScan() {
-    fetch('/stop_scan')
-      .then(response => response.json())
-      .then(data => {
-        console.log("Остановка сканирования:", data);
-      })
-      .catch(err => console.log("Ошибка остановки сканирования:", err));
-  }
-
-  // Функция для опроса статуса сканирования
-  function pollScanProgress() {
-    fetch('/scan_progress')
-      .then(response => response.json())
-      .then(data => {
-         document.getElementById("scanProgress").innerText = "Сканировано " + data.scanned + " из " + data.total;
-         if(data.status !== "completed" && data.status !== "stopped")
-             setTimeout(pollScanProgress, 1000);
-         else
-             alert("Сканирование " + data.status);
-      })
-      .catch(err => console.log("Ошибка опроса статуса сканирования:", err));
-  }
-</script>
-<script>
-    document.getElementById("retrain-btn").addEventListener("click", function() {
-      fetch('/retrain', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-          alert("Переобучение запущено.");
-          document.getElementById("progress-container").style.display = "block";
-          checkProgress();
-        })
-        .catch(err => { alert("Ошибка: " + err); });
-    });
-
-    function checkProgress() {
-      fetch('/training_status')
-        .then(response => response.json())
-        .then(data => {
-          let progress = data.progress;
-          document.getElementById("progress-bar").value = progress;
-          document.getElementById("progress-text").innerText = progress + "%";
-          if (progress < 100) {
-            setTimeout(checkProgress, 500); // повторять запрос каждые 500 мс
-          } else {
-            alert("Обучение завершено.");
-          }
-        })
-        .catch(err => { console.error("Ошибка получения статуса:", err); });
-    }
-</script>
-<script>
-  // Обработчик для кнопки "Сохранить" в модальном окне сканирования.
-  document.getElementById('saveScanModeBtn').addEventListener('click', function(){
-    // Получаем выбранное значение из выпадающего списка
-    var scanMode = document.getElementById('scanModeSelect').value;
-    // Сохраняем выбранное значение в localStorage (для использования в функции startScan)
-    localStorage.setItem('scanMode', scanMode);
-
-    // Отправляем AJAX-запрос для обновления сканировочного режима в config.json
-    fetch('/update_scan_config', {
-      method: 'POST',
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({scan_mode: scanMode})
-    })
-    .then(response => response.json())
-    .then(data => {
-      alert("Режим сканирования сохранен: " + data.scan_mode);
-      // Закрываем модальное окно
-      var modalInstance = bootstrap.Modal.getInstance(document.getElementById("scanSettingsModal"));
-      modalInstance.hide();
-    })
-    .catch(err => console.log("Ошибка сохранения настроек сканирования:", err));
-  });
-
-  // Функция для запуска сканирования, учитывая выбранный режим,
-  // передаваемый серверу через параметр "mode"
-  function startScan(){
-    var scanMode = localStorage.getItem('scanMode') || 'new'; // значение по умолчанию "new"
-    fetch('/start_scan?mode=' + scanMode)
-      .then(response => response.json())
-      .then(data => {
-          console.log("Сканирование запущено:", data);
-          pollScanProgress();  // Опрашиваем статус сканирования
-      })
-      .catch(err => console.log("Ошибка старта сканирования:", err));
-  }
-
-  // Функция для остановки сканирования
-  function stopScan(){
-    fetch('/stop_scan')
-      .then(response => response.json())
-      .then(data => console.log("Остановка сканирования:", data))
-      .catch(err => console.log("Ошибка остановки сканирования:", err));
-  }
-
-  // Пример функции опроса статуса сканирования
-  function pollScanProgress() {
-    fetch('/scan_progress')
-      .then(response => response.json())
-      .then(data => {
-         document.getElementById("scanProgress").innerText = "Сканировано " + data.scanned + " из " + data.total;
-         if(data.status !== "completed" && data.status !== "stopped")
-             setTimeout(pollScanProgress, 1000);
-         else
-             alert("Сканирование " + data.status);
-      })
-      .catch(err => console.log("Ошибка опроса статуса сканирования:", err));
-  }
-</script>
-<script>
-  // Функция для загрузки конфигурации сканирования с сервера при загрузке страницы
-  function loadScanConfig(){
-    fetch('/get_scan_config?t=' + Date.now())  // параметр t добавлен для предотвращения кэширования
-      .then(response => response.json())
-      .then(data => {
-        // Устанавливаем выбранное значение в выпадающий список
-        document.getElementById('scanModeSelect').value = data.scan_mode || 'new';
-      })
-      .catch(err => console.log("Ошибка загрузки настроек сканирования:", err));
-  }
-
-  // Вызываем функцию при загрузке страницы
-  window.onload = loadScanConfig;
-</script>
-
-
+  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>
-

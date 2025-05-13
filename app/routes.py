@@ -147,6 +147,7 @@ def register_routes(app):
     @app.route("/browse")
     def browse():
         path = request.args.get("path")
+        autoplay = request.args.get("autoplay", "")  # извлекаем параметр autoplay, если он есть
         if not path and 'current_folder' in session:
             path = session['current_folder']
         decoded_path = unquote_plus(path) if path else ""
@@ -179,7 +180,8 @@ def register_routes(app):
                                current_track=session.get("current_track"),
                                current_genre=global_state["current_track"].get("genre"),
                                config=config,
-                               enumerate=enumerate)
+                               enumerate=enumerate,
+                               autoplay=autoplay)  # передаём параметр autoplay
 
     @app.route("/shutdown", methods=["POST"])
     def shutdown():

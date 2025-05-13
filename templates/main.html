@@ -227,12 +227,13 @@
         "{{ current_path }}/{{ file }}"{% if not loop.last %},{% endif %}
       {% endfor %}
     ],
-    currentPath: "{{ current_path }}"
-
+    currentPath: "{{ current_path }}",
+    autoplay: "{{ autoplay|default('') }}"
   };
+  console.log("playerConfig:", window.playerConfig);
 </script>
-
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 
 
 

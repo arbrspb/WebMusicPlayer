@@ -530,20 +530,24 @@ function showRecommendModal(filename, folder, rel_path) {
   };
 }
 
-const autoplay = window.playerConfig.autoplay;
 document.addEventListener("DOMContentLoaded", function(){
-  if (autoplay) {
+  setTimeout(() => { // небольшой таймаут для уверенности, что все переменные загружены
+    const autoplay = window.playerConfig.autoplay;
     console.log("Autoplay параметр найден:", autoplay);
-    let idx = playlist.findIndex(item =>
-      item.replace(/\\/g, '/') === autoplay.replace(/\\/g, '/')
-    );
-    if (idx !== -1) {
-      currentIndex = idx;
-      playTrack(playlist[currentIndex]);
-    } else {
-      console.warn("Не найден трек для автозапуска");
+    if (autoplay && autoplay.trim() !== "") {
+      let idx = playlist.findIndex(item =>
+        item.replace(/\\/g, '/') === autoplay.replace(/\\/g, '/')
+      );
+      if (idx !== -1) {
+        currentIndex = idx;
+        console.log("Запускаем трек из плейлиста:", playlist[currentIndex]);
+        playTrack(playlist[currentIndex]);
+      } else {
+        console.warn("Не найден трек для автозапуска");
+      }
     }
-  }
+  }, 1000);
 });
+
 
 

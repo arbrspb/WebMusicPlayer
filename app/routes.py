@@ -146,15 +146,13 @@ def register_routes(app):
 
     @app.route("/browse")
     def browse():
-        from urllib.parse import unquote_plus
         path = request.args.get("path")
-        autoplay = request.args.get("autoplay")
         if not path and 'current_folder' in session:
             path = session['current_folder']
         decoded_path = unquote_plus(path) if path else ""
         logger.debug("Decoded path: %s", decoded_path)
 
-        config = load_config()
+        config = load_config()  # получаем конфигурацию
         MUSIC_DIR = config.get("music_dir", DEFAULT_CONFIG["music_dir"])
         full_dir = os.path.join(MUSIC_DIR, decoded_path) if decoded_path else MUSIC_DIR
         logger.debug("Полный путь каталога: %s", full_dir)
@@ -168,43 +166,20 @@ def register_routes(app):
 
         current_path_clean = decoded_path.replace('\\', '/') if decoded_path else ''
         logger.debug("Формируется область воспроизведения для %s", current_path_clean)
-        session['current_folder'] = decoded_path
-        playlist = [f"{current_path_clean}/{fname}" if current_path_clean else fname for fname in files]
-        favorites = get_favorites()
-        autoplay_index = None
-        if autoplay:
-            autoplay_norm = autoplay.replace('\\', '/')
-            for idx, item in enumerate(playlist):
-                if item.replace('\\', '/') == autoplay_norm:
-                    autoplay_index = idx
-                    break
-            logger.debug(f"Autoplay param: {autoplay}, найден индекс: {autoplay_index}")
-        # Исправление здесь:
-        playing_file = None
-        current_track = session.get('current_track')
-        if autoplay_index is not None:
-            playing_file = files[autoplay_index]
-        elif isinstance(current_track, dict):
-            playing_file = os.path.basename(current_track.get("path", ""))
-        elif isinstance(current_track, str):
-            playing_file = os.path.basename(current_track)
-        else:
-            playing_file = None
 
-        return render_template(
-            "main.html",
-            files=files,
-            current_path=current_path_clean,
-            favorites=favorites,
-            devices=global_state["audio_devices"],
-            selected_device=global_state["selected_device"],
-            current_track=session.get("current_track"),
-            current_genre=global_state["current_track"].get("genre"),
-            config=config,
-            enumerate=enumerate,
-            autoplay=autoplay,
-            playing_file=playing_file
-        )
+        # Добавляем список избранного
+        favorites = get_favorites()
+
+        return render_template("main.html",
+                               files=files,
+                               current_path=current_path_clean,
+                               favorites=favorites,  # передаем избранное в шаблон
+                               devices=global_state["audio_devices"],
+                               selected_device=global_state["selected_device"],
+                               current_track=session.get("current_track"),
+                               current_genre=global_state["current_track"].get("genre"),
+                               config=config,
+                               enumerate=enumerate)
 
     @app.route("/shutdown", methods=["POST"])
     def shutdown():
@@ -216,94 +191,82 @@ def register_routes(app):
         logger.info("Сервер завершается по запросу.")
         return "Сервер завершается...", 200
 
-    # @app.route("/play")
-    # def play_track():
-    #     logger.info("Запущен маршрут /play")
-    #     path = request.args.get("path")
-    #     if not path:
-    #         logger.error("Нет переданного параметра path")
-    #         return jsonify({"error": "No path provided"}), 400
-    #
-    #     decoded_path = unescape(unquote_plus(path))
-    #     track_title = get_track_title(decoded_path)  # используем утилиту здесь
-    #     MUSIC_DIR = load_config().get("music_dir", DEFAULT_CONFIG["music_dir"])
-    #     full_path = os.path.normpath(os.path.join(MUSIC_DIR, decoded_path))
-    #
-    #     if not os.path.isfile(full_path):
-    #         logger.error("Файл не найден: %s", full_path)
-    #         return jsonify({"error": "File not found", "full_path": full_path}), 404
-    #
-    #     folder = os.path.dirname(decoded_path)
-    #     global_state["current_playlist_directory"] = folder
-    #     session['current_folder'] = folder
-    #
-    #     try:
-    #         playlist = sorted(
-    #             f for f in os.listdir(os.path.join(MUSIC_DIR, folder))
-    #             if f.lower().endswith(".mp3")
-    #         )
-    #     except Exception as e:
-    #         logger.error("Ошибка формирования плейлиста: %s", e)
-    #         playlist = []
-    #     global_state["current_playlist"] = playlist
-    #
-    #     file_name = os.path.basename(decoded_path)
-    #     if file_name in playlist:
-    #         global_state["current_index"] = playlist.index(file_name)
-    #     else:
-    #         global_state["current_index"] = 0
-    #
-    #     if global_state["current_player"] is not None:
-    #         try:
-    #             global_state["current_player"].stop()
-    #         except Exception as ex:
-    #             logger.error("Ошибка при остановке текущего плеера: %s", ex)
-    #
-    #     config = load_config()
-    #     mode = config.get("playback_mode", "host")
-    #     if mode == "host":
-    #         try:
-    #             instance = vlc.Instance()
-    #             global_state["current_player"] = instance.media_player_new()
-    #             media = instance.media_new(full_path)
-    #             global_state["current_player"].set_media(media)
-    #             global_state["current_player"].audio_set_volume(config.get("default_volume", 70))
-    #             vlc_devices = get_active_vlc_devices_default()
-    #             selected_index = config.get("selected_device", 0)
-    #             if vlc_devices and selected_index >= len(vlc_devices):
-    #                 logger.warning("Выбранный индекс устройства превышает число устройств. Сбрасываем на 0.")
-    #                 selected_index = 0
-    #             if vlc_devices:
-    #                 device_id = vlc_devices[selected_index]['id']
-    #                 logger.info("Устанавливается устройство с ID: %s", device_id)
-    #                 global_state["current_player"].audio_output_device_set(None, device_id)
-    #             else:
-    #                 logger.info("Устройство не установлено, используется устройство по умолчанию.")
-    #             global_state["current_player"].play()
-    #             play_url = None
-    #         except Exception as e:
-    #             logger.error("Error playing file (host): %s", str(e))
-    #             return jsonify({"error": str(e)}), 500
-    #     elif mode == "plyr":
-    #         play_url = url_for("stream", path=decoded_path)
-    #         global_state["current_player"] = None
-    #     else:
-    #         return jsonify({"error": "Неверный режим воспроизведения"}), 400
-    #
-    #     # Получаем жанр используя данные из базы scan_results.db
-    #     genre = get_scanned_genre(decoded_path)
-    #
-    #     global_state["current_track"]["path"] = decoded_path
-    #     global_state["current_track"]["title"] = track_title  # можно сохранить "чистое" имя
-    #     global_state["current_track"]["genre"] = genre
-    #     session['current_track'] = decoded_path
-    #
-    #     response = {"status": "playing", "track": decoded_path, "genre": genre}
-    #     if play_url:
-    #         response["play_url"] = play_url
-    #
-    #     logger.info("Формируется ответ: %s", response)
-    #     return jsonify(response)
+    @app.route("/recommend")
+    def recommend():
+        # Ваш код поиска похожего трека...
+        current_genre = str(global_state["current_track"].get("genre") or "").strip()
+        current_path = str(global_state["current_track"].get("path") or "").strip()
+        if not current_genre or current_genre.lower() == "unknown":
+            return jsonify({"error": "Нет установлено жанра текущего трека"}), 400
+        try:
+            con = sqlite3.connect("scan_results.db")
+            cur = con.cursor()
+            cur.execute(
+                "SELECT rel_path, confidence FROM scan_results WHERE genre=? AND rel_path<>? ORDER BY confidence DESC",
+                (current_genre, current_path)
+            )
+            candidates = cur.fetchall()
+            con.close()
+        except Exception as e:
+            return jsonify({"error": "Ошибка обращения к базе: " + str(e)}), 500
+        threshold = 0.5
+        valid_candidates = [rel_path for rel_path, conf in candidates if conf is not None and conf > threshold]
+        recommended = None
+        if valid_candidates:
+            import random
+            recommended = random.choice(valid_candidates)
+        if not recommended:
+            return jsonify({"error": "Похожий трек не найден"}), 400
+        logger.info("Глобально рекомендован трек: %s", recommended)
+        filename = os.path.basename(recommended)
+        folder = os.path.dirname(recommended)
+        return jsonify({
+            "redirect": recommended,
+            "filename": filename,
+            "folder": folder
+        })
+
+    @app.route("/autoplay")
+    def autoplay_route():
+        # Получаем параметр track из GET-запроса
+        track = request.args.get("track")
+        logger.info("Autoplay: получен параметр track: %s", track)
+        if not track:
+            logger.warning("Autoplay: параметр track отсутствует, перенаправление на browse")
+            return redirect(url_for("browse"))
+
+        # Заменяем обратные слэши на прямые и нормализуем путь
+        track = track.replace("\\", "/")
+        norm_rel_path = os.path.normpath(track).replace("\\", "/")
+        logger.info("Autoplay: нормализованный путь: %s", norm_rel_path)
+
+        # Читаем жанр из базы (без аудиоанализа)
+        genre = get_scanned_genre(norm_rel_path)
+        logger.info("Autoplay: жанр получен: %s", genre)
+
+        # Обновляем глобальное состояние текущего трека и сессионные данные
+        global_state["current_track"]["path"] = norm_rel_path
+        global_state["current_track"]["title"] = os.path.basename(norm_rel_path)
+        global_state["current_track"]["genre"] = genre
+        session["current_track"] = norm_rel_path
+
+        # Определяем директорию для перехода
+        folder = os.path.dirname(norm_rel_path)
+        logger.info("Autoplay: определена директория: %s", folder)
+        global_state["current_playlist_directory"] = folder
+        session["current_folder"] = folder
+
+        logger.info("Автоплей: текущий трек обновлён: %s, жанр: %s", norm_rel_path, genre)
+
+        # Останавливаем текущий плеер, если он существует
+        if global_state["current_player"] is not None:
+            try:
+                global_state["current_player"].stop()
+            except Exception as ex:
+                logger.error("Ошибка при остановке текущего плеера: %s", ex)
+
+        # Перенаправляем на маршрут /play, чтобы запустить воспроизведение нового трека
+        return redirect(url_for("browse", path=folder, autoplay=norm_rel_path))
 
     @app.route("/play")
     def play_track():
@@ -317,7 +280,7 @@ def register_routes(app):
         decoded_path = unescape(unquote_plus(path))
         norm_rel_path = os.path.normpath(decoded_path)
 
-        # Получаем "чистое" название трека (без .mp3)
+        # Получаем "чистое" название трека (без расширения .mp3)
         track_title = get_track_title(norm_rel_path)
 
         MUSIC_DIR = load_config().get("music_dir", DEFAULT_CONFIG["music_dir"])
@@ -329,7 +292,7 @@ def register_routes(app):
 
         folder = os.path.dirname(norm_rel_path)
         global_state["current_playlist_directory"] = folder
-        session['current_folder'] = folder
+        session["current_folder"] = folder
 
         try:
             playlist = sorted(
@@ -355,7 +318,7 @@ def register_routes(app):
 
         # Получаем конфигурацию и определяем режим воспроизведения
         config = load_config()
-        mode = config.get("playback_mode", "host")  # Режим воспроизведения (host или plyr)
+        mode = config.get("playback_mode", "host")  # "host" или "plyr"
 
         if mode == "host":
             try:
@@ -364,7 +327,6 @@ def register_routes(app):
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
 
-                # Если пользователь ещё не задавал громкость, инициализируем её из настроек
                 if global_state.get("current_volume") is None:
                     global_state["current_volume"] = config.get("default_volume", 70)
                 volume_to_set = global_state["current_volume"]
@@ -376,13 +338,12 @@ def register_routes(app):
                     logger.warning("Выбранный индекс устройства превышает число устройств. Сбрасываем на 0.")
                     selected_index = 0
                 if vlc_devices:
-                    device_id = vlc_devices[selected_index]['id']
+                    device_id = vlc_devices[selected_index]["id"]
                     logger.info("Устанавливается устройство с ID: %s", device_id)
                     global_state["current_player"].audio_output_device_set(None, device_id)
                 else:
                     logger.info("Устройство не установлено, используется устройство по умолчанию.")
 
-                # После установки громкости запускаем воспроизведение
                 global_state["current_player"].play()
                 play_url = None
             except Exception as e:
@@ -394,19 +355,19 @@ def register_routes(app):
         else:
             return jsonify({"error": "Неверный режим воспроизведения"}), 400
 
-        # Получаем жанр используя данные из базы scan_results.db
+        # Получаем жанр из базы (без аудиоанализа)
         genre = get_scanned_genre(norm_rel_path)
 
-        # Обновляем глобальное состояние текущего трека
+        # Обновляем глобальное состояние текущего трека (используем уже полученные norm_rel_path и track_title)
         global_state["current_track"]["path"] = norm_rel_path
-        global_state["current_track"]["title"] = track_title
         global_state["current_track"]["genre"] = genre
-        session['current_track'] = norm_rel_path
+        global_state["current_track"]["title"] = track_title
+        session["current_track"] = norm_rel_path
 
         response = {
             "status": "playing",
-            "track": norm_rel_path,  # полный путь для логики воспроизведения
-            "title": track_title,  # чистое имя трека для отображения
+            "track": norm_rel_path,
+            "title": track_title,
             "genre": genre
         }
         if play_url:
@@ -414,43 +375,6 @@ def register_routes(app):
 
         logger.info("Формируется ответ: %s", response)
         return jsonify(response)
-
-    @app.route("/stop")
-    def stop_track():
-        if global_state["current_player"] is not None:
-            try:
-                global_state["current_player"].stop()
-            except Exception as ex:
-                logger.error("Ошибка при остановке плеера: %s", ex)
-                return jsonify({"error": str(ex)}), 500
-            global_state["current_player"] = None
-        # Очищаем глобальное состояние текущего трека
-        global_state["current_track"]["path"] = None
-        global_state["current_track"]["title"] = None
-        global_state["current_track"]["genre"] = None
-        return jsonify({"status": "stopped"})
-
-    # Пауза
-    @app.route("/pause")
-    def pause_track():
-        if global_state["current_player"] is not None:
-            try:
-                global_state["current_player"].pause()
-                global_state["paused"] = True  # Устанавливаем флаг паузы
-            except Exception as ex:
-                logger.error("Ошибка при приостановке плеера: %s", ex)
-                return jsonify({"error": str(ex)}), 500
-        # Возвращаем актуальную позицию, длительность и данные трека – они не очищаются
-        current_time = global_state["current_player"].get_time() if global_state["current_player"] is not None else 0
-        duration = global_state["current_player"].get_length() if global_state["current_player"] is not None else 0
-        return jsonify({
-            "status": "paused",
-            "current_time": current_time,
-            "duration": duration,
-            "track": global_state["current_track"].get("path", ""),
-            "title": global_state["current_track"].get("title", ""),
-            "genre": global_state["current_track"].get("genre", "")
-        })
 
     @app.route("/next")
     def next_track():
@@ -475,7 +399,6 @@ def register_routes(app):
                 global_state["current_player"] = instance.media_player_new()
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
-                # Если пользователь ещё не менял громкость – устанавливаем значение из настроек
                 if global_state.get("current_volume") is None:
                     global_state["current_volume"] = config.get("default_volume", 70)
                 volume_to_set = global_state["current_volume"]
@@ -483,7 +406,7 @@ def register_routes(app):
                 vlc_devices = get_active_vlc_devices_default()
                 selected_index = config.get("selected_device", 0)
                 if vlc_devices and selected_index < len(vlc_devices):
-                    device_id = vlc_devices[selected_index]['id']
+                    device_id = vlc_devices[selected_index]["id"]
                     global_state["current_player"].audio_output_device_set(None, device_id)
                 global_state["current_player"].play()
                 play_url = None
@@ -495,11 +418,8 @@ def register_routes(app):
         else:
             return jsonify({"error": "Неверный режим воспроизведения"}), 400
 
-        try:
-            genre = get_genre(full_path)
-        except Exception as e:
-            genre = "Unknown"
-
+        # Обновляем глобальное состояние текущего трека с использованием next_path
+        genre = get_scanned_genre(next_path)
         track_title = get_track_title(next_path)
         global_state["current_track"]["path"] = next_path
         global_state["current_track"]["genre"] = genre
@@ -510,7 +430,7 @@ def register_routes(app):
             "track": next_path,
             "title": track_title,
             "genre": genre,
-            "volume": volume_to_set  # передаем текущее значение громкости
+            "volume": volume_to_set
         }
         if play_url:
             response["play_url"] = play_url
@@ -539,7 +459,6 @@ def register_routes(app):
                 global_state["current_player"] = instance.media_player_new()
                 media = instance.media_new(full_path)
                 global_state["current_player"].set_media(media)
-                # Если пользователь не менял громкость, то инициализируем её из настроек
                 if global_state.get("current_volume") is None:
                     global_state["current_volume"] = config.get("default_volume", 70)
                 volume_to_set = global_state["current_volume"]
@@ -547,7 +466,7 @@ def register_routes(app):
                 vlc_devices = get_active_vlc_devices_default()
                 selected_index = config.get("selected_device", 0)
                 if vlc_devices and selected_index < len(vlc_devices):
-                    device_id = vlc_devices[selected_index]['id']
+                    device_id = vlc_devices[selected_index]["id"]
                     global_state["current_player"].audio_output_device_set(None, device_id)
                 global_state["current_player"].play()
                 play_url = None
@@ -559,11 +478,9 @@ def register_routes(app):
         else:
             return jsonify({"error": "Неверный режим воспроизведения"}), 400
 
-        try:
-            genre = get_genre(full_path)
-        except Exception as e:
-            genre = "Unknown"
-
+        # Обновляем глобальное состояние текущего трека
+        # Здесь используем prev_path
+        genre = get_scanned_genre(prev_path)
         track_title = get_track_title(prev_path)
         global_state["current_track"]["path"] = prev_path
         global_state["current_track"]["genre"] = genre
@@ -574,11 +491,47 @@ def register_routes(app):
             "track": prev_path,
             "title": track_title,
             "genre": genre,
-            "volume": volume_to_set  # возвращаем текущее значение громкости
+            "volume": volume_to_set
         }
         if play_url:
             response["play_url"] = play_url
         return jsonify(response)
+
+    @app.route("/stop")
+    def stop_track():
+        if global_state["current_player"] is not None:
+            try:
+                global_state["current_player"].stop()
+            except Exception as ex:
+                logger.error("Ошибка при остановке плеера: %s", ex)
+                return jsonify({"error": str(ex)}), 500
+            global_state["current_player"] = None
+        # Очищаем глобальное состояние текущего трека
+        global_state["current_track"]["path"] = None
+        global_state["current_track"]["title"] = None
+        global_state["current_track"]["genre"] = None
+        return jsonify({"status": "stopped"})
+
+    @app.route("/pause")
+    def pause_track():
+        if global_state["current_player"] is not None:
+            try:
+                global_state["current_player"].pause()
+                global_state["paused"] = True  # Устанавливаем флаг паузы
+            except Exception as ex:
+                logger.error("Ошибка при приостановке плеера: %s", ex)
+                return jsonify({"error": str(ex)}), 500
+        # Возвращаем актуальную позицию, длительность и данные трека – они не очищаются
+        current_time = global_state["current_player"].get_time() if global_state["current_player"] is not None else 0
+        duration = global_state["current_player"].get_length() if global_state["current_player"] is not None else 0
+        return jsonify({
+            "status": "paused",
+            "current_time": current_time,
+            "duration": duration,
+            "track": global_state["current_track"].get("path", ""),
+            "title": global_state["current_track"].get("title", ""),
+            "genre": global_state["current_track"].get("genre", "")
+        })
 
     @app.route("/favorite", methods=["POST"])
     def favorite():
@@ -696,41 +649,6 @@ def register_routes(app):
         logger.info("Из избранного удалён трек: %s", path)
         return jsonify({"status": "removed", "path": path})
 
-    @app.route("/recommend")
-    def recommend():
-        # Получаем текущий трек и его жанр из базы (НЕ МЕНЯТЬ)
-        current_path = global_state["current_track"].get("path")
-        genre = global_state["current_track"].get("genre")
-        # Если genre это кортеж (например, ('Drum & Bass', 1.0)), берем первый элемент
-        if isinstance(genre, (tuple, list)):
-            genre = genre[0] if genre else None
-        if not genre or (isinstance(genre, str) and genre.lower() in ["unknown", ""]):
-            return jsonify({"error": "Нет установлено жанра текущего трека"}), 400
-
-        # Подключаемся к БД scan_results
-        con = sqlite3.connect("scan_results.db")
-        cur = con.cursor()
-        # Ищем кандидатов по жанру, кроме текущего трека
-        cur.execute("""SELECT rel_path, confidence
-                       FROM scan_results
-                       WHERE genre = ?
-                         AND rel_path <> ?
-                       ORDER BY confidence DESC""", (genre, current_path))
-        candidates = cur.fetchall()
-        con.close()
-        # Порог confidence (например, 0.5)
-        recommended = None
-        for rel_path, confidence in candidates:
-            if confidence and confidence > 0.5:
-                recommended = rel_path
-                break
-        if not recommended:
-            return jsonify({"error": "Похожий трек не найден"}), 404
-        return jsonify({
-            "redirect": recommended,
-            "filename": os.path.basename(recommended),
-            "folder": os.path.dirname(recommended)
-        })
 
     @app.route("/analyze")
     def analyze_current():
@@ -913,5 +831,13 @@ def register_routes(app):
         else:
             keywords = load_genre_settings()
             return jsonify({"keywords": keywords})
+
+
+
+
+
+
+
+
 
 

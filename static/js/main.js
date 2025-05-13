@@ -1,18 +1,4 @@
 // main.js 12-05-25
-
-// В начале main.js
-const autoplay = window.playerConfig.autoplay;
-document.addEventListener("DOMContentLoaded", function() {
-  if (autoplay) {
-    // Найти индекс в плейлисте и сразу проиграть
-    let idx = playlist.findIndex(item => item.replace(/\\/g, '/') === autoplay.replace(/\\/g, '/'));
-    if (idx !== -1) {
-      currentIndex = idx;
-      playTrack(playlist[currentIndex]);
-    }
-  }
-});
-
 // ========== Смена темы ==========
 function applyTheme() {
   var selected = document.querySelector('input[name="themeOption"]:checked').value;
@@ -53,14 +39,6 @@ function formatTime(seconds) {
 
 // ========== HOST (VLC) ==========
 function playTrackHost(trackPath) {
-  console.log("playlist:", playlist);
-  // Обновляем индекс ТОЛЬКО тут, до запроса!
-  const idx = playlist.findIndex(p =>
-    p.replace(/\\/g, '/').replace(/\/+/g, '/').trim() === trackPath.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
-  );
-  if (idx !== -1) currentIndex = idx;
-  updateTrackHighlight();
-
   fetch('/play?path=' + encodeURIComponent(trackPath))
     .then(response => response.json())
     .then(data => {
@@ -99,7 +77,6 @@ function pauseTrackHost() {
 }
 
 function nextTrackHost() {
-  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
   fetch('/next')
     .then(response => response.json())
     .then(data => {
@@ -114,7 +91,6 @@ function nextTrackHost() {
 }
 
 function prevTrackHost() {
-  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
   fetch('/prev')
     .then(response => response.json())
     .then(data => {
@@ -184,24 +160,6 @@ function resumeTrackPlyr() {
 }
 
 function playTrackPlyr(trackPath) {
-  // Обновляем индекс до запроса!
-  const idx = playlist.findIndex(p =>
-    p.replace(/\\/g, '/').replace(/\/+/g, '/').trim() === trackPath.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
-  );
-  if (idx !== -1) currentIndex = idx;
-  updateTrackHighlight();
-    if (playbackMode === "host") {
-    playTrackHost(trackPath); // внутри playTrackHost не меняем currentIndex!
-    setTimeout(() => {
-      fetch('/status')
-        .then(resp => resp.json())
-        .then(data => {
-          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
-        });
-    }, 500); // задержка чтобы сервер успел переключить трек
-  } else if (playbackMode === "plyr") {
-    playTrackPlyr(trackPath);
-  }
   fetch('/play?path=' + encodeURIComponent(trackPath))
     .then(response => response.json())
     .then(data => {
@@ -222,6 +180,8 @@ function playTrackPlyr(trackPath) {
       if (window.currentVolume !== undefined) {
         setVolumePlyr(window.currentVolume);
       }
+      const newIndex = playlist.indexOf(trackPath);
+      if (newIndex !== -1) currentIndex = newIndex;
     })
     .catch(err => console.log(err));
 }
@@ -256,13 +216,6 @@ function pauseTrackPlyr() {
 
 // ========== Единая функция воспроизведения ==========
 function playTrack(trackPath) {
-  // Обновляем индекс до вызова конкретного режима!
-  const idx = playlist.findIndex(p =>
-    p.replace(/\\/g, '/').replace(/\/+/g, '/').trim() === trackPath.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
-  );
-  if (idx !== -1) currentIndex = idx;
-  updateTrackHighlight();
-
   if (playbackMode === "host") {
     playTrackHost(trackPath);
   } else if (playbackMode === "plyr") {
@@ -336,39 +289,26 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   document.getElementById("next_btn")?.addEventListener("click", function(){
-  console.log("currentIndex:", currentIndex, "nowPath:", nowPath);
-    if (playlist.length === 0) return;
-  if (playbackMode === "host") {
-    nextTrackHost();
-    setTimeout(() => {
-      fetch('/status')
-        .then(resp => resp.json())
-        .then(data => {
-          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
-        });
-    }, 500);
-  } else if (playbackMode === "plyr") {
-    let newIndex = (currentIndex + 1) % playlist.length;
-    playTrack(playlist[newIndex]);
-  }
-});
+    if (playbackMode === "host") {
+      nextTrackHost();
+    } else if (playbackMode === "plyr") {
+      if (playlist.length > 0) {
+        currentIndex = (currentIndex + 1) % playlist.length;
+        playTrackPlyr(playlist[currentIndex]);
+      }
+    }
+  });
 
-document.getElementById("prev_btn")?.addEventListener("click", function(){
-  if (playlist.length === 0) return;
-  if (playbackMode === "host") {
-    prevTrackHost();
-    setTimeout(() => {
-      fetch('/status')
-        .then(resp => resp.json())
-        .then(data => {
-          if (data && data.track) syncCurrentIndexAndHighlight(data.track);
-        });
-    }, 500);
-  } else if (playbackMode === "plyr") {
-    let newIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-    playTrack(playlist[newIndex]);
-  }
-});
+  document.getElementById("prev_btn")?.addEventListener("click", function(){
+    if (playbackMode === "host") {
+      prevTrackHost();
+    } else if (playbackMode === "plyr") {
+      if (playlist.length > 0) {
+        currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+        playTrackPlyr(playlist[currentIndex]);
+      }
+    }
+  });
 
   document.getElementById("seekSlider")?.addEventListener("input", function(){
     const newTimeSec = Number(this.value);
@@ -392,51 +332,8 @@ document.getElementById("prev_btn")?.addEventListener("click", function(){
     });
   }
 
-document.getElementById("recommend_btn")?.addEventListener("click", function(){
-  fetch('/recommend')
-    .then(response => response.json())
-    .then(data => {
-      if (data.redirect) {
-        // Показать модальное окно с выбором
-        showRecommendModal(data.filename, data.folder, data.redirect);
-      } else if (data.error) {
-        alert("Похожий трек не найден: " + data.error);
-      }
-    })
-    .catch(err => console.log(err));
-});
 
-// Модальное окно выбора действия (добавь элемент recommendModal в html)
-function showRecommendModal(filename, folder, rel_path) {
-  // Создаём модалку динамически или используй Bootstrap Modal
-  const modalHtml = `
-    <div class="modal fade" id="recommendModal" tabindex="-1">
-      <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Похожий трек найден</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Похожий трек: <b>${filename}</b><br>Папка: <i>${folder}</i></p>
-          <p>Что сделать?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="goToTrack">Перейти к папке и воспроизвести</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Остаться здесь</button>
-        </div>
-      </div></div>
-    </div>`;
-  // Удаляем старую модалку если есть
-  document.getElementById('recommendModal')?.remove();
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  const modal = new bootstrap.Modal(document.getElementById('recommendModal'));
-  modal.show();
 
-  document.getElementById('goToTrack').onclick = function() {
-    modal.hide();
-    // Перейти в нужную папку
-    window.location.href = `/browse?path=${encodeURIComponent(folder)}&autoplay=${encodeURIComponent(rel_path)}`;
-  };
-}
 
   document.getElementById("pause_button")?.addEventListener("click", function(){
     if (playbackMode === "host") {
@@ -559,53 +456,94 @@ function scanLibrary(){
     .catch(err => {});
 }
 
-// функция для динамического выделения трека в боковой панели
-function updateTrackHighlight() {
- console.log("playlist:", playlist);
-  document.querySelectorAll('#playlist .list-group-item').forEach(el => el.classList.remove('playing'));
-  let nowPath = playlist[currentIndex];
-  // Для отладки:
-  console.log('[updateTrackHighlight] currentIndex:', currentIndex, ', nowPath:', nowPath);
-  let el = Array.from(document.querySelectorAll('#playlist .list-group-item'))
-    .find(el =>
-      el.getAttribute('data-track') &&
-      el.getAttribute('data-track').replace(/\\/g, '/').replace(/\/+/g, '/').trim() ===
-      nowPath.replace(/\\/g, '/').replace(/\/+/g, '/').trim()
-    );
-  if (el) {
-    el.classList.add('playing');
-    // Для отладки:
-    console.log('[updateTrackHighlight] выделено:', el.getAttribute('data-track'));
-  } else {
-    console.log('[updateTrackHighlight] не найден элемент для выделения!');
-  }
-}
-
-function updateCurrentIndexFromStatus() {
-  fetch('/status')
+// Обработчик для кнопки "Похожий"
+document.getElementById("recommend_btn")?.addEventListener("click", function(){
+  fetch('/recommend')
     .then(response => response.json())
     .then(data => {
-      if (data && data.track) {
-        const playingPath = data.track.replace(/\\/g, '/').replace(/\/+/g, '/').trim();
-        const idx = playlist.findIndex(p =>
-          p.replace(/\\/g, '/').replace(/\/+/g, '/').trim().endsWith(playingPath)
-        );
-        if (idx !== -1) {
-          currentIndex = idx;
-          updateTrackHighlight();
+      if (data.redirect) {
+        // Вызываем модальное окно для выбора действия
+        showRecommendModal(data.filename, data.folder, data.redirect);
+      } else if (data.error && data.error.indexOf("Нет установлено жанра") !== -1) {
+        if (confirm("Жанр текущего трека не установлен. Запустить анализ трека?")) {
+          fetch('/analyze')
+            .then(response => response.json())
+            .then(anData => {
+              if (anData.status === "analyzed") {
+                alert("Жанр обновлен: " + anData.genre);
+                fetch('/recommend')
+                  .then(response => response.json())
+                  .then(recData => {
+                    if (recData.redirect) {
+                      showRecommendModal(recData.filename, recData.folder, recData.redirect);
+                    } else {
+                      alert("Похожий трек не найден.");
+                    }
+                  });
+              }
+            });
         }
+      } else {
+        alert("Похожий трек не найден: " + (data.error || ""));
       }
     })
-    .catch(err => console.log('Ошибка при получении статуса для выделения:', err));
+    .catch(err => console.log(err));
+});
+
+// Функция показа модального окна для найденного похожего трека
+function showRecommendModal(filename, folder, rel_path) {
+  const modalHtml = `
+    <div class="modal fade" id="recommendModal" tabindex="-1" aria-labelledby="recommendModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="recommendModalLabel">Похожий трек найден</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <p>Найден трек: <b>${filename}</b></p>
+            <p>Директория: <i>${folder}</i></p>
+            <p>Перейти в эту директорию и воспроизвести трек?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="goToTrack">Перейти</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Остаться здесь</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  // Если модальное окно уже существует, удаляем его
+  const existingModal = document.getElementById("recommendModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  const modalElement = document.getElementById("recommendModal");
+  const modalInstance = new bootstrap.Modal(modalElement);
+  modalInstance.show();
+
+  document.getElementById("goToTrack").onclick = function() {
+    modalInstance.hide();
+    // Перенаправляем пользователя на /autoplay, передавая параметр track с выбранным треком для автозапуска
+    window.location.href = `/autoplay?track=${encodeURIComponent(rel_path)}`;
+  };
 }
 
-function syncCurrentIndexAndHighlight(playingPath) {
-  // playingPath — это "реально играющий" путь (из /status или сервера)
-  // сравниваем всегда по basename, либо по нормализованному относительному пути
-  const playingBase = playingPath.split(/[\\/]/).pop();
-  const idx = playlist.findIndex(p => p.split(/[\\/]/).pop() === playingBase);
-  if (idx !== -1) {
-    currentIndex = idx;
-    updateTrackHighlight();
+const autoplay = window.playerConfig.autoplay;
+document.addEventListener("DOMContentLoaded", function(){
+  if (autoplay) {
+    console.log("Autoplay параметр найден:", autoplay);
+    let idx = playlist.findIndex(item =>
+      item.replace(/\\/g, '/') === autoplay.replace(/\\/g, '/')
+    );
+    if (idx !== -1) {
+      currentIndex = idx;
+      playTrack(playlist[currentIndex]);
+    } else {
+      console.warn("Не найден трек для автозапуска");
+    }
   }
-}
+});
+
+

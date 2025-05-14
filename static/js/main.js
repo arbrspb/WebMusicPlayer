@@ -580,6 +580,47 @@ function updateCurrentTrackHighlight() {
 // Запускаем периодическое опрашивание каждую 3 секунды
 setInterval(updateCurrentTrackHighlight, 500);
 
+// Пример обработчика для формы избранных настроек с AJAX (если используется fetch)
+document.addEventListener("DOMContentLoaded", function() {
+  var favSettingsForm = document.getElementById("favSettingsForm");
+  if (favSettingsForm) {
+    favSettingsForm.addEventListener("submit", function(event) {
+      event.preventDefault();  // отменяем стандартную отправку формы
+      var formData = new FormData(favSettingsForm);
+      fetch("/update_fav_settings", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Выполняем программную замену адреса.
+        window.location.href = data.redirect;
+      })
+      .catch(err => {
+        console.error("Ошибка обновления настройки:", err);
+        alert("Ошибка обновления настроек избранных");
+      });
+    });
+  }
+});
+
+function playFavoriteTrack(trackPath) {
+  let favMode = localStorage.getItem('favorite_mode');
+  if (!favMode && window.playerConfig) {
+    favMode = window.playerConfig.favoriteMode || "stay";
+  }
+  console.log("playFavoriteTrack - favoriteMode:", favMode);
+  if (favMode === "switch") {
+    const folder = trackPath.substring(0, trackPath.lastIndexOf('/'));
+    const url = `/browse?path=${encodeURIComponent(folder)}&autoplay=${encodeURIComponent(trackPath)}`;
+    window.location.href = url;
+  } else {
+    playTrack(trackPath);
+    highlightCurrentTrack(trackPath);
+  }
+}
+
+
 
 
 

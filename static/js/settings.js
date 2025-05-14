@@ -29,6 +29,66 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  // --- Обработка отправки формы настроек избранных треков ---
+  var favSettingsForm = document.getElementById("favSettingsForm");
+  if (favSettingsForm) {
+    favSettingsForm.addEventListener("submit", function(event) {
+      event.preventDefault(); // отменяем стандартную отправку формы
+      var formData = new FormData(favSettingsForm);
+      fetch("/update_fav_settings", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Обновляем localStorage с новым значением favorite_mode
+        localStorage.setItem("favorite_mode", data.favorite_mode);
+        // Также обновляем глобальный объект, если он существует
+        if (window.settingsConfig) {
+          window.settingsConfig.favoriteMode = data.favorite_mode;
+        }
+        alert("Настройки избранных треков обновлены!");
+        // Если необходимо, можно выполнить программный редирект или перезагрузку:
+        // window.location.href = data.redirect;
+      })
+      .catch(err => {
+        console.error("Ошибка обновления настройки избранных:", err);
+        alert("Ошибка обновления настроек избранных");
+      });
+    });
+  }
+
+  // Если нужно, можно при загрузке формы проверить и установить localStorage,
+  // например, если в session (через глобальный объект) передано значение, но в localStorage оно отсутствует:
+  if (!localStorage.getItem("favorite_mode") && window.settingsConfig) {
+    localStorage.setItem("favorite_mode", window.settingsConfig.favoriteMode);
+  }
+});
+
+// Функция воспроизведения избранного трека уже есть:
+function playFavoriteTrack(trackPath) {
+  // Сначала пробуем получить актуальное значение из localStorage
+  let favMode = localStorage.getItem("favorite_mode");
+  // Если его нет, используем глобальное значение из settingsConfig
+  if (!favMode && window.settingsConfig) {
+    favMode = window.settingsConfig.favoriteMode || "stay";
+  }
+  console.log("playFavoriteTrack - favoriteMode:", favMode);
+
+  if (favMode === "switch") {
+    // Определяем папку, в которой находится трек
+    const folder = trackPath.substring(0, trackPath.lastIndexOf('/'));
+    // Редирект на /browse с передачей параметров: путь к каталогу и автозапуск трека
+    const url = `/browse?path=${encodeURIComponent(folder)}&autoplay=${encodeURIComponent(trackPath)}`;
+    window.location.href = url;
+  } else {
+    // Режим "stay": воспроизводим трек в текущем плейлисте
+    playTrack(trackPath);
+    highlightCurrentTrack(trackPath);
+  }
+}
+
+
   // --- Сохранение режима сканирования ---
   var saveScanModeBtn = document.getElementById('saveScanModeBtn');
   if (saveScanModeBtn) {
@@ -65,10 +125,6 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(err => { alert("Ошибка: " + err); });
     });
   }
-
-  // --- Конфиг сканирования при загрузке ---
-  loadScanConfig();
-});
 
 // --- Жанровые настройки ---
 function saveGenreSettings() {
@@ -151,3 +207,6 @@ function loadScanConfig(){
     })
     .catch(err => console.log("Ошибка загрузки настроек сканирования:", err));
 }
+// Вызываем функцию при загрузке страницы
+//  window.onload = loadScanConfig;
+

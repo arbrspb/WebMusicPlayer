@@ -14,7 +14,8 @@ DEFAULT_CONFIG = {
     "music_dir": r"\\192.168.1.120\Music",
     "playback_mode": "host",    # Можно поменять на "plyr", если хотите использовать новый режим
     "default_volume": 100,
-    "scan_mode": "new"          # "new" – начать заново, "continue" – дополнить новые записи
+    "scan_mode": "new",         # "new" – начать заново, "continue" – дополнить новые записи
+    "favorite_mode": "stay"     # Новая настройка: "stay" – оставаться в текущем плейлисте, "switch" – переходить к каталогу трека
 }
 
 def load_config():
@@ -50,3 +51,4 @@ class Config:
     PLAYBACK_MODE = _config.get("playback_mode", DEFAULT_CONFIG["playback_mode"])
     DEFAULT_VOLUME = _config.get("default_volume", DEFAULT_CONFIG["default_volume"])
     SCAN_MODE = _config.get("scan_mode", DEFAULT_CONFIG["scan_mode"])
+    FAVORITE_MODE = _config.get("favorite_mode", DEFAULT_CONFIG["favorite_mode"])

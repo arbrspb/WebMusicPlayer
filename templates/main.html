@@ -228,10 +228,12 @@
       {% endfor %}
     ],
     currentPath: "{{ current_path }}",
+    favoriteMode: "{{ session.get('favorite_mode', config.favorite_mode) }}",
     autoplay: "{{ autoplay|default('') }}"
   };
   console.log("playerConfig:", window.playerConfig);
 </script>
+
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 

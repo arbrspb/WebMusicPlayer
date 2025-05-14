@@ -5,7 +5,7 @@ import threading
 import time
 import vlc
 import logging
-from flask import request, redirect, url_for, jsonify, send_file, render_template, session
+from flask import request, redirect, url_for, jsonify, send_file, render_template, session, flash
 from urllib.parse import unquote_plus
 from .config import DEFAULT_CONFIG, load_config, save_config
 from .db import init_scan_db, init_favorite_db, FAVORITE_DB
@@ -13,6 +13,7 @@ from .models import get_genre, scan_library_async, train_genre_model, load_genre
 import sounddevice as sd
 from html import unescape
 from .utils import get_track_title
+
 
 
 logger = logging.getLogger(__name__) # Логирование
@@ -614,7 +615,7 @@ def register_routes(app):
                         <div class="fw-bold text-truncate" title="{f}">{track_name}</div>
                         <div class="small text-muted">Genre: {g}</div>
                         <div class="button-container d-flex justify-content-end" style="gap: 0.2rem;">
-                          <button class="btn btn-sm btn-primary custom-btn" style="width:80px;" onclick="playTrack('{f}')">Play</button>
+                          <button class="btn btn-sm btn-primary custom-btn" style="width:80px;" onclick="playFavoriteTrack('{f}')">Play</button>
                           <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
                         </div>
                       </div>
@@ -815,6 +816,17 @@ def register_routes(app):
             devices = get_active_vlc_devices_default()
             current_folder = session.get("current_folder", "")
             return render_template("settings.html", config=config_val, devices=devices, current_folder=current_folder)
+
+    @app.route("/update_fav_settings", methods=["POST"])
+    def update_fav_settings():
+        favorite_mode = request.form.get("favorite_mode", "stay")
+        config_val = load_config()
+        config_val["favorite_mode"] = favorite_mode
+        save_config(config_val)
+        session["favorite_mode"] = favorite_mode
+        global_state["favorite_mode"] = favorite_mode
+        flash("Настройки избранных треков обновлены и сохранены в конфигурации!", "success")
+        return redirect(url_for("settings"))
 
     @app.route("/custom_keywords", methods=["GET", "POST"])
     def custom_keywords():

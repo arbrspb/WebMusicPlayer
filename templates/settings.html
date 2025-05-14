@@ -78,7 +78,23 @@
     </form>
     {% endif %}
 
-    <hr>
+   <hr>
+    <h4>Настройка избранных треков</h4>
+    <form id="favSettingsForm" method="POST" action="/update_fav_settings">
+      <div class="mb-3">
+        <label class="form-label">Режим работы избранных треков:</label><br>
+        <label class="form-check-label me-3">
+          <input type="radio" name="favorite_mode" value="stay" class="form-check-input" {% if session.get('favorite_mode', config.favorite_mode) == 'stay' %}checked{% endif %}>
+          Оставаться в текущем плейлисте
+        </label>
+        <label class="form-check-label">
+          <input type="radio" name="favorite_mode" value="switch" class="form-check-input" {% if session.get('favorite_mode', config.favorite_mode) == 'switch' %}checked{% endif %}>
+          Переходить в плейлист трека
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить настройки избранных</button>
+    </form>
+<hr>
     <h4>Дополнительное</h4>
     <div class="custom-btn-group">
       <button type="button" class="btn btn-secondary" onclick="startScan();">
@@ -168,6 +184,8 @@
         {% endfor %}
       ],
       isHost: {{ 'true' if config.playback_mode == 'host' else 'false' }}
+    // Передаем также настройку избранных треков
+      favoriteMode: "{{ session.get('favorite_mode', config.favorite_mode) }}"
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

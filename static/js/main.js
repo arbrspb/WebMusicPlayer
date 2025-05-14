@@ -1,4 +1,4 @@
-// main.js 12-05-25
+// main.js 15-05-25
 // ========== Смена темы ==========
 function applyTheme() {
   var selected = document.querySelector('input[name="themeOption"]:checked').value;
@@ -605,21 +605,38 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function playFavoriteTrack(trackPath) {
-  let favMode = localStorage.getItem('favorite_mode');
-  if (!favMode && window.playerConfig) {
-    favMode = window.playerConfig.favoriteMode || "stay";
+  console.log("playFavoriteTrack вызвана с trackPath:", trackPath);
+
+  // Получаем режим favoriteMode из localStorage либо конфига
+  let favMode = localStorage.getItem("favoriteMode");
+  if (!favMode) {
+    if (typeof playerConfig !== "undefined" && playerConfig.favoriteMode) {
+      favMode = playerConfig.favoriteMode;
+    } else if (window.settingsConfig && window.settingsConfig.favoriteMode) {
+      favMode = window.settingsConfig.favoriteMode;
+    } else {
+      favMode = "stay";
+    }
+    localStorage.setItem("favoriteMode", favMode);
   }
-  console.log("playFavoriteTrack - favoriteMode:", favMode);
+
+  console.log("Окончательное значение favoriteMode:", favMode);
+
   if (favMode === "switch") {
     const folder = trackPath.substring(0, trackPath.lastIndexOf('/'));
     const url = `/browse?path=${encodeURIComponent(folder)}&autoplay=${encodeURIComponent(trackPath)}`;
     window.location.href = url;
   } else {
-    playTrack(trackPath);
-    highlightCurrentTrack(trackPath);
+    if (typeof playTrack === "function") {
+      playTrack(trackPath);
+    } else {
+      console.warn("Функция playTrack не определена");
+    }
+    if (typeof highlightCurrentTrack === "function") {
+      highlightCurrentTrack(trackPath);
+    }
   }
 }
-
 
 
 

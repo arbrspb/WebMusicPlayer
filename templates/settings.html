@@ -1,4 +1,4 @@
-<!-- settings.html -->
+<!-- settings.html 15-05-25 -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -172,23 +172,23 @@
 
   <!-- ВАЖНО: до подключения settings.js! -->
   <script>
-    window.settingsConfig = {
-      musicDir: "{{ config.music_dir }}",
-      playbackMode: "{{ config.playback_mode }}",
-      defaultVolume: "{{ config.default_volume }}",
-      soundQuality: "{{ config.sound_quality }}",
-      selectedDevice: "{{ config.selected_device }}",
-      devices: [
-        {% for dev in devices %}
-          { name: "{{ dev.name }}" }{% if not loop.last %},{% endif %}
-        {% endfor %}
-      ],
-      isHost: {{ 'true' if config.playback_mode == 'host' else 'false' }}
-    // Передаем также настройку избранных треков
-      favoriteMode: "{{ session.get('favorite_mode', config.favorite_mode) }}"
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+  window.settingsConfig = {
+    musicDir: "{{ config.music_dir }}",
+    playbackMode: "{{ config.playback_mode }}",
+    defaultVolume: "{{ config.default_volume }}",
+    soundQuality: "{{ config.sound_quality }}",
+    selectedDevice: "{{ config.selected_device }}",
+    devices: [
+      {% for dev in devices %}
+        { name: "{{ dev.name }}" }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ],
+    isHost: {{ 'true' if config.playback_mode == 'host' else 'false' }},
+    // Передаем настройку избранных треков
+    favoriteMode: "{{ session.get('favorite_mode', config.favorite_mode) }}"
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

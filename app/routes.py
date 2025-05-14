@@ -1,4 +1,4 @@
-# app/routes.py 11-05-25
+# app/routes.py 15-05-25
 import os
 import sqlite3
 import threading
@@ -799,6 +799,7 @@ def register_routes(app):
                 playback_mode = "plyr"
             default_volume = request.form.get("default_volume", config_val.get("default_volume"))
             sound_quality = request.form.get("sound_quality", config_val.get("sound_quality"))
+            favorite_mode = request.form.get("favorite_mode", config_val.get("favorite_mode", "stay"))
             try:
                 default_volume = int(default_volume)
             except Exception as e:
@@ -807,7 +808,9 @@ def register_routes(app):
             config_val["playback_mode"] = playback_mode
             config_val["default_volume"] = default_volume
             config_val["sound_quality"] = sound_quality
+            config_val["favorite_mode"] = favorite_mode  # сохраняем в config
             save_config(config_val)
+            session["favorite_mode"] = favorite_mode  # сохраняем в сессии для текущего пользователя
             logger.info("Настройки сохранены: %s", config_val)
             session.pop("current_folder", None)
             session.pop("current_track", None)
@@ -815,7 +818,13 @@ def register_routes(app):
         else:
             devices = get_active_vlc_devices_default()
             current_folder = session.get("current_folder", "")
-            return render_template("settings.html", config=config_val, devices=devices, current_folder=current_folder)
+            # Передаём camelCase для JS
+            return render_template(
+                "settings.html",
+                config=config_val,
+                devices=devices,
+                current_folder=current_folder,
+            )
 
     @app.route("/update_fav_settings", methods=["POST"])
     def update_fav_settings():

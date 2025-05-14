@@ -533,8 +533,20 @@ function showRecommendModal(filename, folder, rel_path) {
 document.addEventListener("DOMContentLoaded", function(){
   setTimeout(() => { // небольшой таймаут для уверенности, что все переменные загружены
     const autoplay = window.playerConfig.autoplay;
-    console.log("Autoplay параметр найден:", autoplay);
-    if (autoplay && autoplay.trim() !== "") {
+    // Определяем тип навигации (и для новых, и для старых браузеров)
+    let navType = "navigate";
+    if (performance.getEntriesByType) {
+      const navEntry = performance.getEntriesByType("navigation")[0];
+      if (navEntry) navType = navEntry.type; // "navigate" | "reload" | "back_forward" | "prerender"
+    } else if (performance.navigation) {
+      if (performance.navigation.type === 1) navType = "reload";
+      if (performance.navigation.type === 0) navType = "navigate";
+    }
+
+    console.log("Autoplay параметр найден:", autoplay, "Тип навигации:", navType);
+
+    // Только если это не reload (то есть не F5/обновление)
+    if (navType !== "reload" && autoplay && autoplay.trim() !== "") {
       let idx = playlist.findIndex(item =>
         item.replace(/\\/g, '/') === autoplay.replace(/\\/g, '/')
       );
@@ -638,6 +650,57 @@ function playFavoriteTrack(trackPath) {
   }
 }
 
+// После загрузки избранного (после вставки HTML в #favoritesContent)
+function setupFavoriteGenreFilter() {
+  // Собираем жанры
+  const entries = document.querySelectorAll('#favoritesContent .fav-entry .text-muted');
+  const genresSet = new Set();
+  entries.forEach(e => {
+    const genreMatch = e.textContent.match(/Genre:\s*(.*)/i);
+    if (genreMatch && genreMatch[1]) genresSet.add(genreMatch[1].trim());
+  });
+
+  const select = document.getElementById('favGenreFilter');
+  // Очистить, кроме "Все жанры"
+  select.querySelectorAll('option:not([value="all"])').forEach(opt => opt.remove());
+  genresSet.forEach(g => {
+    if (g && g !== "Unknown") {
+      const opt = document.createElement('option');
+      opt.value = g;
+      opt.textContent = g;
+      select.appendChild(opt);
+    }
+  });
+  select.style.display = genresSet.size > 0 ? '' : 'none';
+
+  // Сбросить на "Все жанры" при открытии
+  select.value = "all";
+  // Вешаем обработчик
+  select.onchange = function() {
+    const selected = select.value;
+    document.querySelectorAll('#favoritesContent .fav-entry').forEach(item => {
+      const genreDiv = item.querySelector('.text-muted');
+      const genre = genreDiv ? (genreDiv.textContent.match(/Genre:\s*(.*)/i)?.[1]?.trim() || "Unknown") : "Unknown";
+      if (selected === "all" || genre === selected) {
+        item.style.display = "";
+      } else {
+        item.style.display = "none";
+      }
+    });
+  };
+}
+
+// Вызови эту функцию после подгрузки избранного
+function loadFavoritesList() {
+  fetch("/favorites_list")
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById("favoritesContent").innerHTML = data.html;
+      setupFavoriteGenreFilter();
+    });
+}
+// и при открытии модального окна:
+document.getElementById('favoritesModal').addEventListener('show.bs.modal', loadFavoritesList);
 
 
 

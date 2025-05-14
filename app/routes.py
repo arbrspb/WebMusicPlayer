@@ -566,35 +566,6 @@ def register_routes(app):
         logger.info("Добавлен трек в избранное: %s с жанром %s", path, genre)
         return jsonify({"status": "success", "path": path, "genre": genre})
 
-    # Рабочий вариант функции
-    # @app.route("/favorites_list")
-    # def favorites_list():
-    #     con = sqlite3.connect(FAVORITE_DB)
-    #     cur = con.cursor()
-    #     cur.execute("SELECT path, genre FROM favorites")
-    #     favorites = cur.fetchall()
-    #     con.close()
-    #
-    #     if favorites:
-    #         html = "<ul class='list-group'>"
-    #         for f, g in favorites:
-    #             track_name = os.path.basename(f)
-    #             html += f"""
-    #                 <li class="list-group-item fav-entry">
-    #                   <div class="d-flex flex-column">
-    #                     <div class="fw-bold text-truncate" title="{f}">{track_name}</div>
-    #                     <div class="small text-muted">Genre: {g}</div>
-    #                     <div class="button-container d-flex justify-content-end" style="gap: 0.2rem;">
-    #                       <button class="btn btn-sm btn-primary custom-btn" style="width:80px;" onclick="playTrack('{f}')">Play</button>
-    #                       <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
-    #                     </div>
-    #                   </div>
-    #                 </li>
-    #             """
-    #         html += "</ul>"
-    #     else:
-    #         html = "<p>Список избранного пуст.</p>"
-    #     return jsonify({"html": html})
 
     @app.route("/favorites_list")
     def favorites_list():
@@ -854,6 +825,57 @@ def register_routes(app):
         else:
             keywords = load_genre_settings()
             return jsonify({"keywords": keywords})
+
+    # @app.route("/custom_keywords", methods=["GET", "POST"])   # c отладкой
+    # def custom_keywords():
+    #     import traceback
+    #
+    #     if request.method == "POST":
+    #         try:
+    #             logger.info(">>> Запрос на обновление жанровых настроек")
+    #             logger.info("Headers: %s", dict(request.headers))
+    #             logger.info("Raw data: %s", request.data)
+    #             try:
+    #                 json_data = request.get_json(force=True, silent=False)
+    #             except Exception as e:
+    #                 logger.error("Ошибка при request.get_json(): %s", e)
+    #                 logger.error(traceback.format_exc())
+    #                 return jsonify({"status": "error", "message": "Ошибка парсинга JSON: %s" % e}), 400
+    #
+    #             logger.info("request.get_json(): %s", json_data)
+    #             new_keywords = (json_data or {}).get("keywords")
+    #             logger.info("new_keywords: %s", new_keywords)
+    #             logger.info("type(new_keywords): %s", type(new_keywords))
+    #
+    #             if isinstance(new_keywords, dict):
+    #                 logger.info("Перед сохранением: %s", new_keywords)
+    #                 try:
+    #                     save_genre_settings(new_keywords)
+    #                 except Exception as save_exc:
+    #                     logger.error("Ошибка при сохранении файла: %s", save_exc)
+    #                     logger.error(traceback.format_exc())
+    #                     return jsonify({"status": "error", "message": "Ошибка записи файла: %s" % save_exc}), 500
+    #                 logger.info("Жанровые настройки успешно обновлены: %s", new_keywords)
+    #                 return jsonify({"status": "saved", "keywords": new_keywords})
+    #             else:
+    #                 logger.error("Неверный формат: не dict. Получено: %s", new_keywords)
+    #                 return jsonify({"status": "error", "message": "Неверный формат (ожидался dict)"}), 400
+    #
+    #         except Exception as e:
+    #             logger.error("Ошибка общего уровня при обновлении жанровых настроек: %s", e)
+    #             logger.error(traceback.format_exc())
+    #             return jsonify({"status": "error", "message": "Общая ошибка: %s" % e}), 500
+    #
+    #     else:
+    #         logger.info(">>> GET-запрос на получение жанровых настроек")
+    #         try:
+    #             keywords = load_genre_settings()
+    #             logger.info("Загружено жанровых настроек: %s", keywords)
+    #             return jsonify({"keywords": keywords})
+    #         except Exception as e:
+    #             logger.error("Ошибка при чтении жанровых настроек: %s", e)
+    #             logger.error(traceback.format_exc())
+    #             return jsonify({"status": "error", "message": "Ошибка чтения настроек: %s" % e}), 500
 
     @app.route("/current-track")
     def current_track_info():

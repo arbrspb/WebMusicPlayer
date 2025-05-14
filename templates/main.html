@@ -180,9 +180,15 @@
       <div class="modal fade" id="favoritesModal" tabindex="-1" aria-labelledby="favoritesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
           <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="favoritesModalLabel">Избранное</h5>
-              <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            <div class="modal-header d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center flex-grow-1">
+                <h5 class="modal-title me-3" id="favoritesModalLabel">Избранное</h5>
+                <select id="favGenreFilter" class="form-select form-select-sm w-auto ms-auto" style="min-width: 140px; display: none;">
+                  <option value="all">Все жанры</option>
+                  <!-- жанры будут добавлены JS-ом -->
+                </select>
+              </div>
+              <button type="button" class="btn btn-close ms-2" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body" id="favoritesContent">
               <p>Загрузка...</p>

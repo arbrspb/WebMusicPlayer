@@ -3,7 +3,7 @@
     "playback_mode": "host",
     "default_volume": 100,
     "scan_mode": "new",
-    "favorite_mode": "switch",
+    "favorite_mode": "stay",
     "sound_quality": "high",
     "selected_device": 1
 }

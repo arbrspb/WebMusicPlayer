@@ -222,7 +222,12 @@ body {
   border-left: 4px solid #ff4500;  /* символическое выделение с левой стороны */
 }
 
-
+#favoritesContent ul.list-group {
+  border-top: 1px solid #dee2e6 !important;
+}
+#favoritesContent ul.list-group > li.list-group-item:first-child {
+  border-top: none !important;
+}
 
 
 

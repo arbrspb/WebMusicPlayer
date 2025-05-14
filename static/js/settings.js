@@ -136,6 +136,13 @@ function saveGenreSettings() {
       newSettings[pair[0].trim().toLowerCase()] = pair[1].trim();
     }
   });
+
+  // Проверка на пустой ввод
+  if (Object.keys(newSettings).length === 0) {
+    alert("Проверьте формат ввода! Пример: rock:гитара, pop:танцы");
+    return;
+  }
+
   fetch("/custom_keywords", {
     method: "POST",
     headers: {"Content-Type": "application/json"},

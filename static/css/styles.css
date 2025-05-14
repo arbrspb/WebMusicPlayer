@@ -213,12 +213,15 @@ body {
     width: 100%;
   }
 }
- /* Жирное выделение/цвет строки текущего трека */
-.list-group-item.playing {
+
+/* Пример оформления для выделенного элемента (левый список) */
+.list-group-item.current {
+  background-color: #ffc;  /* Светло-жёлтый фон для выделения */
   font-weight: bold;
-  background: #ffe4ec !important;
-  color: #a4458d !important;
+  color: #333;                /* цвет текста, если требуется */
+  border-left: 4px solid #ff4500;  /* символическое выделение с левой стороны */
 }
+
 
 
 

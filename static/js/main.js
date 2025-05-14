@@ -549,5 +549,37 @@ document.addEventListener("DOMContentLoaded", function(){
   }, 1000);
 });
 
+// Функция для выделения текущего трека в списке по значению data-track
+function highlightCurrentTrack(currentTrackPath) {
+  // Удаление класса выделения со всех элементов списка
+  $("#playlist .list-group-item").removeClass("current");
+
+  // Находим элемент, чье значение data-track совпадает с currentTrackPath (с заменой обратных слэшей на прямые)
+  $("#playlist .list-group-item").filter(function() {
+    return $(this).data("track").replace(/\\/g, '/') === currentTrackPath.replace(/\\/g, '/');
+  }).addClass("current");
+}
+
+// Функция опроса сервера для получения текущего трека
+function updateCurrentTrackHighlight() {
+  $.ajax({
+    url: "/current-track",
+    type: "GET",
+    dataType: "json",
+    success: function(data) {
+      if (data.currentTrack && data.currentTrack.trim() !== "") {
+        highlightCurrentTrack(data.currentTrack);
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error("Ошибка при получении текущего трека:", error);
+    }
+  });
+}
+
+// Запускаем периодическое опрашивание каждую 3 секунды
+setInterval(updateCurrentTrackHighlight, 500);
+
+
 
 

@@ -834,6 +834,11 @@ def register_routes(app):
             keywords = load_genre_settings()
             return jsonify({"keywords": keywords})
 
+    @app.route("/current-track")
+    def current_track_info():
+        current = global_state["current_track"].get("path", "")
+        return jsonify({"currentTrack": current})
+
 
 
 

@@ -82,16 +82,30 @@ body {
 }
 
 /* Стили для элементов избранного */
+/*.fav-entry {*/
+/*  padding: 0.4rem 0.5rem;*/
+/*  margin-bottom: 0.1rem;*/
+/*}*/
+
+/*.fav-entry .button-container {*/
+/*  margin-top: -17px;*/
+/*  display: flex;*/
+/*  justify-content: flex-end;*/
+/*}*/
+
 .fav-entry {
-  padding: 0.4rem 0.5rem;
+  padding: 0.6rem 0.6rem;  /* уменьшены внутренние отступы */
   margin-bottom: 0.1rem;
 }
 
+/* Если кнопки стоят как раньше, но вы хотите сохранить их позиционирование,
+   можно немного откорректировать margin-top, чтобы они не "перекрывались" */
 .fav-entry .button-container {
-  margin-top: -17px;
+  margin-top: -25px;  /* подберите значение под свои требования */
   display: flex;
   justify-content: flex-end;
 }
+
 
 /* ===== МЕДИА ЗАПРОСЫ ДЛЯ ПЛАНШЕТОВ (макс. 992px) ===== */
 @media only screen and (max-width: 992px) {
@@ -233,10 +247,11 @@ body {
 
 .track-rating {
   display: inline-block;
-  margin-left: 15px; /* отступ от строки Genre */
-  padding-bottom: 20px;
-
+  padding: 8px 0; /* увеличиваем вертикальное пространство для удобства клика */
+  position: relative;
+  z-index: 10;
 }
+
 
 .star {
   font-size: 16px;
@@ -248,9 +263,7 @@ body {
 }
 
 .star.rated {
-  color: gold;         /* желтый цвет для заполненной звезды */
-}
-
+  color: gold;}         /* желтый цвет для заполненной звезды */
 
 
 

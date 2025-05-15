@@ -544,7 +544,6 @@ def register_routes(app):
             logger.error("Нет переданного параметра path")
             return jsonify({"error": "No path provided"}), 400
 
-        # Открываем соединение с базой избранного
         con = sqlite3.connect(FAVORITE_DB)
         cur = con.cursor()
 
@@ -559,7 +558,6 @@ def register_routes(app):
 
         # Получаем жанр из базы результатов сканирования (без аудиоанализа)
         genre = get_scanned_genre(path)
-
         cur.execute("INSERT INTO favorites (path, genre) VALUES (?, ?)", (path, genre))
         con.commit()
         con.close()
@@ -570,13 +568,15 @@ def register_routes(app):
     def favorites_list():
         con = sqlite3.connect(FAVORITE_DB)
         cur = con.cursor()
-        cur.execute("SELECT path, genre FROM favorites")
+        cur.execute("SELECT path, genre, COALESCE(rating, 0) as rating FROM favorites")
         favorites = cur.fetchall()
         con.close()
 
         if favorites:
             html = "<ul class='list-group'>"
-            for f, g in favorites:
+            for f, g, r in favorites:
+                 # Если рейтинг вдруг равен None (на всякий случай) – устанавливаем 0
+                r = r if r is not None else 0
                 # Получаем чистое название трека без расширения
                 track_name = get_track_title(f)
                 html += f"""
@@ -586,7 +586,7 @@ def register_routes(app):
                             <div class="small text-muted">
                               Genre: {g}
                               <!-- Контейнер для рейтинга: звёзды будут отображаться справа от жанра -->
-                              <span class="track-rating" data-rating="0">
+                              <span class="track-rating" data-rating="{r}">
                                 <span class="star" data-value="1">&#9734;</span>
                                 <span class="star" data-value="2">&#9734;</span>
                                 <span class="star" data-value="3">&#9734;</span>
@@ -599,7 +599,7 @@ def register_routes(app):
                               <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
                             </div>
                           </div>
-                        </li>
+    </li>
                     """
             html += "</ul>"
         else:

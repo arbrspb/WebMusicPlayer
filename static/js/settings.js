@@ -38,6 +38,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+    // --- Регистрация обработчика для модального окна жанровых настроек ---
+  var genreSettingsModal = document.getElementById("genreSettingsModal");
+  if (genreSettingsModal) {
+    // Используем событие "shown.bs.modal", чтобы дождаться полной анимации открытия окна
+    genreSettingsModal.addEventListener("shown.bs.modal", loadGenreSettings);
+  }
+
   // Если localStorage не содержит favoriteMode, устанавливаем его из глобального объекта
   if (!localStorage.getItem("favoriteMode") && window.settingsConfig) {
     localStorage.setItem("favoriteMode", window.settingsConfig.favoriteMode);
@@ -165,4 +172,23 @@ function saveGenreSettings() {
   .catch(err => {
     alert("Ошибка сохранения: " + err);
   });
+}
+
+function loadGenreSettings() {
+  fetch("/custom_keywords")
+    .then(response => response.json())
+    .then(data => {
+      var input = document.getElementById("genreSettingsInput");
+      if (!input) return;
+      // data.keywords — это объект {жанр: ключи, ...}
+      // Преобразуем обратно в строку вида "rock:гитара, pop:танцы"
+      let settings = [];
+      for (let genre in data.keywords) {
+        settings.push(`${genre}:${data.keywords[genre]}`);
+      }
+      input.value = settings.join(", ");
+    })
+    .catch(err => {
+      console.error("Ошибка загрузки жанровых настроек:", err);
+    });
 }

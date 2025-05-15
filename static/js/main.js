@@ -195,6 +195,7 @@ function updateStatusPlyr() {
     document.getElementById("time_display").innerText = formatTime(ct) + " / " + formatTime(dur);
   }
 }
+
 function seekPlyr(newTimeSec) {
   if (playerPlyr) playerPlyr.currentTime = newTimeSec;
 }
@@ -361,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  document.getElementById("selectFolderBtn")?.addEventListener("click", function(){
+document.getElementById("selectFolderBtn")?.addEventListener("click", function(){
     const tree = $('#folderTree').jstree(true);
     const selected = tree.get_selected();
     if (selected.length) {
@@ -390,6 +391,7 @@ function toggleFavButton(btn, isFav) {
     btn.textContent = "Fav";
   }
 }
+
 function loadFavorites() {
   fetch('/favorites_list')
     .then(response => response.json())
@@ -398,6 +400,7 @@ function loadFavorites() {
     })
     .catch(err => {});
 }
+
 function addFavorite(path, btn) {
   if (btn.classList.contains("btn-danger")) {
     alert("Трек уже добавлен в избранное!");
@@ -422,6 +425,7 @@ function addFavorite(path, btn) {
       toggleFavButton(btn, false);
     });
 }
+
 function removeFavorite(path, btn) {
   if (!confirm("Удалить трек из избранного?")) return;
   if (btn) toggleFavButton(btn, false);
@@ -449,6 +453,7 @@ function removeFavorite(path, btn) {
       if (btn) toggleFavButton(btn, true);
     });
 }
+
 function scanLibrary(){
   fetch('/scan_library')
     .then(response => response.json())

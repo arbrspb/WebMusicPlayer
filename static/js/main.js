@@ -1,4 +1,4 @@
-// main.js 15-05-25 18-25
+// main.js  20-38
 // ========== Смена темы ==========
 function applyTheme() {
   var selected = document.querySelector('input[name="themeOption"]:checked').value;
@@ -333,9 +333,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-
-
-
   document.getElementById("pause_button")?.addEventListener("click", function(){
     if (playbackMode === "host") {
       pauseTrackHost();
@@ -348,9 +345,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
-  document.getElementById("favoritesModal")?.addEventListener("show.bs.modal", loadFavorites);
 
   $('#folderModal').on('shown.bs.modal', function () {
+    console.log("Модальное окно открыто, инициализируем jsTree");
     $('#folderTree').jstree({
       'core': {
         'data': {
@@ -362,16 +359,25 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-document.getElementById("selectFolderBtn")?.addEventListener("click", function(){
-    const tree = $('#folderTree').jstree(true);
-    const selected = tree.get_selected();
-    if (selected.length) {
-      const path = selected[0];
-      window.location.href = "/browse?path=" + encodeURIComponent(path);
-    } else {
-      alert("Пожалуйста, выберите папку.");
-    }
-  });
+
+
+  document.getElementById("selectFolderBtn")?.addEventListener("click", function(){
+      const tree = $('#folderTree').jstree(true);
+      const selected = tree.get_selected();
+      console.log("Выбранные элементы:", selected);
+      if (selected.length) {
+        const path = selected[0];
+        console.log("Выбранный путь:", path);
+        window.location.href = "/browse?path=" + encodeURIComponent(path);
+      } else {
+        alert("Пожалуйста, выберите папку.");
+      }
+    });
+
+
+
+
+
 
   // Plyr инициализация
   if (playbackMode === "plyr") {
@@ -392,14 +398,26 @@ function toggleFavButton(btn, isFav) {
   }
 }
 
-function loadFavorites() {
-  fetch('/favorites_list')
+function loadFavoritesContent(options = { withFilter: false, withRating: false }) {
+  fetch("/favorites_list")
     .then(response => response.json())
     .then(data => {
       document.getElementById("favoritesContent").innerHTML = data.html;
+      // Если требуется настройка фильтра по жанрам
+      if (options.withFilter) {
+        setupFavoriteGenreFilter();
+      }
+      // Если требуется инициализация рейтинговых обработчиков
+      if (options.withRating) {
+        initFavoritesRating();
+      }
     })
-    .catch(err => {});
+    .catch(err => console.error("Ошибка при загрузке избранного:", err));
 }
+// Использование функции при открытии модального окна (где нужен фильтр и рейтинг)
+document.getElementById('favoritesModal')?.addEventListener('show.bs.modal', () => {
+  loadFavoritesContent({ withFilter: true, withRating: true });
+});
 
 function addFavorite(path, btn) {
   if (btn.classList.contains("btn-danger")) {
@@ -415,7 +433,8 @@ function addFavorite(path, btn) {
     .then(response => response.json())
     .then(data => {
       if (data.status === "success") {
-        loadFavorites();
+        // Обновляем список избранного без фильтрации и инициализации рейтинга
+        loadFavoritesContent({ withFilter: false, withRating: false });
       } else {
         toggleFavButton(btn, false);
         alert("Ошибка при добавлении трека: " + (data.error || ""));
@@ -437,7 +456,8 @@ function removeFavorite(path, btn) {
     .then(response => response.json())
     .then(data => {
       if (data.status === "removed") {
-        loadFavorites();
+        // Обновляем список избранного после удаления
+        loadFavoritesContent({ withFilter: false, withRating: false });
         if (btn) {
           var elems = document.querySelectorAll('[data-track="' + path + '"] button.fav-btn');
           elems.forEach(function(el) {
@@ -695,17 +715,80 @@ function setupFavoriteGenreFilter() {
   };
 }
 
-// Вызови эту функцию после подгрузки избранного
-function loadFavoritesList() {
-  fetch("/favorites_list")
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById("favoritesContent").innerHTML = data.html;
-      setupFavoriteGenreFilter();
+// Функция рейтинга треков
+
+function initFavoritesRating() {
+  // Находим все контейнеры рейтинга в списке избранного
+  document.querySelectorAll("#favoritesContent .track-rating").forEach(function(ratingElem) {
+    const stars = ratingElem.querySelectorAll('.star');
+    // Получаем текущий рейтинг из data-атрибута
+    let currentRating = parseInt(ratingElem.getAttribute('data-rating')) || 0;
+    updateStars(stars, currentRating);
+
+    stars.forEach(function(star) {
+      star.addEventListener('mouseover', function() {
+        const hoverValue = parseInt(this.getAttribute('data-value'));
+        updateStars(stars, hoverValue);
+      });
+
+      star.addEventListener('mouseout', function() {
+        updateStars(stars, currentRating);
+      });
+
+      star.addEventListener('click', function() {
+        currentRating = parseInt(this.getAttribute('data-value'));
+        ratingElem.setAttribute('data-rating', currentRating);
+        updateStars(stars, currentRating);
+        // Сохраняем рейтинг для этого трека
+        const trackId = ratingElem.closest('.fav-entry').getAttribute('data-track-id');
+        saveRating(trackId, currentRating);
+      });
+
+      star.addEventListener('dblclick', function() {
+        currentRating = 0;
+        ratingElem.setAttribute('data-rating', currentRating);
+        updateStars(stars, currentRating);
+        const trackId = ratingElem.closest('.fav-entry').getAttribute('data-track-id');
+        saveRating(trackId, currentRating);
+      });
     });
+  });
 }
-// и при открытии модального окна:
-document.getElementById('favoritesModal').addEventListener('show.bs.modal', loadFavoritesList);
+
+// Функция обновления отображения звезд
+function updateStars(stars, rating) {
+  stars.forEach(function(star, idx) {
+    if (idx < rating) {
+      star.classList.add('rated');
+      star.innerHTML = '&#9733;'; // заполненная звезда (★)
+    } else {
+      star.classList.remove('rated');
+      star.innerHTML = '&#9734;'; // пустая звезда (☆)
+    }
+  });
+}
+
+// Функция для сохранения рейтинга через AJAX
+function saveRating(trackId, rating) {
+  fetch('/updateRating', {  // на сервере создайте соответствующий эндпоинт
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ trackId: trackId, rating: rating })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log("Рейтинг сохранён для трека " + trackId);
+    } else {
+      console.error("Ошибка сохранения рейтинга для трека " + trackId);
+    }
+  })
+  .catch(err => console.error("Ошибка:", err));
+}
+
+
 
 
 

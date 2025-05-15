@@ -229,6 +229,31 @@ body {
   border-top: none !important;
 }
 
+/* Стили для звезд рейтинга в модальном окне избранного  */
+
+.track-rating {
+  display: inline-block;
+  margin-left: 15px; /* отступ от строки Genre */
+  padding-bottom: 20px;
+
+}
+
+.star {
+  font-size: 16px;
+  color: #ccc;         /* серый цвет для пустой звезды (контур) */
+  cursor: pointer;
+  transition: color 0.2s ease;
+  user-select: none;
+  margin-left: 2px;    /* небольшой отступ между звёздами */
+}
+
+.star.rated {
+  color: gold;         /* желтый цвет для заполненной звезды */
+}
+
+
+
+
 
 
 

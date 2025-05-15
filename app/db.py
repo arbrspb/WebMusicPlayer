@@ -57,7 +57,8 @@ def init_favorite_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS favorites (
             path TEXT PRIMARY KEY,
-            genre TEXT
+            genre TEXT,
+            rating INTEGER DEFAULT 0
         )
     ''')
     conn.commit()

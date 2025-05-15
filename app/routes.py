@@ -580,17 +580,27 @@ def register_routes(app):
                 # Получаем чистое название трека без расширения
                 track_name = get_track_title(f)
                 html += f"""
-                    <li class="list-group-item fav-entry">
-                      <div class="d-flex flex-column">
-                        <div class="fw-bold text-truncate" title="{f}">{track_name}</div>
-                        <div class="small text-muted">Genre: {g}</div>
-                        <div class="button-container d-flex justify-content-end" style="gap: 0.2rem;">
-                          <button class="btn btn-sm btn-primary custom-btn" style="width:80px;" onclick="playFavoriteTrack('{f}')">Play</button>
-                          <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
-                        </div>
-                      </div>
-                    </li>
-                """
+                        <li class="list-group-item fav-entry" data-track-id="{f}">
+                          <div class="d-flex flex-column">
+                            <div class="fw-bold text-truncate" title="{f}">{track_name}</div>
+                            <div class="small text-muted">
+                              Genre: {g}
+                              <!-- Контейнер для рейтинга: звёзды будут отображаться справа от жанра -->
+                              <span class="track-rating" data-rating="0">
+                                <span class="star" data-value="1">&#9734;</span>
+                                <span class="star" data-value="2">&#9734;</span>
+                                <span class="star" data-value="3">&#9734;</span>
+                                <span class="star" data-value="4">&#9734;</span>
+                                <span class="star" data-value="5">&#9734;</span>
+                              </span>
+                            </div>
+                            <div class="button-container d-flex justify-content-end" style="gap: 0.2rem;">
+                              <button class="btn btn-sm btn-primary custom-btn" style="width:80px;" onclick="playFavoriteTrack('{f}')">Play</button>
+                              <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
+                            </div>
+                          </div>
+                        </li>
+                    """
             html += "</ul>"
         else:
             html = "<p>Список избранного пуст.</p>"
@@ -619,6 +629,24 @@ def register_routes(app):
 
         logger.info("Из избранного удалён трек: %s", path)
         return jsonify({"status": "removed", "path": path})
+
+    @app.route("/updateRating", methods=["POST"])
+    def update_rating():
+        data = request.get_json()
+        track_id = data.get("trackId")  # В данном случае track_id соответствует path
+        rating = data.get("rating")
+        if track_id is None or rating is None:
+            return jsonify({"success": False, "error": "Неверные данные"}), 400
+
+        try:
+            con = sqlite3.connect(FAVORITE_DB)
+            cur = con.cursor()
+            cur.execute("UPDATE favorites SET rating = ? WHERE path = ?", (rating, track_id))
+            con.commit()
+            con.close()
+            return jsonify({"success": True})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
 
     @app.route("/analyze")
     def analyze_current():

@@ -1,4 +1,4 @@
-# run.py 15-05-25  test
+# run.py 15-05-25 18-25
 from app import create_app
 import logging
 

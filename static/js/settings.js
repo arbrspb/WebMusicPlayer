@@ -1,4 +1,4 @@
-// settings.js 15-05-25
+// settings.js 15-05-25 18-25
 console.log("window.settingsConfig:", window.settingsConfig); // отладка
 
 window.settingsConfig = window.settingsConfig || {};

@@ -1,4 +1,4 @@
-// main.js 15-05-25
+// main.js 15-05-25 18-25
 // ========== Смена темы ==========
 function applyTheme() {
   var selected = document.querySelector('input[name="themeOption"]:checked').value;

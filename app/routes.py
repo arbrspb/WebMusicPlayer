@@ -583,9 +583,7 @@ def register_routes(app):
                         <li class="list-group-item fav-entry" data-track-id="{f}">
                           <div class="d-flex flex-column">
                             <div class="fw-bold text-truncate" title="{f}">{track_name}</div>
-                            <div class="small text-muted">
-                              Genre: {g}
-                              <!-- Контейнер для рейтинга: звёзды будут отображаться справа от жанра -->
+                            <div class="small text-muted">Genre: {g}</div>
                               <span class="track-rating" data-rating="{r}">
                                 <span class="star" data-value="1">&#9734;</span>
                                 <span class="star" data-value="2">&#9734;</span>
@@ -599,7 +597,7 @@ def register_routes(app):
                               <button class="btn btn-sm btn-danger custom-btn" style="width:80px;" onclick="removeFavorite('{f}')">Remove</button>
                             </div>
                           </div>
-    </li>
+                        </li>
                     """
             html += "</ul>"
         else:

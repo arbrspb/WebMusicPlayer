@@ -1,5 +1,5 @@
 /* ===== styles.css =====  */
-/* ===== БАЗОВЫЕ СТИЛИ (Desktop) ===== 15-05-25 */
+/* ===== БАЗОВЫЕ СТИЛИ (Desktop) ===== */
 
 body {
   padding-top: 70px !important;
@@ -81,159 +81,12 @@ body {
   column-gap: 5px;
 }
 
-/* Стили для элементов избранного */
-/*.fav-entry {*/
-/*  padding: 0.4rem 0.5rem;*/
-/*  margin-bottom: 0.1rem;*/
-/*}*/
-
-/*.fav-entry .button-container {*/
-/*  margin-top: -17px;*/
-/*  display: flex;*/
-/*  justify-content: flex-end;*/
-/*}*/
-
-.fav-entry {
-  padding: 0.6rem 0.6rem;  /* уменьшены внутренние отступы */
-  margin-bottom: 0.1rem;
-}
-
-/* Если кнопки стоят как раньше, но вы хотите сохранить их позиционирование,
-   можно немного откорректировать margin-top, чтобы они не "перекрывались" */
-.fav-entry .button-container {
-  margin-top: -25px;  /* подберите значение под свои требования */
-  display: flex;
-  justify-content: flex-end;
-}
-
-
-/* ===== МЕДИА ЗАПРОСЫ ДЛЯ ПЛАНШЕТОВ (макс. 992px) ===== */
-@media only screen and (max-width: 992px) {
-  body {
-    padding-top: 60px !important;
-  }
-
-  #playlist {
-    max-height: 60vh; /* Немного меньшая высота, чем на десктопе */
-  }
-
-  .player-btn {
-    margin: 2px;
-    font-size: 0.9em;
-    padding: 0.35em 0.7em;
-  }
-
-  /* Если у вас есть контейнер для элементов управления плеером */
-  .card-body {
-    padding: 1.2rem;
-  }
-
-  /* Располагаем кнопки в каждом элементе списка вертикально, с небольшим отступом */
-  #playlist li > div {
-    display: flex;
-    flex-direction: column;
-    row-gap: 8px; /* Можно настроить под оптимальный вид */
-  }
-
-  /* Дополнительная настройка размеров шрифтов для элементов плейлиста */
-  #now_playing {
-    font-size: 1.1em;
-  }
-
-  #genre {
-    font-size: 1em;
-  }
-}
-
-
-/* ===== МЕДИА ЗАПРОСЫ ДЛЯ МОБИЛЬНЫХ (макс. 768px) ===== */
-@media only screen and (max-width: 768px) {
-  /* Чтобы содержимое не смещалось под navbar, можно добавить отступ сверху */
-  body {
-    padding-top: 70px !important;
-  }
-
-  /* Плеер остаётся в верхней части (например, внутри .col-md-9) – здесь можно оставить базовые стили */
-  /* Если плеер находится в отдельном контейнере, убедитесь, что он не перекрывается нижней панелью */
-
-  /* Мобильная панель с треками – фиксированная внизу */
-  #mobile-playlist {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    max-height: 40vh;   /* Ширина панели можно скорректировать */
-    overflow-y: auto;
-    background-color: #fff; /* Если нужна тёмная тема, меняйте по необходимости */
-    border-top: 1px solid #ccc;
-    z-index: 1000;  /* Чтобы панель была поверх остальных элементов */
-    transition: transform 0.3s ease;
-  }
-
-  /* Класс скрыть панель: переводим её за пределы экрана */
-  #mobile-playlist.hidden {
-    transform: translateY(100%);
-  }
-
-  /* Кнопки внутри мобильного плейлиста – располагаем вертикально */
-  #playlist-mobile li > div {
-    display: flex;
-    flex-direction: column;
-    row-gap: 10px;
-  }
-
-  /* Кнопка "Избранное" в мобильном варианте – растягиваем по ширине */
-  #favorites_btn_mobile {
-    margin: 10px;
-    width: calc(100% - 20px);
-    text-align: center;
-  }
-
-  /* Кнопка-переключатель плейлиста – фиксируем чуть выше панели */
-  #toggle-playlist {
-    position: fixed;
-    bottom: 42vh;  /* Обратите внимание, это значение зависит от max-height панели */
-    left: 0;
-    width: 100%;
-    z-index: 1100; /* Выше, чем у панели */
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 0.5em;
-    text-align: center;
-    font-size: 1em;
-  }
-
-  /* Можно настроить размеры кнопок в плейлисте для мобильной версии */
-  .player-btn {
-    margin: 3px;
-    font-size: 1em;
-    padding: 0.5em 0.75em;
-  }
-
-  /* При необходимости можно добавить дополнительные отступы для input-group с Browse */
-  .input-group {
-    margin-bottom: 10px;
-  }
-
-  /* Остальные стили для мобильных, например, для текста плеера */
-  #now_playing {
-    font-size: 1.1em;
-  }
-  #genre {
-    font-size: 1em;
-  }
-  #seekSlider {
-    width: 100%;
-  }
-}
-
 /* Пример оформления для выделенного элемента (левый список) */
 .list-group-item.current {
-  background-color: #ffc;  /* Светло-жёлтый фон для выделения */
+  background-color: #ffc;
   font-weight: bold;
-  color: #333;                /* цвет текста, если требуется */
-  border-left: 4px solid #ff4500;  /* символическое выделение с левой стороны */
+  color: 333;
+  border-left: 4px solid #ff4500;
 }
 
 #favoritesContent ul.list-group {
@@ -243,33 +96,334 @@ body {
   border-top: none !important;
 }
 
-/* Стили для звезд рейтинга в модальном окне избранного  */
+/* ==== Компактное оформление для избранного трека ==== */
 
-.track-rating {
-  display: inline-block;
-  padding: 8px 0; /* увеличиваем вертикальное пространство для удобства клика */
-  position: relative;
-  z-index: 10;
+/* Минимальные отступы для .fav-entry и .list-group-item */
+.list-group-item.fav-entry {
+  padding-top: 0.08rem !important;
+  padding-bottom: 0.08rem !important;
+  padding-left: 0.28rem !important;
+  padding-right: 0.28rem !important;
+  min-height: unset !important;
 }
 
+.fav-entry {
+  min-height: unset !important;
+  padding: 0 !important;
+  margin-bottom: 0.04rem;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Внутренняя колонка — всё в столбик, без лишних отступов */
+.fav-entry .d-flex.flex-column {
+  width: 100%;
+  gap: 0.03em;
+  align-items: stretch;
+  height: 100%;
+}
+
+/* Название трека */
+.fav-entry .fw-bold {
+  font-size: 0.92em;
+  margin-bottom: 0.02em;
+  margin-top: 0.01em;
+  line-height: 1.09;
+}
+
+/* Жанр */
+.fav-entry .small.text-muted {
+  font-size: 0.88em;
+  margin-bottom: 0.01em;
+  margin-top: 0;
+  line-height: 1.06;
+}
+
+/* Рейтинг — компактно под жанром */
+.fav-entry .track-rating {
+  display: block;
+  margin-left: 0;
+  margin-top: 0;
+  margin-bottom: 0.01em;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Звезды чуть меньше */
+.fav-entry .star {
+  font-size: 13px;
+  margin-left: 0;
+  margin-right: 1px;
+  vertical-align: middle;
+}
+
+/* Кнопки справа и компактно */
+.fav-entry .button-container {
+  margin-top: 0.01em;
+  margin-bottom: 0.15em; /* поднимает кнопки чуть выше нижней границы */
+  align-self: flex-end;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.10rem;
+  width: 100%;
+}
+
+.fav-entry .custom-btn {
+  padding: 0 6px;
+  min-width: 44px;
+  height: 19px;
+  font-size: 0.85em;
+  line-height: 1.05;
+}
+
+
+
+
+/* Стили для звезд рейтинга в модальном окне избранного */
+.track-rating {
+  display: inline-block;
+  padding: 4px 0; /* оставляем небольшой вертикальный паддинг для кликабельности */
+  position: relative;
+  z-index: 10;
+  vertical-align: middle;
+}
 
 .star {
   font-size: 16px;
-  color: #ccc;         /* серый цвет для пустой звезды (контур) */
+  color: #ccc; /* серый цвет для пустой звезды (контур) */
   cursor: pointer;
   transition: color 0.2s ease;
   user-select: none;
-  margin-left: 2px;    /* небольшой отступ между звёздами */
+  margin-left: 2px;
+  position: relative;
+  z-index: 12;
+}
+.star.rated {
+  color: gold; /* желтый цвет для заполненной звезды */
 }
 
-.star.rated {
-  color: gold;}         /* желтый цвет для заполненной звезды */
+/* ===== МЕДИА ЗАПРОСЫ ДЛЯ ПЛАНШЕТОВ (макс. 992px) ===== */
+@media only screen and (max-width: 992px) {
+  body {
+    padding-top: 60px !important;
+  }
+  #playlist {
+    max-height: 60vh;
+  }
+  .player-btn {
+    margin: 2px;
+    font-size: 0.9em;
+    padding: 0.35em 0.7em;
+  }
+  .card-body {
+    padding: 1.2rem;
+  }
+  /* Исправляем ломку flex-структуры */
+  #playlist li > div:not(.d-flex) {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+  }
+  #now_playing {
+    font-size: 1.1em;
+  }
+  #genre {
+    font-size: 1em;
+  }
+  .fav-entry .button-container {
+    align-self: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.10rem;
+    width: 100%;
+    margin-bottom: 0.14em;
+  }
+  .fav-entry .custom-btn {
+    min-width: 36px;
+    font-size: 0.83em;
+    padding: 0 4px;
+    height: 18px;
+  }
+}
 
+/* ===== МЕДИА ЗАПРОСЫ ДЛЯ МОБИЛЬНЫХ (макс. 768px) ===== */
+@media only screen and (max-width: 768px) {
+  body {
+    padding-top: 70px !important;
+  }
+  #mobile-playlist {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 40vh;
+    overflow-y: auto;
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  #mobile-playlist.hidden {
+    transform: translateY(100%);
+  }
+  #playlist-mobile li > div:not(.d-flex) {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+  }
+  #favorites_btn_mobile {
+    margin: 10px;
+    width: calc(100% - 20px);
+    text-align: center;
+  }
+  #toggle-playlist {
+    position: fixed;
+    bottom: 42vh;
+    left: 0;
+    width: 100%;
+    z-index: 1100;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5em;
+    text-align: center;
+    font-size: 1em;
+  }
+  .player-btn {
+    margin: 3px;
+    font-size: 1em;
+    padding: 0.5em 0.75em;
+  }
+  .input-group {
+    margin-bottom: 10px;
+  }
+  #now_playing {
+    font-size: 1.1em;
+  }
+  #genre {
+    font-size: 1em;
+  }
+  #seekSlider {
+    width: 100%;
+  }
+  .fav-entry .button-container {
+    align-self: flex-end;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.07rem;
+    width: 100%;
+    margin-bottom: 0.10em;
+  }
+  .fav-entry .custom-btn {
+    min-width: 28px;
+    font-size: 0.8em;
+    padding: 0 2px;
+    height: 17px;
+  }
+}
 
+/* --- Компактный избранный трек, адаптивно, каждая часть на своей строке --- */
+.list-group-item.fav-entry {
+  padding: 0.12rem 0.18rem !important;
+  min-height: unset !important;
+}
+.fav-entry {
+  min-height: unset !important;
+  padding: 0 !important;
+  margin-bottom: 0.04rem;
+}
+.fav-entry .d-flex.flex-column {
+  width: 100%;
+  min-width: 0;
+  gap: 0.06em;
+}
+.fav-entry .fw-bold,
+.fav-entry .small.text-muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fav-entry .fw-bold {
+  font-size: 0.96em;
+  margin-bottom: 0.02em;
+  margin-top: 0.01em;
+  font-weight: bold;
+}
+.fav-entry .small.text-muted {
+  font-size: 0.89em;
+  margin-bottom: 0.01em;
+  margin-top: 0;
+  color: #888;
+}
+.fav-entry .track-rating {
+  display: block;
+  margin: 0.01em 0 0.01em 0;
+  padding: 0;
+  line-height: 1;
+}
+.fav-entry .star {
+  font-size: 14px;
+  margin-left: 0;
+  margin-right: 1px;
+  vertical-align: middle;
+}
+.fav-entry .button-container {
+  margin-top: 0.05em;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.08rem;
+  width: 100%;
+  align-self: flex-end;
+}
+/*.fav-entry .custom-btn {*/
+/*  padding: 0 6px;*/
+/*  min-width: 44px;*/
+/*  height: 19px;*/
+/*  font-size: 0.85em;*/
+/*  line-height: 1.05;*/
+/*  box-sizing: border-box;*/
+/*}*/
 
+.fav-entry .custom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  min-width: 44px;
+  font-size: 0.95em;
+  line-height: 1.15;
+  box-sizing: border-box;
+  /* height: 19px;   <-- УБРАТЬ или закомментировать! */
+}
 
-
-
+/* --- МЕДИА-ЗАПРОСЫ: адаптация для планшета и телефона --- */
+@media only screen and (max-width: 992px) {
+  .fav-entry .custom-btn {
+    min-width: 34px;
+    font-size: 0.8em;
+    padding: 0 2px;
+    height: 18px;
+  }
+  .fav-entry .button-container {
+    gap: 0.06rem;
+    margin-bottom: 0.09em;
+  }
+}
+@media only screen and (max-width: 768px) {
+  .fav-entry .d-flex.flex-column {
+    gap: 0.03em;
+  }
+  .fav-entry .custom-btn {
+    min-width: 24px;
+    font-size: 0.75em;
+    padding: 0 1px;
+    height: 16px;
+  }
+  .fav-entry .button-container {
+    gap: 0.04rem;
+    margin-bottom: 0.08em;
+  }
+}
 
 
 

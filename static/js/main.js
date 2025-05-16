@@ -360,7 +360,6 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
 
-
   document.getElementById("selectFolderBtn")?.addEventListener("click", function(){
       const tree = $('#folderTree').jstree(true);
       const selected = tree.get_selected();

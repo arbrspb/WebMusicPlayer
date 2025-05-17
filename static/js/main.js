@@ -787,7 +787,27 @@ function saveRating(trackId, rating) {
   .catch(err => console.error("Ошибка:", err));
 }
 
+// Сохраняем изначальный padding начало
+let originalBodyPaddingRight = null;
 
+document.addEventListener('show.bs.modal', function () {
+  // Вычисляем ширину скроллбара
+  const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+  if (scrollBarWidth > 0) {
+    originalBodyPaddingRight = document.body.style.paddingRight;
+    document.body.style.paddingRight = scrollBarWidth + 'px';
+  }
+});
 
+document.addEventListener('hidden.bs.modal', function () {
+  // Возвращаем изначальный padding
+  if (originalBodyPaddingRight !== null) {
+    document.body.style.paddingRight = originalBodyPaddingRight;
+    originalBodyPaddingRight = null;
+  } else {
+    document.body.style.paddingRight = '';
+  }
+});
+// Сохраняем изначальный padding конец
 
 

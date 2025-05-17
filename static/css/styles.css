@@ -319,8 +319,23 @@ body {
     font-size: 0.8em;
     padding: 0 2px;
     height: 17px;
+    }
+
+    .flex-mobile-reverse {
+    display: flex;
+    flex-direction: column;
+  }
+  .flex-mobile-reverse > .col-md-3 {
+    order: 2;
+  }
+  .flex-mobile-reverse > .col-md-9 {
+    order: 1;
   }
 }
+
+
+
+
 
 /* --- Компактный избранный трек, адаптивно, каждая часть на своей строке --- */
 .list-group-item.fav-entry {

@@ -5,6 +5,7 @@ from .utils import resource_path
 from .config import Config
 from .routes import register_routes
 from .db import init_favorite_db
+from .librosa_settings import librosa_settings_bp, librosa_test_bp  # для настроек librosa
 import logging
 
 logger = logging.getLogger(__name__) # Логирование
@@ -28,4 +29,10 @@ def create_app():
     # Если ранее был зарегистрирован blueprint для plyr_mode, его нужно удалить, если файла нет.
     # app.register_blueprint(plyr_bp)
 
+    # Регистрируем блюпринт для настроек и тестовой страницы трека librosa
+    app.register_blueprint(librosa_settings_bp)
+    app.register_blueprint(librosa_test_bp)
+
     return app
+
+

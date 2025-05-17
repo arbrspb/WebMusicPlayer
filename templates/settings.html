@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="/static/css/styles.css">
   <style>
     body { padding-top: 0 !important; }
+   .modal-body .btn {
+  width: auto !important;
+  min-width: 0 !important;
+  display: inline-block !important;
+}
   </style>
 </head>
 <body>
@@ -109,8 +114,8 @@
       <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#genreSettingsModal">
         Редактировать жанровые настройки
       </button>
-      <button type="button" id="retrain-btn" class="btn btn-success">
-        Переобучить модель
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modelParamsModal">
+        Параметры модели
       </button>
     </div>
     <div id="progress-container" style="display: none;">
@@ -169,6 +174,23 @@
       </div>
     </div>
   </div>
+
+  <!-- Модальное окно для параметров модели и переобучения -->
+<div class="modal fade" id="modelParamsModal" tabindex="-1" aria-labelledby="modelParamsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modelParamsModalLabel">Параметры модели</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+        <div class="modal-body text-center">
+          <a href="/librosa-settings" class="btn btn-info mb-2 me-2">Настроить параметры модели</a>
+          <button type="button" class="btn btn-success mb-2" id="retrain-btn-modal">Переобучить модель</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- ВАЖНО: до подключения settings.js! -->
   <script>

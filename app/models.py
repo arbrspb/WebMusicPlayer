@@ -7,8 +7,11 @@ import numpy as np
 import librosa
 import logging
 from mutagen.easyid3 import EasyID3
+from sklearn.ensemble import RandomForestClassifier
 from .db import init_scan_db, load_scan_result, save_scan_result
 from .config import DEFAULT_CONFIG
+
+global_state = None
 
 logger = logging.getLogger(__name__) # Логирование
 
@@ -50,47 +53,139 @@ def save_genre_settings(settings_dict):
     except Exception as e:
         logger.error("Error saving genre settings: %s", e)
 
+def get_genre(path, librosa_params=None):
+    default_params = {
+        "sample_rate": 22050,
+        "duration": 30,
+        "n_mfcc": 13,
+        "hop_length": 512,
+        "n_fft": 2048,
+        "win_length": 2048,
+        "window": "hann",
+        "genre_threshold": 0.6,
+        "features": {
+            "mfcc": True,
+            "chroma": False,
+            "spectral_contrast": False,
+            "zcr": False,
+            "tonnetz": False
+        }
+    }
+    params = default_params.copy()
+    # Обрабатываем вложенные 'features'
+    if librosa_params:
+        params.update({k: v for k, v in librosa_params.items() if k in default_params and k != "features"})
+        if "features" in librosa_params:
+            params["features"].update(librosa_params["features"])
 
-def get_genre(path):
-    # Попытка получить жанр из ID3-тегов
+    print(f"[DEBUG] get_genre called for path={path}, librosa_params={librosa_params}")
+
+    # Попытка взять жанр из ID3
     try:
         tags = EasyID3(path)
         genre_from_tags = tags.get("genre", [None])[0]
+        print(f"[DEBUG] ID3 genre: {genre_from_tags}")
         if genre_from_tags:
-            logger.debug("Genre (ID3) for %s: %s", path, genre_from_tags)
             return genre_from_tags, 1.0
     except Exception as e:
-        logger.debug("Error reading ID3 for %s: %s", path, e)
+        print(f"[DEBUG] Error reading ID3: {e}")
 
-    # Используем имя родительской папки по настройкам жанра
+    # Попытка взять жанр по папке
     folder_name = os.path.basename(os.path.dirname(path)).lower()
     genre_settings = load_genre_settings()
     candidate_genre = None
     for key, val in genre_settings.items():
         if key in folder_name:
             candidate_genre = val
-            logger.debug("Candidate genre for %s: %s", path, candidate_genre)
+            print(f"[DEBUG] candidate_genre found: {candidate_genre}")
             break
-    # Аудио-анализ
+    print(f"[DEBUG] candidate_genre after loop: {candidate_genre}")
+
     try:
-        y, sr = librosa.load(path, duration=30)
-        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-        features = np.mean(mfcc.T, axis=0).reshape(1, -1)
+        print(f"[DEBUG] Start librosa.load for {path}")
+        y, sr = librosa.load(
+            path,
+            sr=params["sample_rate"],
+            duration=params["duration"]
+        )
+        print(f"[DEBUG] librosa.load OK, sr={sr}, y.shape={y.shape}")
+
+        features = []
+
+        # MFCC
+        if params["features"].get("mfcc", True):
+            mfcc = librosa.feature.mfcc(
+                y=y,
+                sr=sr,
+                n_mfcc=params["n_mfcc"],
+                hop_length=params["hop_length"],
+                n_fft=params["n_fft"],
+                win_length=params["win_length"],
+                window=params["window"]
+            )
+            print(f"[DEBUG] MFCC shape: {mfcc.shape}")
+            features.extend(np.mean(mfcc.T, axis=0))
+
+        # Chroma
+        if params["features"].get("chroma", False):
+            chroma = librosa.feature.chroma_stft(
+                y=y,
+                sr=sr,
+                hop_length=params["hop_length"],
+                n_fft=params["n_fft"]
+            )
+            print(f"[DEBUG] Chroma shape: {chroma.shape}")
+            features.extend(np.mean(chroma, axis=1))
+
+        # Spectral Contrast
+        if params["features"].get("spectral_contrast", False):
+            contrast = librosa.feature.spectral_contrast(
+                y=y,
+                sr=sr,
+                hop_length=params["hop_length"],
+                n_fft=params["n_fft"]
+            )
+            print(f"[DEBUG] Spectral Contrast shape: {contrast.shape}")
+            features.extend(np.mean(contrast, axis=1))
+
+        # Zero Crossing Rate
+        if params["features"].get("zcr", False):
+            zcr = librosa.feature.zero_crossing_rate(y)
+            print(f"[DEBUG] ZCR shape: {zcr.shape}")
+            features.append(np.mean(zcr))
+
+        # Tonnetz
+        if params["features"].get("tonnetz", False):
+            try:
+                tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
+                print(f"[DEBUG] Tonnetz shape: {tonnetz.shape}")
+                features.extend(np.mean(tonnetz, axis=1))
+            except Exception as e:
+                print(f"[DEBUG] Tonnetz extraction failed: {e}")
+
+        features = np.array(features).reshape(1, -1)
+        print(f"[DEBUG] Features vector shape: {features.shape}")
+
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
         predicted_genre = model.predict(features)[0]
+        print(f"[DEBUG] Model prediction: {predicted_genre}")
         try:
             proba = model.predict_proba(features)[0].max()
-        except Exception:
+            print(f"[DEBUG] Model proba: {proba}")
+        except Exception as e:
+            print(f"[DEBUG] Error in predict_proba: {e}")
             proba = None
-        if proba is not None and proba < 0.6:
+        threshold = params.get("genre_threshold", 0.6)
+        if proba is not None and proba < threshold:
             predicted_genre = "Unknown"
-        logger.debug("Audio analysis for %s: genre=%s", path, predicted_genre)
+        print(f"[DEBUG] Final predicted_genre: {predicted_genre}, proba: {proba}")
     except Exception as e:
-        logger.error("Error in audio analysis for %s: %s", path, e)
+        print(f"[DEBUG] Error in audio analysis: {e}")
         predicted_genre = "Unknown"
         proba = None
 
+    print(f"[DEBUG] Returning: predicted_genre={predicted_genre}, candidate_genre={candidate_genre}, proba={proba}")
     if predicted_genre.lower() == "unknown" and candidate_genre:
         return candidate_genre, proba
     return predicted_genre, proba
@@ -152,12 +247,39 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
     logger.info("Scanning finished. Results: %s", results)
 
 
-def train_genre_model(force=False):
-    global training_progress
-    training_progress = 0
+def train_genre_model(force=False, global_state=None):
+    def set_progress(x):
+        if global_state is not None:
+            global_state["training_progress"] = x
+
+    set_progress(0)
     if os.path.exists(MODEL_PATH) and not force:
         logger.info("Model exists; skipping retraining.")
         return
+
+    # Загружаем актуальные настройки librosa из файла (как и get_genre)
+    try:
+        from .librosa_settings import load_librosa_settings
+        librosa_params = load_librosa_settings()
+    except Exception:
+        # fallback если импорт не работает (например, при тестах)
+        librosa_params = {
+            "sample_rate": 22050,
+            "duration": 30,
+            "n_mfcc": 13,
+            "hop_length": 512,
+            "n_fft": 2048,
+            "win_length": 2048,
+            "window": "hann",
+            "features": {
+                "mfcc": True,
+                "chroma": False,
+                "spectral_contrast": False,
+                "zcr": False,
+                "tonnetz": False
+            }
+        }
+
     samples = []
     labels = []
     genre_dirs = {
@@ -185,20 +307,88 @@ def train_genre_model(force=False):
                 if file.endswith(".mp3"):
                     path = os.path.join(folder, file)
                     try:
-                        y, sr = librosa.load(path, duration=30)
-                        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-                        features = np.mean(mfcc.T, axis=0)
+                        y, sr = librosa.load(
+                            path,
+                            sr=librosa_params.get("sample_rate", 22050),
+                            duration=librosa_params.get("duration", 30)
+                        )
+                        features = []
+
+                        # MFCC
+                        if librosa_params["features"].get("mfcc", True):
+                            mfcc = librosa.feature.mfcc(
+                                y=y,
+                                sr=sr,
+                                n_mfcc=librosa_params.get("n_mfcc", 13),
+                                hop_length=librosa_params.get("hop_length", 512),
+                                n_fft=librosa_params.get("n_fft", 2048),
+                                win_length=librosa_params.get("win_length", 2048),
+                                window=librosa_params.get("window", "hann")
+                            )
+                            features.extend(np.mean(mfcc.T, axis=0))
+
+                        # Chroma
+                        if librosa_params["features"].get("chroma", False):
+                            chroma = librosa.feature.chroma_stft(
+                                y=y,
+                                sr=sr,
+                                hop_length=librosa_params.get("hop_length", 512),
+                                n_fft=librosa_params.get("n_fft", 2048)
+                            )
+                            features.extend(np.mean(chroma, axis=1))
+
+                        # Spectral Contrast
+                        if librosa_params["features"].get("spectral_contrast", False):
+                            contrast = librosa.feature.spectral_contrast(
+                                y=y,
+                                sr=sr,
+                                hop_length=librosa_params.get("hop_length", 512),
+                                n_fft=librosa_params.get("n_fft", 2048)
+                            )
+                            features.extend(np.mean(contrast, axis=1))
+
+                        # Zero Crossing Rate
+                        if librosa_params["features"].get("zcr", False):
+                            zcr = librosa.feature.zero_crossing_rate(y)
+                            features.append(np.mean(zcr))
+
+                        # Tonnetz
+                        if librosa_params["features"].get("tonnetz", False):
+                            try:
+                                tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
+                                features.extend(np.mean(tonnetz, axis=1))
+                            except Exception as e:
+                                logger.warning(f"Tonnetz extraction failed: {e}")
+
+                        features = np.array(features)
+                        if features.size == 0:
+                            logger.warning(f"No features extracted from {path}, skipping.")
+                            continue
                         samples.append(features)
                         labels.append(genre)
                     except Exception as e:
                         logger.error("Error processing %s: %s", path, e)
                     processed += 1
-                    training_progress = int((processed / total_files) * 100)
-    if samples:
-        from sklearn.ensemble import RandomForestClassifier
-        clf = RandomForestClassifier(500)
-        clf.fit(samples, labels)
-        with open(MODEL_PATH, "wb") as f:
-            pickle.dump(clf, f)
-        training_progress = 100
-        logger.info("Training completed (100%).")
+                    set_progress(int((processed / total_files) * 100))
+
+    # === Весь блок обучения — СЮДА, после всех циклов ===
+    if not samples:
+        print("[ОШИБКА] Нет обучающих примеров! Проверьте папки с треками.")
+        return
+    try:
+        X = np.stack(samples)
+    except Exception as e:
+        print(f"[ОШИБКА] Ошибка при формировании матрицы признаков: {e}")
+        print(f"[DEBUG] Форматы features: {[s.shape for s in samples]}")
+        return
+    if X.shape[1] == 0:
+        print("[ОШИБКА] Нет достаточных признаков для обучения! Измените настройки и попробуйте снова.")
+        return
+    from sklearn.ensemble import RandomForestClassifier
+    n_estimators = librosa_params.get("n_estimators", 100)
+    clf = RandomForestClassifier(n_estimators=n_estimators)
+    clf.fit(X, labels)
+    with open(MODEL_PATH, "wb") as f:
+        pickle.dump(clf, f)
+    set_progress(100)
+    logger.info("Training completed (100%).")

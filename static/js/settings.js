@@ -51,13 +51,20 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // --- Кнопка переобучения ---
-  var retrainBtn = document.getElementById("retrain-btn");
+  var retrainBtn = document.getElementById("retrain-btn-modal");
   if (retrainBtn) {
     retrainBtn.addEventListener("click", function() {
       fetch('/retrain', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
           alert("Переобучение запущено.");
+
+          // Закрытие модального окна
+        var modalEl = document.getElementById("modelParamsModal");
+        var modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
           var progressContainer = document.getElementById("progress-container");
           if (progressContainer) {
             progressContainer.style.display = "block";
@@ -192,3 +199,5 @@ function loadGenreSettings() {
       console.error("Ошибка загрузки жанровых настроек:", err);
     });
 }
+
+

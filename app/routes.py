@@ -81,7 +81,9 @@ def register_routes(app):
     def retrain():
         global_state["training_progress"] = 0
         logger.info("Запущено переобучение модели с принудительным режимом.")
-        threading.Thread(target=train_genre_model, args=(True,), daemon=True).start()
+        threading.Thread(
+            target=train_genre_model, args=(True, global_state), daemon=True
+        ).start()
         return jsonify({"status": "Переобучение запущено"}), 200
 
     @app.route("/training_status")

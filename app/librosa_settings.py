@@ -61,13 +61,6 @@ def upload_rekordbox_json():
         return jsonify({"error": "Нет файла!"}), 400
     f = request.files["jsonfile"]
     f.save(REKORDBOX_JSON_UPLOAD_PATH)
-    REKORDBOX_JSON_PARSED_STATE["status"] = "json_uploaded"
-    try:
-        with open(REKORDBOX_JSON_UPLOAD_PATH, "r", encoding="utf-8") as fp:
-            data = json.load(fp)
-            REKORDBOX_JSON_PARSED_STATE["count"] = len(data)
-    except Exception:
-        REKORDBOX_JSON_PARSED_STATE["count"] = 0
     return jsonify({"status": "ok"})
 
 @librosa_settings_bp.route("/librosa-settings/parse-rekordbox-json", methods=["POST"])
@@ -77,8 +70,6 @@ def parse_rekordbox_json():
     try:
         with open(REKORDBOX_JSON_UPLOAD_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-        REKORDBOX_JSON_PARSED_STATE["status"] = "ready"
-        REKORDBOX_JSON_PARSED_STATE["count"] = len(data)
         with open(REKORDBOX_JSON_PARSED_PATH, "w", encoding="utf-8") as f2:
             json.dump(data, f2)
         return jsonify({"status": "ok", "count": len(data)})
@@ -87,7 +78,27 @@ def parse_rekordbox_json():
 
 @librosa_settings_bp.route("/librosa-settings/rekordbox-json-status")
 def rekordbox_json_status():
-    return jsonify(REKORDBOX_JSON_PARSED_STATE)
+    parsed_path = REKORDBOX_JSON_PARSED_PATH
+    upload_path = REKORDBOX_JSON_UPLOAD_PATH
+
+    if os.path.exists(parsed_path):
+        try:
+            with open(parsed_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            count = len(data)
+        except Exception:
+            count = 0
+        return jsonify({"status": "ready", "count": count})
+    elif os.path.exists(upload_path):
+        try:
+            with open(upload_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            count = len(data)
+        except Exception:
+            count = 0
+        return jsonify({"status": "json_uploaded", "count": count})
+    else:
+        return jsonify({"status": "not_ready", "count": 0})
 
 @librosa_settings_bp.route("/librosa-settings", methods=["GET"])
 def librosa_settings_page():
@@ -146,13 +157,45 @@ def parse_rekordbox():
 
 @librosa_settings_bp.route("/librosa-settings/rekordbox-status", methods=["GET"])
 def rekordbox_status():
+    source = request.args.get("source", "xml")  # по умолчанию xml
+
     xml_exists = os.path.exists(REKORDBOX_XML_PATH)
-    json_exists = os.path.exists(REKORDBOX_JSON_PARSED_PATH)
-    if json_exists:
-        with open(REKORDBOX_JSON_PARSED_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify({"status": "ready", "count": len(data)})
-    elif xml_exists:
-        return jsonify({"status": "xml_uploaded"})
+    json_parsed_exists = os.path.exists(REKORDBOX_JSON_PARSED_PATH)
+    json_uploaded_exists = os.path.exists(REKORDBOX_JSON_UPLOAD_PATH)
+
+    # === Для источника JSON ===
+    if source == "json":
+        if json_parsed_exists:
+            try:
+                with open(REKORDBOX_JSON_PARSED_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                count = len(data)
+            except Exception:
+                count = 0
+            return jsonify({"status": "json_ready", "count": count})
+        elif json_uploaded_exists:
+            try:
+                with open(REKORDBOX_JSON_UPLOAD_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                count = len(data)
+            except Exception:
+                count = 0
+            return jsonify({"status": "json_uploaded", "count": count})
+        else:
+            return jsonify({"status": "not_ready", "count": 0})
+
+    # === Для источника XML ===
     else:
-        return jsonify({"status": "not_ready"})
+        # Если есть готовый распарсенный JSON и исходный XML (оба файла), значит XML был успешно распарсен
+        if json_parsed_exists and xml_exists:
+            try:
+                with open(REKORDBOX_JSON_PARSED_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                count = len(data)
+            except Exception:
+                count = 0
+            return jsonify({"status": "xml_ready", "count": count})
+        elif xml_exists:
+            return jsonify({"status": "xml_uploaded", "count": 0})
+        else:
+            return jsonify({"status": "not_ready", "count": 0})

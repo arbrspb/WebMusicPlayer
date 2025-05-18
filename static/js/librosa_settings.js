@@ -106,14 +106,19 @@ document.addEventListener("DOMContentLoaded", function() {
     if (jsonSection) updateRekordboxJsonStatus();
 
 
-   function updateRekordboxStatus() {
-    fetch("/librosa-settings/rekordbox-status")
+function updateRekordboxStatus() {
+    let source = xmlRadio && xmlRadio.checked ? "xml" : "json";
+    fetch(`/librosa-settings/rekordbox-status?source=${source}`)
     .then(r => r.json())
     .then(data => {
-        if (data.status === "ready") {
-            statusBlock.innerHTML = `<span class="text-success">Файл Reckordbox успешно распаршен и готов к использованию.<br>Треков: ${data.count}</span>`;
+        if (data.status === "ready" || data.status === "xml_ready") {
+            statusBlock.innerHTML = `<span class="text-success">XML-файл успешно распаршен и готов к использованию.<br>Треков: ${data.count ?? ""}</span>`;
         } else if (data.status === "xml_uploaded") {
             statusBlock.innerHTML = `<span class="text-primary">XML-файл загружен, но ещё не распарсен. Нажмите "Парсить XML".</span>`;
+        } else if (data.status === "json_ready") {
+            statusBlock.innerHTML = `<span class="text-success">JSON-файл успешно загружен и готов к использованию.<br>Треков: ${data.count ?? ""}</span>`;
+        } else if (data.status === "json_uploaded") {
+            statusBlock.innerHTML = `<span class="text-primary">JSON-файл загружен, но ещё не распарсен. Нажмите "Парсить JSON".</span>`;
         } else {
             statusBlock.innerHTML = `<span class="text-warning">Файл Reckordbox не загружен.</span>`;
         }

@@ -11,7 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from .db import init_scan_db, load_scan_result, save_scan_result
 from .config import DEFAULT_CONFIG
 import getpass
-
+import re
 import logging
 
 global_state = None
@@ -52,6 +52,49 @@ DEFAULT_FOLDER_KEYWORDS = {
     "русские ремиксы": "Русские Ремиксы"
 }
 GENRE_SETTINGS_FILE = "folder_keywords.json"
+
+import re
+
+# Флаг для однократного логирования использования функции
+normalize_for_genre_compare_used = False
+
+def normalize_for_genre_compare(s):
+    """
+    Универсальная нормализация строки для сравнения жанров:
+    - переводит в нижний регистр
+    - заменяет все апострофы/кавычки на n
+    - удаляет все не-буквенно-цифровые символы (заменяя их на пробел)
+    - сводит множественные пробелы к одному
+    """
+    global normalize_for_genre_compare_used
+    if not normalize_for_genre_compare_used:
+        print("Функция normalize_for_genre_compare используется")
+        normalize_for_genre_compare_used = True
+    s = s.lower()
+    s = re.sub(r"[’'`]", "n", s)  # апострофы и кавычки = n
+    s = re.sub(r"[^a-zа-я0-9]+", " ", s)  # все не буквы/цифры -> пробел
+    s = re.sub(r"\s+", " ", s)  # несколько пробелов -> один
+    return s.strip()
+
+def normalize_genre(raw_genre, genre_settings):
+    """
+    Приводит строку жанра к одному из ключей genre_settings с учётом разных написаний.
+    Сравнивает нормализованные строки (см. normalize_for_genre_compare).
+    Иначе возвращает 'Other'.
+    """
+    if not raw_genre:
+        print(f"normalize_genre: пустой raw_genre -> 'Other'")
+        return "Other"
+    raw_norm = normalize_for_genre_compare(raw_genre)
+    print(f"normalize_genre: original genre: '{raw_genre}', normalized: '{raw_norm}'")
+    for key in sorted(genre_settings, key=len, reverse=True):
+        key_norm = normalize_for_genre_compare(key)
+        print(f"  Сравнение с ключом: '{key}' -> '{key_norm}'")
+        if key_norm in raw_norm:
+            print(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') для жанра '{raw_genre}' -> '{genre_settings[key]}'")
+            return genre_settings[key]
+    print(f"normalize_genre: не найдено совпадение для '{raw_genre}' -> 'Other'")
+    return "Other"
 
 def load_genre_settings():
     if os.path.exists(GENRE_SETTINGS_FILE):
@@ -179,9 +222,10 @@ def get_genre(path, librosa_params=None):
         print(f"[DEBUG] Error reading ID3: {e}")
 
     # Попытка взять жанр по папке
-    folder_name = os.path.basename(os.path.dirname(path)).lower()
+    folder_name = os.path.basename(os.path.dirname(path))
     genre_settings = load_genre_settings()
-    candidate_genre = None
+    candidate_genre = normalize_genre(folder_name, genre_settings)
+    print(f"[DEBUG] candidate_genre after normalize: {candidate_genre}")
     for key, val in genre_settings.items():
         if key in folder_name:
             candidate_genre = val
@@ -321,6 +365,9 @@ def train_genre_model(force=False, global_state=None):
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
 
+    # Загружаем твой словарь жанров
+    genre_settings = load_genre_settings()
+
     samples = []
     labels = []
     genre_dirs = {
@@ -361,9 +408,10 @@ def train_genre_model(force=False, global_state=None):
                         if features.size == 0:
                             logger.warning(f"No features extracted from {path}, skipping.")
                             continue
-                        genre = ",".join(sorted(set(g.strip() for g in genre.split(","))))
+                        # Используем только нормализованный жанр (только один!)
+                        genre_norm = normalize_genre(genre, genre_settings)
                         samples.append(features)
-                        labels.append(genre)
+                        labels.append(genre_norm)
                     except Exception as e:
                         logger.error("Error processing %s: %s", path, e)
                     processed += 1
@@ -387,7 +435,8 @@ def train_genre_model(force=False, global_state=None):
         added = 0
         for track in rk_tracks:
             genre = track["genre"]
-            genre_norm = ",".join(sorted(set(g.strip() for g in genre.split(","))))
+            # Только один жанр по словарю!
+            genre_norm = normalize_genre(genre, genre_settings)
             path = track["path"]
             try:
                 y, sr = librosa.load(
@@ -401,9 +450,9 @@ def train_genre_model(force=False, global_state=None):
                     logger.warning(f"No features extracted from Rekordbox track: {path}")
                     continue
                 samples.append(full_features)
-                labels.append(genre)
+                labels.append(genre_norm)
                 added += 1
-                logger.info(f"Rekordbox track added for train: {path} (genre: {genre})")
+                logger.info(f"Rekordbox track added for train: {path} (genre: {genre_norm})")
             except Exception as e:
                 logger.error(f"Error processing Rekordbox track {path}: {e}")
         logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")

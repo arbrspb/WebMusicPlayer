@@ -412,7 +412,7 @@ def train_genre_model(force=False, global_state=None):
         print("[ОШИБКА] Нет достаточных признаков для обучения! Измените настройки и попробуйте снова.")
         return
     n_estimators = librosa_params.get("n_estimators", 100)
-    clf = RandomForestClassifier(n_estimators=n_estimators)
+    clf = RandomForestClassifier(n_estimators=n_estimators, n_jobs=-1)
     clf.fit(X, labels)
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(clf, f)

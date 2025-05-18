@@ -361,6 +361,7 @@ def train_genre_model(force=False, global_state=None):
                         if features.size == 0:
                             logger.warning(f"No features extracted from {path}, skipping.")
                             continue
+                        genre = ",".join(sorted(set(g.strip() for g in genre.split(","))))
                         samples.append(features)
                         labels.append(genre)
                     except Exception as e:
@@ -386,6 +387,7 @@ def train_genre_model(force=False, global_state=None):
         added = 0
         for track in rk_tracks:
             genre = track["genre"]
+            genre_norm = ",".join(sorted(set(g.strip() for g in genre.split(","))))
             path = track["path"]
             try:
                 y, sr = librosa.load(

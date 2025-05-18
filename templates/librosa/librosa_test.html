@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест жанра (librosa)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h3>Проверка трека на определение жанра</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input type="file" name="audiofile" accept=".mp3,audio/*" required>
+        </div>
+        <button type="submit" class="btn btn-success">Проверить</button>
+    </form>
+    {% if result %}
+        <div class="alert alert-info mt-3">
+            <b>Файл:</b> {{ result.filename }}<br>
+            <b>Жанр:</b> {{ result.genre }}<br>
+            <b>Уверенность:</b> {{ (result.confidence or 0) | round(3) }}
+        </div>
+    {% endif %}
+    <hr>
+    <h5>Инструкция по тесту и работе с базой</h5>
+    <ul>
+        <li>Треки для теста можно загружать через форму выше (они не добавляются в основную библиотеку, только для анализа).</li>
+        <li>Для обучения модели положите треки по жанрам в подпапки папки <code>samples/</code> (например, <code>samples/House/</code> и т.д.).</li>
+        <li>Параметры анализа (librosa) настраиваются на странице <a href="/librosa-settings">/librosa-settings</a>.</li>
+        <li>После переобучения модели рекомендуется <b>просканировать библиотеку заново</b> (режим "Начать заново" или "Продолжить").</li>
+        <li>Если есть много треков с жанром <code>Unknown</code>, попробуйте:
+            <ul>
+                <li>Снизить порог уверенности (genre_threshold)</li>
+                <li>Увеличить количество MFCC (например, 20–40)</li>
+                <li>Переобучить модель с более разнообразным набором треков</li>
+                <li>Сделать "Продолжить сканирование" после удаления <code>Unknown</code> из базы</li>
+            </ul>
+        </li>
+        <li>Справка и рекомендации доступны в разделе ниже.</li>
+    </ul>
+    <hr>
+    <h5>Рекомендации</h5>
+    <ul>
+        <li>Для повышения качества распознавания увеличивайте количество обучающих треков на жанр (20+ на каждую папку).</li>
+        <li>Старайтесь, чтобы треки для обучения не были обрезками, имели хорошее качество.</li>
+        <li>Если трек определяется как <code>Unknown</code> &mdash; попробуйте изменить параметры анализа или добавить его в тренировочную выборку.</li>
+        <li>Для массовой корректировки можно удалить записи <code>Unknown</code> из базы и запустить "Продолжить сканирование".</li>
+    </ul>
+</div>
+</body>
+</html>

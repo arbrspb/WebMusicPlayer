@@ -361,11 +361,10 @@ def train_genre_model(force=False, global_state=None):
                         logger.error("Error processing %s: %s", path, e)
                     processed += 1
                     set_progress(int((processed / total_files) * 100))
-
     # === Блок Reckordbox ===
     logger.warning("=== DEBUG: Проверка входа в блок Reckordbox ===")
     if librosa_params.get("use_rekordbox"):
-        rk_json = "reckordbox_parcer_file_output/parsed_reckordbox.json"
+        rk_json = os.path.join(os.path.dirname(__file__), "reckordbox_parcer_file_output", "parsed_reckordbox.json")
         logger.warning(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
         if os.path.exists(rk_json):
             logger.info("ВКЛЮЧЕНА опция использования треков Reckordbox для обучения модели.")
@@ -374,8 +373,8 @@ def train_genre_model(force=False, global_state=None):
             logger.warning(f"Начинаю обработку Reckordbox, всего треков: {len(rk_tracks)}")
             added = 0
             for track in rk_tracks:
-                genre = track.get("genre")
-                path = track.get("path")
+                genre = get_track_val(track, "Genre")
+                path = get_track_val(track, "path")
                 logger.warning(f"Проверяю трек: {path}, жанр: {genre}, существует: {os.path.exists(path)}")
                 if not genre or not os.path.exists(path):
                     logger.warning(f"Rekordbox track skipped: {path} (genre: {genre})")
@@ -419,6 +418,9 @@ def train_genre_model(force=False, global_state=None):
     set_progress(100)
     logger.info("Training completed (100%).")
 
+def get_track_val(track, key):
+    return track.get(key) or track.get(key.lower()) or track.get(key.upper()) or ""
+
 def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json"):
     if not os.path.exists(json_path):
         return []
@@ -427,19 +429,19 @@ def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json"):
     # Пример фильтрации: только с жанром и существующим файлом
     tracks = []
     for track in data:
-        genre = (track.get("Genre") or "").strip()
-        path = track.get("path")
+        genre = (get_track_val(track, "Genre") or "").strip()
+        path = get_track_val(track, "path")
         if genre and path and os.path.exists(path):
             # Можно извлекать и другие поля: Color, Rating, BPM, Situation, Artist, Title ...
             tracks.append({
                 "path": path,
                 "genre": genre,
-                "color": track.get("Color", ""),
-                "rating": track.get("Rating", ""),
-                "bpm": track.get("BPM", ""),
-                "artist": track.get("Artist", ""),
-                "title": track.get("Title", ""),
-                "situation": track.get("Situation", "")
+                "color": get_track_val(track, "Color"),
+                "rating": get_track_val(track, "Rating"),
+                "bpm": get_track_val(track, "BPM"),
+                "artist": get_track_val(track, "Artist"),
+                "title": get_track_val(track, "Title") or os.path.splitext(os.path.basename(path))[0],
+                "situation": get_track_val(track, "Situation")
             })
     return tracks
 

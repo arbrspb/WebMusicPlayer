@@ -9,6 +9,102 @@ document.addEventListener("DOMContentLoaded", function() {
     const parseBtn = document.getElementById("parse-rekordbox-btn");
     const statusBlock = document.getElementById("rekordbox-status-block");
     const progressBlock = document.getElementById("rekordbox-progress");
+    const xmlRadio = document.getElementById("rekordbox-xml-radio");
+    const jsonRadio = document.getElementById("rekordbox-json-radio");
+    const xmlSection = document.getElementById("rekordbox-xml-section");
+    const jsonSection = document.getElementById("rekordbox-json-section");
+    if (xmlRadio && jsonRadio && xmlSection && jsonSection) {
+        xmlRadio.addEventListener("change", function() {
+            if (xmlRadio.checked) {
+                xmlSection.style.display = "block";
+                jsonSection.style.display = "none";
+            }
+        });
+        jsonRadio.addEventListener("change", function() {
+            if (jsonRadio.checked) {
+                xmlSection.style.display = "none";
+                jsonSection.style.display = "block";
+            }
+        });
+    }
+// ========== JSON загрузка ===========
+    const rekordboxJSON = document.getElementById("rekordbox-json");
+    const uploadJSONBtn = document.getElementById("upload-rekordbox-json-btn");
+    const parseJSONBtn = document.getElementById("parse-rekordbox-json-btn");
+    const jsonStatusBlock = document.getElementById("rekordbox-json-status-block");
+    const jsonProgressBlock = document.getElementById("rekordbox-json-progress");
+
+
+    function updateRekordboxJsonStatus() {
+            fetch("/librosa-settings/rekordbox-json-status")
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "ready") {
+                    jsonStatusBlock.innerHTML = `<span class="text-success">JSON-файл успешно загружен и готов к использованию.<br>Треков: ${data.count}</span>`;
+                } else if (data.status === "json_uploaded") {
+                    jsonStatusBlock.innerHTML = `<span class="text-primary">JSON-файл загружен, но ещё не распарсен. Нажмите "Парсить JSON".</span>`;
+                } else {
+                    jsonStatusBlock.innerHTML = `<span class="text-warning">JSON-файл не загружен.</span>`;
+                }
+            });
+        }
+
+        if (uploadJSONBtn) {
+            uploadJSONBtn.addEventListener("click", function() {
+                if (!rekordboxJSON.files.length) {
+                    jsonProgressBlock.innerText = "Выберите JSON-файл!";
+                    return;
+                }
+                let formData = new FormData();
+                formData.append("jsonfile", rekordboxJSON.files[0]);
+                jsonProgressBlock.innerText = "Загрузка...";
+                fetch("/librosa-settings/upload-rekordbox-json", {
+                    method: "POST",
+                    body: formData
+                }).then(r => r.json())
+                 .then(res => {
+                    if (res.error) {
+                        jsonProgressBlock.innerText = "Ошибка: " + res.error;
+                    } else {
+                        jsonProgressBlock.innerText = "Файл загружен.";
+                    }
+                    updateRekordboxJsonStatus();
+                 });
+            });
+        }
+
+        if (parseJSONBtn) {
+            parseJSONBtn.addEventListener("click", function() {
+                fetch("/librosa-settings/rekordbox-json-status")
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === "not_ready") {
+                            jsonProgressBlock.innerText = "Сначала загрузите JSON-файл!";
+                            return;
+                        }
+                        if (data.status === "ready") {
+                            jsonProgressBlock.innerText = "Файл уже распарсен.";
+                            return;
+                        }
+                        // data.status === "json_uploaded" — можно парсить!
+                        jsonProgressBlock.innerText = "Парсинг JSON...";
+                        fetch("/librosa-settings/parse-rekordbox-json", {method: "POST"})
+                            .then(r => r.json())
+                            .then(res => {
+                                if (res.error) {
+                                    jsonProgressBlock.innerText = "Ошибка парсинга: " + res.error;
+                                } else {
+                                    jsonProgressBlock.innerText = "JSON успешно распаршен!";
+                                }
+                                updateRekordboxJsonStatus();
+                            });
+                    });
+            });
+        }
+
+    // Показываем статус для JSON при загрузке страницы
+    if (jsonSection) updateRekordboxJsonStatus();
+
 
    function updateRekordboxStatus() {
     fetch("/librosa-settings/rekordbox-status")

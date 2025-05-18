@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from .reckordbox_parser import parse_reckordbox_xml
 import logging
+
 logger = logging.getLogger(__name__)
 
 LIBROSA_CONFIG_FILE = "librosa_config.json"
@@ -15,9 +16,12 @@ UPLOAD_FOLDER = "test_uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 REKORDBOX_UPLOAD_FOLDER = "reckordbox_parcer_file_output"
-REKORDBOX_XML_PATH = os.path.join(REKORDBOX_UPLOAD_FOLDER, "uploaded_rekordbox.xml")
-REKORDBOX_JSON_PATH = os.path.join(REKORDBOX_UPLOAD_FOLDER, "parsed_reckordbox.json")
 os.makedirs(REKORDBOX_UPLOAD_FOLDER, exist_ok=True)
+REKORDBOX_XML_PATH = os.path.join(REKORDBOX_UPLOAD_FOLDER, "uploaded_rekordbox.xml")
+REKORDBOX_JSON_UPLOAD_PATH = os.path.join(REKORDBOX_UPLOAD_FOLDER, "uploaded_rekordbox.json")
+REKORDBOX_JSON_PARSED_PATH = os.path.join(REKORDBOX_UPLOAD_FOLDER, "parsed_rekordbox.json")
+
+REKORDBOX_JSON_PARSED_STATE = {"status": "not_ready", "count": 0}
 
 DEFAULT_LIBROSA_SETTINGS = {
     "sample_rate": 22050,
@@ -40,6 +44,7 @@ DEFAULT_LIBROSA_SETTINGS = {
     },
     "use_rekordbox": False
 }
+
 def load_librosa_settings():
     if os.path.exists(LIBROSA_CONFIG_FILE):
         with open(LIBROSA_CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -49,6 +54,40 @@ def load_librosa_settings():
 def save_librosa_settings(settings):
     with open(LIBROSA_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
+
+@librosa_settings_bp.route("/librosa-settings/upload-rekordbox-json", methods=["POST"])
+def upload_rekordbox_json():
+    if "jsonfile" not in request.files:
+        return jsonify({"error": "Нет файла!"}), 400
+    f = request.files["jsonfile"]
+    f.save(REKORDBOX_JSON_UPLOAD_PATH)
+    REKORDBOX_JSON_PARSED_STATE["status"] = "json_uploaded"
+    try:
+        with open(REKORDBOX_JSON_UPLOAD_PATH, "r", encoding="utf-8") as fp:
+            data = json.load(fp)
+            REKORDBOX_JSON_PARSED_STATE["count"] = len(data)
+    except Exception:
+        REKORDBOX_JSON_PARSED_STATE["count"] = 0
+    return jsonify({"status": "ok"})
+
+@librosa_settings_bp.route("/librosa-settings/parse-rekordbox-json", methods=["POST"])
+def parse_rekordbox_json():
+    if not os.path.exists(REKORDBOX_JSON_UPLOAD_PATH):
+        return jsonify({"error": "Файл не загружен!"}), 400
+    try:
+        with open(REKORDBOX_JSON_UPLOAD_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        REKORDBOX_JSON_PARSED_STATE["status"] = "ready"
+        REKORDBOX_JSON_PARSED_STATE["count"] = len(data)
+        with open(REKORDBOX_JSON_PARSED_PATH, "w", encoding="utf-8") as f2:
+            json.dump(data, f2)
+        return jsonify({"status": "ok", "count": len(data)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@librosa_settings_bp.route("/librosa-settings/rekordbox-json-status")
+def rekordbox_json_status():
+    return jsonify(REKORDBOX_JSON_PARSED_STATE)
 
 @librosa_settings_bp.route("/librosa-settings", methods=["GET"])
 def librosa_settings_page():
@@ -100,7 +139,7 @@ def upload_rekordbox_xml():
 @librosa_settings_bp.route("/librosa-settings/parse-rekordbox", methods=["POST"])
 def parse_rekordbox():
     try:
-        parse_reckordbox_xml(REKORDBOX_XML_PATH, REKORDBOX_JSON_PATH)
+        parse_reckordbox_xml(REKORDBOX_XML_PATH, REKORDBOX_JSON_PARSED_PATH)
         return jsonify({"status": "ok"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -108,9 +147,9 @@ def parse_rekordbox():
 @librosa_settings_bp.route("/librosa-settings/rekordbox-status", methods=["GET"])
 def rekordbox_status():
     xml_exists = os.path.exists(REKORDBOX_XML_PATH)
-    json_exists = os.path.exists(REKORDBOX_JSON_PATH)
+    json_exists = os.path.exists(REKORDBOX_JSON_PARSED_PATH)
     if json_exists:
-        with open(REKORDBOX_JSON_PATH, "r", encoding="utf-8") as f:
+        with open(REKORDBOX_JSON_PARSED_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         return jsonify({"status": "ready", "count": len(data)})
     elif xml_exists:

@@ -41,7 +41,9 @@ def parse_reckordbox_xml(xml_path, output_path=None):
             "artist": artist,
             "track_id": track_id
         })
-
+    def lower_keys_track(track):
+        return {k.lower(): v for k, v in track.items()}
+    tracks = [lower_keys_track(track) for track in tracks]
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(tracks, f, ensure_ascii=False, indent=2)
     return output_path

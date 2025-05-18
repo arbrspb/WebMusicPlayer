@@ -91,20 +91,32 @@
                 <label><input type="checkbox" name="features.tonnetz" {% if settings.features.tonnetz %}checked{% endif %}> Tonnetz</label>
             </div>
         </div>
-    <hr>
-            <div class="mb-3">
-                <label>
-                    <input type="checkbox" name="use_rekordbox" id="use_rekordbox" {% if settings.use_rekordbox %}checked{% endif %}>
-                    Использовать данные из Reckordbox для обучения
-                </label>
-                <div id="rekordbox-section" style="display: {% if settings.use_rekordbox %}block{% else %}none{% endif %}; margin-top:10px;">
-                    <div id="rekordbox-status-block"></div>
-                    <input type="file" id="rekordbox-xml" accept=".xml" class="form-control mt-2 mb-2">
-                    <button class="btn btn-primary" id="upload-rekordbox-btn" type="button">Загрузить XML</button>
-                    <button class="btn btn-secondary" id="parse-rekordbox-btn" type="button">Парсить XML</button>
-                    <div id="rekordbox-progress" class="mt-2"></div>
-                </div>
-            </div>
+    <hr><div class="mb-3">
+    <label>
+        <input type="checkbox" name="use_rekordbox" id="use_rekordbox" {% if settings.use_rekordbox %}checked{% endif %}>
+        Использовать данные из Reckordbox для обучения
+    </label>
+    <div id="rekordbox-section" style="display: {% if settings.use_rekordbox %}block{% else %}none{% endif %}; margin-top:10px;">
+        <div>
+            <label><input type="radio" name="rekordbox_source" id="rekordbox-xml-radio" value="xml" checked> XML</label>
+            <label class="ms-3"><input type="radio" name="rekordbox_source" id="rekordbox-json-radio" value="json"> JSON</label>
+        </div>
+        <div id="rekordbox-xml-section" style="margin-top:10px;">
+            <div id="rekordbox-status-block"></div>
+            <input type="file" id="rekordbox-xml" accept=".xml" class="form-control mt-2 mb-2">
+            <button class="btn btn-primary" id="upload-rekordbox-btn" type="button">Загрузить XML</button>
+            <button class="btn btn-secondary" id="parse-rekordbox-btn" type="button">Парсить XML</button>
+            <div id="rekordbox-progress" class="mt-2"></div>
+        </div>
+        <div id="rekordbox-json-section" style="display:none; margin-top:10px;">
+            <div id="rekordbox-json-status-block"></div>
+            <input type="file" id="rekordbox-json" accept=".json" class="form-control mt-2 mb-2">
+            <button class="btn btn-primary" id="upload-rekordbox-json-btn" type="button">Загрузить JSON</button>
+            <button class="btn btn-secondary" id="parse-rekordbox-json-btn" type="button">Парсить JSON</button>
+            <div id="rekordbox-json-progress" class="mt-2"></div>
+        </div>
+    </div>
+</div>
         <button type="submit" class="btn btn-success mt-3">Сохранить</button>
     </form>
     <div id="save-status" class="mt-2"></div>

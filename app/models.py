@@ -4,11 +4,13 @@ import threading
 import json
 import pickle
 import numpy as np
+import pandas as pd
 import librosa
 from mutagen.easyid3 import EasyID3
 from sklearn.ensemble import RandomForestClassifier
 from .db import init_scan_db, load_scan_result, save_scan_result
 from .config import DEFAULT_CONFIG
+
 import logging
 
 global_state = None
@@ -16,6 +18,24 @@ global_state = None
 logger = logging.getLogger(__name__)  # Логирование
 
 MODEL_PATH = "genre_model.pkl"
+
+COLOR_MAP = {
+    "Легкая": 0,
+    "Кач": 1,
+    "Танцевально/Поставить": 2,
+    "Нейтральная": 3,
+    "Orange": 4
+    # ... добавьте остальные цвета, если нужно
+}
+
+SITUATION_MAP = {
+    "": 0,
+    "Light": 1,
+    "Медляк": 2,
+    "Грустная": 3,
+    "Ставим": 4,
+    "Веселая": 5
+}
 
 DEFAULT_FOLDER_KEYWORDS = {
     "club house": "Club House",
@@ -32,7 +52,6 @@ DEFAULT_FOLDER_KEYWORDS = {
 }
 GENRE_SETTINGS_FILE = "folder_keywords.json"
 
-
 def load_genre_settings():
     if os.path.exists(GENRE_SETTINGS_FILE):
         try:
@@ -44,7 +63,6 @@ def load_genre_settings():
             logger.error("Error loading genre settings: %s", e)
     return DEFAULT_FOLDER_KEYWORDS.copy()
 
-
 def save_genre_settings(settings_dict):
     try:
         with open(GENRE_SETTINGS_FILE, "w", encoding="utf-8") as f:
@@ -52,7 +70,6 @@ def save_genre_settings(settings_dict):
         logger.info("Genre settings saved: %s", settings_dict)
     except Exception as e:
         logger.error("Error saving genre settings: %s", e)
-
 
 def extract_features(y, sr, librosa_params):
     features = []
@@ -104,6 +121,24 @@ def extract_features(y, sr, librosa_params):
 
     return np.array(features)
 
+def extract_features_from_track(track, audio_features):
+
+    rating = track.get("rating", 0) if track else 0
+    try:
+        rating = float(rating) / 5.0
+    except Exception:
+        rating = 0.0
+    bpm = track.get("bpm", 0) if track else 0
+    try:
+        bpm = float(bpm) / 200.0
+    except Exception:
+        bpm = 0.0
+    color = track.get("color", "") if track else ""
+    color_idx = COLOR_MAP.get(color, -1)
+    situation = track.get("situation", "") if track else ""
+    situation_idx = SITUATION_MAP.get(situation, 0)
+    feature_vector = np.concatenate([audio_features, [rating, bpm, color_idx, situation_idx]])
+    return feature_vector
 
 def get_genre(path, librosa_params=None):
     default_params = {
@@ -164,6 +199,7 @@ def get_genre(path, librosa_params=None):
 
         features = extract_features(y, sr, params)
         print(f"[DEBUG] Features vector shape: {features.shape}")
+        features = extract_features_from_track(None, features)
 
         features = features.reshape(1, -1)
         with open(MODEL_PATH, "rb") as f:
@@ -189,7 +225,6 @@ def get_genre(path, librosa_params=None):
     if predicted_genre.lower() == "unknown" and candidate_genre:
         return candidate_genre, proba
     return predicted_genre, proba
-
 
 def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
     if scan_mode == "new":
@@ -245,7 +280,6 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
         scan_progress["status"] = "completed"
     scan_progress["results"] = results
     logger.info("Scanning finished. Results: %s", results)
-
 
 def train_genre_model(force=False, global_state=None):
     def set_progress(x):
@@ -316,6 +350,8 @@ def train_genre_model(force=False, global_state=None):
                             duration=librosa_params.get("duration", 30)
                         )
                         features = extract_features(y, sr, librosa_params)
+                        # Для унификации размерности (с JSON треками) добавляем "заглушки"
+                        features = extract_features_from_track(None, features)
                         if features.size == 0:
                             logger.warning(f"No features extracted from {path}, skipping.")
                             continue
@@ -347,11 +383,12 @@ def train_genre_model(force=False, global_state=None):
                 try:
                     y, sr = librosa.load(path, sr=librosa_params.get("sample_rate", 22050),
                                          duration=librosa_params.get("duration", 30))
-                    features = extract_features(y, sr, librosa_params)
-                    if features.size == 0:
+                    base_features = extract_features(y, sr, librosa_params)
+                    full_features = extract_features_from_track(track, base_features)
+                    if full_features.size == 0:
                         logger.warning(f"No features extracted from Rekordbox track: {path}")
                         continue
-                    samples.append(features)
+                    samples.append(full_features)
                     labels.append(genre)
                     added += 1
                     logger.info(f"Rekordbox track added for train: {path} (genre: {genre})")
@@ -381,3 +418,29 @@ def train_genre_model(force=False, global_state=None):
         pickle.dump(clf, f)
     set_progress(100)
     logger.info("Training completed (100%).")
+
+def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json"):
+    if not os.path.exists(json_path):
+        return []
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    # Пример фильтрации: только с жанром и существующим файлом
+    tracks = []
+    for track in data:
+        genre = (track.get("Genre") or "").strip()
+        path = track.get("path")
+        if genre and path and os.path.exists(path):
+            # Можно извлекать и другие поля: Color, Rating, BPM, Situation, Artist, Title ...
+            tracks.append({
+                "path": path,
+                "genre": genre,
+                "color": track.get("Color", ""),
+                "rating": track.get("Rating", ""),
+                "bpm": track.get("BPM", ""),
+                "artist": track.get("Artist", ""),
+                "title": track.get("Title", ""),
+                "situation": track.get("Situation", "")
+            })
+    return tracks
+
+

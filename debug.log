@@ -1300,3 +1300,711 @@ label 190:
 01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
 01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
 01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 INFO: 172.19.0.1 - - [19/May/2025 01:46:35] "GET /training_status HTTP/1.1" 200 -
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:35 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:35 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 INFO: 172.19.0.1 - - [19/May/2025 01:46:36] "GET /training_status HTTP/1.1" 200 -
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:36 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:36 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 INFO: 172.19.0.1 - - [19/May/2025 01:46:37] "GET /training_status HTTP/1.1" 200 -
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:37 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:37 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 INFO: 172.19.0.1 - - [19/May/2025 01:46:38] "GET /training_status HTTP/1.1" 200 -
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:38 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:38 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 INFO: 172.19.0.1 - - [19/May/2025 01:46:39] "GET /training_status HTTP/1.1" 200 -
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:39 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:39 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 INFO: 172.19.0.1 - - [19/May/2025 01:46:40] "GET /training_status HTTP/1.1" 200 -
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:40 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:40 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 INFO: 172.19.0.1 - - [19/May/2025 01:46:41] "GET /training_status HTTP/1.1" 200 -
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:41 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:41 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 INFO: 172.19.0.1 - - [19/May/2025 01:46:42] "GET /training_status HTTP/1.1" 200 -
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:42 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:42 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 INFO: 172.19.0.1 - - [19/May/2025 01:46:43] "GET /training_status HTTP/1.1" 200 -
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:43 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:43 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 INFO: 172.19.0.1 - - [19/May/2025 01:46:44] "GET /training_status HTTP/1.1" 200 -
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:44 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:44 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 INFO: 172.19.0.1 - - [19/May/2025 01:46:45] "GET /training_status HTTP/1.1" 200 -
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:45 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:45 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['deep house']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'deep house' (normalized 'deep house') c токеном 'deep house' -> 'Deep House'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 INFO: 172.19.0.1 - - [19/May/2025 01:46:46] "GET /training_status HTTP/1.1" 200 -
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:46 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:46 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 INFO: 172.19.0.1 - - [19/May/2025 01:46:47] "GET /training_status HTTP/1.1" 200 -
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:47 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:47 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 INFO: 172.19.0.1 - - [19/May/2025 01:46:48] "GET /training_status HTTP/1.1" 200 -
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:48 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:48 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 INFO: 172.19.0.1 - - [19/May/2025 01:46:49] "GET /training_status HTTP/1.1" 200 -
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:49 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:49 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 INFO: 172.19.0.1 - - [19/May/2025 01:46:50] "GET /training_status HTTP/1.1" 200 -
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:50 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:50 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 INFO: 172.19.0.1 - - [19/May/2025 01:46:51] "GET /training_status HTTP/1.1" 200 -
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:51 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:51 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 INFO: 172.19.0.1 - - [19/May/2025 01:46:52] "GET /training_status HTTP/1.1" 200 -
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:52 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:52 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 INFO: 172.19.0.1 - - [19/May/2025 01:46:53] "GET /training_status HTTP/1.1" 200 -
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:53 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:53 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['hip hop']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'hip-hop & rap' (normalized 'hip hop rap') c токеном 'hip hop' -> 'Hip-Hop'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 INFO: 172.19.0.1 - - [19/May/2025 01:46:54] "GET /training_status HTTP/1.1" 200 -
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:54 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:54 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 INFO: 172.19.0.1 - - [19/May/2025 01:46:55] "GET /training_status HTTP/1.1" 200 -
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:55 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:55 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 INFO: 172.19.0.1 - - [19/May/2025 01:46:56] "GET /training_status HTTP/1.1" 200 -
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 INFO: 172.19.0.1 - - [19/May/2025 01:46:56] "GET /training_status HTTP/1.1" 200 -
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:56 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:56 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:57 INFO: 172.19.0.1 - - [19/May/2025 01:46:57] "GET /training_status HTTP/1.1" 200 -
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['nu disco']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'nu disco' (normalized 'nu disco') c токеном 'nu disco' -> 'Nu Disco'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 INFO: 172.19.0.1 - - [19/May/2025 01:46:57] "GET /training_status HTTP/1.1" 200 -
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 DEBUG: normalize_genre: tokens extracted: ['trap']
+01:46:57 DEBUG:     -> Найдено совпадение по ключу 'trap' (normalized 'trap') c токеном 'trap' -> 'Trap'
+01:46:57 INFO: 
+====== Статистика по жанрам ======
+01:46:57 INFO: Genre: Chillout найдено треков: 48
+01:46:57 INFO: Genre: Club House найдено треков: 196
+01:46:57 INFO: Genre: Deep House найдено треков: 160
+01:46:57 INFO: Genre: Drum & Bass найдено треков: 0
+01:46:57 INFO: Genre: Funky & Disco найдено треков: 0
+01:46:57 INFO: Genre: Future House найдено треков: 0
+01:46:57 INFO: Genre: G & Bass House найдено треков: 0
+01:46:57 INFO: Genre: Hip-Hop найдено треков: 120
+01:46:57 INFO: Genre: House найдено треков: 0
+01:46:57 INFO: Genre: Mainstage найдено треков: 0
+01:46:57 INFO: Genre: Mix найдено треков: 0
+01:46:57 INFO: Genre: Moombahton найдено треков: 0
+01:46:57 INFO: Genre: Nu Disco найдено треков: 40
+01:46:57 INFO: Genre: Pop найдено треков: 0
+01:46:57 INFO: Genre: Progressive House найдено треков: 0
+01:46:57 INFO: Genre: Remix найдено треков: 0
+01:46:57 INFO: Genre: RnB найдено треков: 0
+01:46:57 INFO: Genre: Rock найдено треков: 0
+01:46:57 INFO: Genre: Romantic Selection найдено треков: 0
+01:46:57 INFO: Genre: Tech House найдено треков: 0
+01:46:57 INFO: Genre: Trap найдено треков: 11
+01:46:57 INFO: Genre: Underground Pop найдено треков: 0
+01:46:57 INFO: Genre: Новогодние найдено треков: 0
+01:46:57 INFO: Genre: Русские Ремиксы найдено треков: 0
+01:46:57 INFO: ВСЕГО треков: 575
+01:46:58 INFO: Training completed (100%).
+01:46:58 INFO: 172.19.0.1 - - [19/May/2025 01:46:58] "GET /training_status HTTP/1.1" 200 -

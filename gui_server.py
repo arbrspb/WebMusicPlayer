@@ -2,23 +2,19 @@
 import tkinter as tk
 from tkinter import messagebox
 import threading
-import logging
 import requests
 import os
 import socket
 from multiprocessing import Process, freeze_support
 from run import app # Импортируйте Flask-приложение из серверного модуля
+from app.logging_config import setup_logging
+import logging
+logger = logging.getLogger(__name__)
 
 # Определяем константу для файла логирования
 LOG_FILE_NAME = "debug.log"
 
-# Настройка базового логирования для GUI (по необходимости)
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%H:%M:%S",
-    level=logging.INFO
-)
-logger = logging.getLogger("GUI")
+
 
 server_process = None  # Глобальная переменная для процесса сервера
 
@@ -35,22 +31,8 @@ def get_local_ip():
     return ip
 
 def run_server(ip, port, debug_enabled=False):
-    root_logger = logging.getLogger()  # получаем корневой логгер
-    if debug_enabled:
-        # Устанавливаем уровень DEBUG
-        root_logger.setLevel(logging.DEBUG)
-        logger.info("Режим отладки включен")
-        # Проверяем, нет ли уже FileHandler'а – если нет, добавляем его
-        if not any(isinstance(h, logging.FileHandler) for h in root_logger.handlers):
-            file_handler = logging.FileHandler(LOG_FILE_NAME, encoding="utf-8")
-            file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s", "%H:%M:%S"))
-            root_logger.addHandler(file_handler)
-            logger.info("Логирование в файл включено: %s", LOG_FILE_NAME)
-    else:
-        root_logger.setLevel(logging.INFO)
-        logger.info("Режим отладки выключен")
+    setup_logging(debug_enabled, LOG_FILE_NAME)
     logger.info("Рабочая директория: %s", os.getcwd())
-    # Запускаем Flask-приложение; use_reloader=False чтобы избежать двойного запуска
     app.run(host=ip, port=int(port), debug=debug_enabled, use_reloader=False)
 
 # Рабочий вариант

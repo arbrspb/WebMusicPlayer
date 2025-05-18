@@ -1,3 +1,4 @@
+<!-- librosa_settings.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -90,6 +91,20 @@
                 <label><input type="checkbox" name="features.tonnetz" {% if settings.features.tonnetz %}checked{% endif %}> Tonnetz</label>
             </div>
         </div>
+    <hr>
+            <div class="mb-3">
+                <label>
+                    <input type="checkbox" name="use_rekordbox" id="use_rekordbox" {% if settings.use_rekordbox %}checked{% endif %}>
+                    Использовать данные из Reckordbox для обучения
+                </label>
+                <div id="rekordbox-section" style="display: {% if settings.use_rekordbox %}block{% else %}none{% endif %}; margin-top:10px;">
+                    <div id="rekordbox-status-block"></div>
+                    <input type="file" id="rekordbox-xml" accept=".xml" class="form-control mt-2 mb-2">
+                    <button class="btn btn-primary" id="upload-rekordbox-btn" type="button">Загрузить XML</button>
+                    <button class="btn btn-secondary" id="parse-rekordbox-btn" type="button">Парсить XML</button>
+                    <div id="rekordbox-progress" class="mt-2"></div>
+                </div>
+            </div>
         <button type="submit" class="btn btn-success mt-3">Сохранить</button>
     </form>
     <div id="save-status" class="mt-2"></div>

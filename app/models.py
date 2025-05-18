@@ -5,15 +5,15 @@ import json
 import pickle
 import numpy as np
 import librosa
-import logging
 from mutagen.easyid3 import EasyID3
 from sklearn.ensemble import RandomForestClassifier
 from .db import init_scan_db, load_scan_result, save_scan_result
 from .config import DEFAULT_CONFIG
+import logging
 
 global_state = None
 
-logger = logging.getLogger(__name__) # Логирование
+logger = logging.getLogger(__name__)  # Логирование
 
 MODEL_PATH = "genre_model.pkl"
 
@@ -52,6 +52,58 @@ def save_genre_settings(settings_dict):
         logger.info("Genre settings saved: %s", settings_dict)
     except Exception as e:
         logger.error("Error saving genre settings: %s", e)
+
+
+def extract_features(y, sr, librosa_params):
+    features = []
+    # MFCC
+    if librosa_params["features"].get("mfcc", True):
+        mfcc = librosa.feature.mfcc(
+            y=y,
+            sr=sr,
+            n_mfcc=librosa_params.get("n_mfcc", 13),
+            hop_length=librosa_params.get("hop_length", 512),
+            n_fft=librosa_params.get("n_fft", 2048),
+            win_length=librosa_params.get("win_length", 2048),
+            window=librosa_params.get("window", "hann")
+        )
+        features.extend(np.mean(mfcc.T, axis=0))
+
+    # Chroma
+    if librosa_params["features"].get("chroma", False):
+        chroma = librosa.feature.chroma_stft(
+            y=y,
+            sr=sr,
+            hop_length=librosa_params.get("hop_length", 512),
+            n_fft=librosa_params.get("n_fft", 2048)
+        )
+        features.extend(np.mean(chroma, axis=1))
+
+    # Spectral Contrast
+    if librosa_params["features"].get("spectral_contrast", False):
+        contrast = librosa.feature.spectral_contrast(
+            y=y,
+            sr=sr,
+            hop_length=librosa_params.get("hop_length", 512),
+            n_fft=librosa_params.get("n_fft", 2048)
+        )
+        features.extend(np.mean(contrast, axis=1))
+
+    # Zero Crossing Rate
+    if librosa_params["features"].get("zcr", False):
+        zcr = librosa.feature.zero_crossing_rate(y)
+        features.append(np.mean(zcr))
+
+    # Tonnetz
+    if librosa_params["features"].get("tonnetz", False):
+        try:
+            tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
+            features.extend(np.mean(tonnetz, axis=1))
+        except Exception as e:
+            logger.warning(f"Tonnetz extraction failed: {e}")
+
+    return np.array(features)
+
 
 def get_genre(path, librosa_params=None):
     default_params = {
@@ -110,62 +162,10 @@ def get_genre(path, librosa_params=None):
         )
         print(f"[DEBUG] librosa.load OK, sr={sr}, y.shape={y.shape}")
 
-        features = []
-
-        # MFCC
-        if params["features"].get("mfcc", True):
-            mfcc = librosa.feature.mfcc(
-                y=y,
-                sr=sr,
-                n_mfcc=params["n_mfcc"],
-                hop_length=params["hop_length"],
-                n_fft=params["n_fft"],
-                win_length=params["win_length"],
-                window=params["window"]
-            )
-            print(f"[DEBUG] MFCC shape: {mfcc.shape}")
-            features.extend(np.mean(mfcc.T, axis=0))
-
-        # Chroma
-        if params["features"].get("chroma", False):
-            chroma = librosa.feature.chroma_stft(
-                y=y,
-                sr=sr,
-                hop_length=params["hop_length"],
-                n_fft=params["n_fft"]
-            )
-            print(f"[DEBUG] Chroma shape: {chroma.shape}")
-            features.extend(np.mean(chroma, axis=1))
-
-        # Spectral Contrast
-        if params["features"].get("spectral_contrast", False):
-            contrast = librosa.feature.spectral_contrast(
-                y=y,
-                sr=sr,
-                hop_length=params["hop_length"],
-                n_fft=params["n_fft"]
-            )
-            print(f"[DEBUG] Spectral Contrast shape: {contrast.shape}")
-            features.extend(np.mean(contrast, axis=1))
-
-        # Zero Crossing Rate
-        if params["features"].get("zcr", False):
-            zcr = librosa.feature.zero_crossing_rate(y)
-            print(f"[DEBUG] ZCR shape: {zcr.shape}")
-            features.append(np.mean(zcr))
-
-        # Tonnetz
-        if params["features"].get("tonnetz", False):
-            try:
-                tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
-                print(f"[DEBUG] Tonnetz shape: {tonnetz.shape}")
-                features.extend(np.mean(tonnetz, axis=1))
-            except Exception as e:
-                print(f"[DEBUG] Tonnetz extraction failed: {e}")
-
-        features = np.array(features).reshape(1, -1)
+        features = extract_features(y, sr, params)
         print(f"[DEBUG] Features vector shape: {features.shape}")
 
+        features = features.reshape(1, -1)
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
         predicted_genre = model.predict(features)[0]
@@ -280,6 +280,9 @@ def train_genre_model(force=False, global_state=None):
             }
         }
 
+    logger.info("librosa_params for training: %s", librosa_params)
+    logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
+
     samples = []
     labels = []
     genre_dirs = {
@@ -312,55 +315,7 @@ def train_genre_model(force=False, global_state=None):
                             sr=librosa_params.get("sample_rate", 22050),
                             duration=librosa_params.get("duration", 30)
                         )
-                        features = []
-
-                        # MFCC
-                        if librosa_params["features"].get("mfcc", True):
-                            mfcc = librosa.feature.mfcc(
-                                y=y,
-                                sr=sr,
-                                n_mfcc=librosa_params.get("n_mfcc", 13),
-                                hop_length=librosa_params.get("hop_length", 512),
-                                n_fft=librosa_params.get("n_fft", 2048),
-                                win_length=librosa_params.get("win_length", 2048),
-                                window=librosa_params.get("window", "hann")
-                            )
-                            features.extend(np.mean(mfcc.T, axis=0))
-
-                        # Chroma
-                        if librosa_params["features"].get("chroma", False):
-                            chroma = librosa.feature.chroma_stft(
-                                y=y,
-                                sr=sr,
-                                hop_length=librosa_params.get("hop_length", 512),
-                                n_fft=librosa_params.get("n_fft", 2048)
-                            )
-                            features.extend(np.mean(chroma, axis=1))
-
-                        # Spectral Contrast
-                        if librosa_params["features"].get("spectral_contrast", False):
-                            contrast = librosa.feature.spectral_contrast(
-                                y=y,
-                                sr=sr,
-                                hop_length=librosa_params.get("hop_length", 512),
-                                n_fft=librosa_params.get("n_fft", 2048)
-                            )
-                            features.extend(np.mean(contrast, axis=1))
-
-                        # Zero Crossing Rate
-                        if librosa_params["features"].get("zcr", False):
-                            zcr = librosa.feature.zero_crossing_rate(y)
-                            features.append(np.mean(zcr))
-
-                        # Tonnetz
-                        if librosa_params["features"].get("tonnetz", False):
-                            try:
-                                tonnetz = librosa.feature.tonnetz(y=librosa.effects.harmonic(y), sr=sr)
-                                features.extend(np.mean(tonnetz, axis=1))
-                            except Exception as e:
-                                logger.warning(f"Tonnetz extraction failed: {e}")
-
-                        features = np.array(features)
+                        features = extract_features(y, sr, librosa_params)
                         if features.size == 0:
                             logger.warning(f"No features extracted from {path}, skipping.")
                             continue
@@ -370,6 +325,41 @@ def train_genre_model(force=False, global_state=None):
                         logger.error("Error processing %s: %s", path, e)
                     processed += 1
                     set_progress(int((processed / total_files) * 100))
+
+    # === Блок Reckordbox ===
+    logger.warning("=== DEBUG: Проверка входа в блок Reckordbox ===")
+    if librosa_params.get("use_rekordbox"):
+        rk_json = "reckordbox_parcer_file_output/parsed_reckordbox.json"
+        logger.warning(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
+        if os.path.exists(rk_json):
+            logger.info("ВКЛЮЧЕНА опция использования треков Reckordbox для обучения модели.")
+            with open(rk_json, "r", encoding="utf-8") as f:
+                rk_tracks = json.load(f)
+            logger.warning(f"Начинаю обработку Reckordbox, всего треков: {len(rk_tracks)}")
+            added = 0
+            for track in rk_tracks:
+                genre = track.get("genre")
+                path = track.get("path")
+                logger.warning(f"Проверяю трек: {path}, жанр: {genre}, существует: {os.path.exists(path)}")
+                if not genre or not os.path.exists(path):
+                    logger.warning(f"Rekordbox track skipped: {path} (genre: {genre})")
+                    continue
+                try:
+                    y, sr = librosa.load(path, sr=librosa_params.get("sample_rate", 22050),
+                                         duration=librosa_params.get("duration", 30))
+                    features = extract_features(y, sr, librosa_params)
+                    if features.size == 0:
+                        logger.warning(f"No features extracted from Rekordbox track: {path}")
+                        continue
+                    samples.append(features)
+                    labels.append(genre)
+                    added += 1
+                    logger.info(f"Rekordbox track added for train: {path} (genre: {genre})")
+                except Exception as e:
+                    logger.error(f"Error processing Reckordbox track {path}: {e}")
+            logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")
+        else:
+            logger.warning("Файл Reckordbox JSON не найден, треки из Reckordbox не будут добавлены.")
 
     # === Весь блок обучения — СЮДА, после всех циклов ===
     if not samples:
@@ -384,7 +374,6 @@ def train_genre_model(force=False, global_state=None):
     if X.shape[1] == 0:
         print("[ОШИБКА] Нет достаточных признаков для обучения! Измените настройки и попробуйте снова.")
         return
-    from sklearn.ensemble import RandomForestClassifier
     n_estimators = librosa_params.get("n_estimators", 100)
     clf = RandomForestClassifier(n_estimators=n_estimators)
     clf.fit(X, labels)

@@ -86,14 +86,14 @@ def normalize_genre(raw_genre, genre_settings):
         print(f"normalize_genre: пустой raw_genre -> 'Other'")
         return "Other"
     raw_norm = normalize_for_genre_compare(raw_genre)
-    print(f"normalize_genre: original genre: '{raw_genre}', normalized: '{raw_norm}'")
+    logger.debug(f"normalize_genre: original genre: '{raw_genre}', normalized: '{raw_norm}'")
     for key in sorted(genre_settings, key=len, reverse=True):
         key_norm = normalize_for_genre_compare(key)
-        print(f"  Сравнение с ключом: '{key}' -> '{key_norm}'")
+        logger.debug(f"  Сравнение с ключом: '{key}' -> '{key_norm}'")
         if key_norm in raw_norm:
-            print(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') для жанра '{raw_genre}' -> '{genre_settings[key]}'")
+            logger.debug(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') для жанра '{raw_genre}' -> '{genre_settings[key]}'")
             return genre_settings[key]
-    print(f"normalize_genre: не найдено совпадение для '{raw_genre}' -> 'Other'")
+    logger.debug(f"normalize_genre: не найдено совпадение для '{raw_genre}' -> 'Other'")
     return "Other"
 
 def load_genre_settings():
@@ -102,6 +102,7 @@ def load_genre_settings():
             with open(GENRE_SETTINGS_FILE, "r", encoding="utf-8") as f:
                 settings = json.load(f)
                 logger.debug("Loaded genre settings: %s", settings)
+                print("DEBUG: genre_settings loaded keys:", list(settings.keys()))
                 return settings
         except Exception as e:
             logger.error("Error loading genre settings: %s", e)
@@ -224,6 +225,7 @@ def get_genre(path, librosa_params=None):
     # Попытка взять жанр по папке
     folder_name = os.path.basename(os.path.dirname(path))
     genre_settings = load_genre_settings()
+    print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
     candidate_genre = normalize_genre(folder_name, genre_settings)
     print(f"[DEBUG] candidate_genre after normalize: {candidate_genre}")
     for key, val in genre_settings.items():

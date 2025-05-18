@@ -52,6 +52,7 @@ DEFAULT_FOLDER_KEYWORDS = {
     "русские ремиксы": "Русские Ремиксы"
 }
 GENRE_SETTINGS_FILE = "folder_keywords.json"
+REKORDBOX_TRACK_LIMIT = 10  # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
 
 import re
 
@@ -430,6 +431,8 @@ def train_genre_model(force=False, global_state=None):
 
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):
+        if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
+            logger.warning(f"[LIMT] Включён лимит на количество треков Reckordbox: {REKORDBOX_TRACK_LIMIT}")
         rk_json = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reckordbox_parcer_file_output", "parsed_rekordbox.json"))
         logger.info(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
         rk_tracks = []
@@ -444,7 +447,11 @@ def train_genre_model(force=False, global_state=None):
             logger.warning("Файл Reckordbox JSON не найден, треки Rekordbox не будут добавлены.")
 
         added = 0
+        rk_track_count = 0  # <--- счетчик
         for track in rk_tracks:
+            if REKORDBOX_TRACK_LIMIT and added >= REKORDBOX_TRACK_LIMIT:
+                logger.info(f"Достигнут лимит Reckordbox: {added}")
+                break
             genre = track["genre"]
             # Только один жанр по словарю!
             genre_norm = normalize_genre(genre, genre_settings)
@@ -467,6 +474,7 @@ def train_genre_model(force=False, global_state=None):
                 logger.info(f"Rekordbox track added for train: {path} (genre: {genre_norm})")
             except Exception as e:
                 logger.error(f"Error processing Rekordbox track {path}: {e}")
+            rk_track_count += 1  # <--- увеличиваем после успешной попытки
         logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")
 
     # === Блок обучения (когда все samples и labels собраны) ===

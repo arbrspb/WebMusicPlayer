@@ -10,6 +10,7 @@ from mutagen.easyid3 import EasyID3
 from sklearn.ensemble import RandomForestClassifier
 from .db import init_scan_db, load_scan_result, save_scan_result
 from .config import DEFAULT_CONFIG
+import getpass
 
 import logging
 
@@ -282,6 +283,11 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
     logger.info("Scanning finished. Results: %s", results)
 
 def train_genre_model(force=False, global_state=None):
+    # Временно для отладки
+    print("=== DEBUG INFO ===")
+    print("Current working directory:", os.getcwd())
+    print("Running as user:", getpass.getuser())
+
     def set_progress(x):
         if global_state is not None:
             global_state["training_progress"] = x
@@ -361,43 +367,69 @@ def train_genre_model(force=False, global_state=None):
                         logger.error("Error processing %s: %s", path, e)
                     processed += 1
                     set_progress(int((processed / total_files) * 100))
+
     # === Блок Reckordbox ===
     logger.warning("=== DEBUG: Проверка входа в блок Reckordbox ===")
     if librosa_params.get("use_rekordbox"):
-        rk_json = os.path.join(os.path.dirname(__file__), "reckordbox_parcer_file_output", "parsed_reckordbox.json")
+        rk_json = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reckordbox_parcer_file_output", "parsed_rekordbox.json"))
+        # Отладка путей и окружения
+        print("Absolute path trying to use:", rk_json)
+        print("File exists:", os.path.exists(rk_json))
+        print("Current working directory:", os.getcwd())
+        try:
+            print("Running as user:", os.getlogin())
+        except Exception:
+            print("Running as user:", getpass.getuser())
+        print("Can list D:", os.path.exists("D:\\"))
+        try:
+            print("Contents of D:\\:", os.listdir("D:\\"))
+        except Exception as e:
+            print("Error listing D:\\", e)
+        parent_folder = os.path.dirname(rk_json)
+        print("Can list parent folder:", os.path.exists(parent_folder))
+        try:
+            print("Contents of parent folder:", os.listdir(parent_folder))
+        except Exception as e:
+            print("Error listing parent folder", e)
         logger.warning(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
         if os.path.exists(rk_json):
-            logger.info("ВКЛЮЧЕНА опция использования треков Reckordbox для обучения модели.")
-            with open(rk_json, "r", encoding="utf-8") as f:
-                rk_tracks = json.load(f)
-            logger.warning(f"Начинаю обработку Reckordbox, всего треков: {len(rk_tracks)}")
-            added = 0
-            for track in rk_tracks:
-                genre = get_track_val(track, "Genre")
-                path = get_track_val(track, "path")
-                logger.warning(f"Проверяю трек: {path}, жанр: {genre}, существует: {os.path.exists(path)}")
-                if not genre or not os.path.exists(path):
-                    logger.warning(f"Rekordbox track skipped: {path} (genre: {genre})")
-                    continue
-                try:
-                    y, sr = librosa.load(path, sr=librosa_params.get("sample_rate", 22050),
-                                         duration=librosa_params.get("duration", 30))
-                    base_features = extract_features(y, sr, librosa_params)
-                    full_features = extract_features_from_track(track, base_features)
-                    if full_features.size == 0:
-                        logger.warning(f"No features extracted from Rekordbox track: {path}")
+            print("Trying to open file:", rk_json)
+            try:
+                with open(rk_json, "r", encoding="utf-8") as f:
+                    print("File opened successfully!")
+                    rk_tracks = json.load(f)
+                logger.info("ВКЛЮЧЕНА опция использования треков Reckordbox для обучения модели.")
+                logger.warning(f"Начинаю обработку Reckordbox, всего треков: {len(rk_tracks)}")
+                added = 0
+                for track in rk_tracks:
+                    genre = get_track_val(track, "Genre")
+                    path = get_track_val(track, "path")
+                    logger.warning(f"Проверяю трек: {path}, жанр: {genre}, существует: {os.path.exists(path)}")
+                    if not genre or not os.path.exists(path):
+                        logger.warning(f"Rekordbox track skipped: {path} (genre: {genre})")
                         continue
-                    samples.append(full_features)
-                    labels.append(genre)
-                    added += 1
-                    logger.info(f"Rekordbox track added for train: {path} (genre: {genre})")
-                except Exception as e:
-                    logger.error(f"Error processing Reckordbox track {path}: {e}")
-            logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")
+                    try:
+                        y, sr = librosa.load(path, sr=librosa_params.get("sample_rate", 22050),
+                                             duration=librosa_params.get("duration", 30))
+                        base_features = extract_features(y, sr, librosa_params)
+                        full_features = extract_features_from_track(track, base_features)
+                        if full_features.size == 0:
+                            logger.warning(f"No features extracted from Rekordbox track: {path}")
+                            continue
+                        samples.append(full_features)
+                        labels.append(genre)
+                        added += 1
+                        logger.info(f"Rekordbox track added for train: {path} (genre: {genre})")
+                    except Exception as e:
+                        logger.error(f"Error processing Reckordbox track {path}: {e}")
+                logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")
+            except Exception as e:
+                print("Error opening file:", e)
         else:
+            print("File does NOT exist, skipping open.")
             logger.warning("Файл Reckordbox JSON не найден, треки из Reckordbox не будут добавлены.")
 
-    # === Весь блок обучения — СЮДА, после всех циклов ===
+    # === Блок обучения после сбора всех samples и labels ===
     if not samples:
         print("[ОШИБКА] Нет обучающих примеров! Проверьте папки с треками.")
         return

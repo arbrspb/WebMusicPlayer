@@ -76,24 +76,31 @@ def normalize_for_genre_compare(s):
     s = re.sub(r"\s+", " ", s)  # несколько пробелов -> один
     return s.strip()
 
-def normalize_genre(raw_genre, genre_settings):
-    """
-    Приводит строку жанра к одному из ключей genre_settings с учётом разных написаний.
-    Сравнивает нормализованные строки (см. normalize_for_genre_compare).
-    Иначе возвращает 'Other'.
-    """
-    if not raw_genre:
-        print(f"normalize_genre: пустой raw_genre -> 'Other'")
+def extract_relevant_tokens(s):
+    s = re.sub(r"^[a-z]:[\\/]", "", s, flags=re.IGNORECASE)
+    parts = re.split(r"[\\/]", s)
+    tokens = []
+    for part in parts:
+        part = re.sub(r"\.[a-z0-9]{2,5}$", "", part, flags=re.IGNORECASE)
+        part = re.sub(r"^\d+\s*[\-a-z]*", "", part, flags=re.IGNORECASE)
+        part = part.strip()
+        if part:
+            tokens.append(normalize_for_genre_compare(part))
+    return tokens
+
+def normalize_genre(raw_genre_or_path, genre_settings):
+    if not raw_genre_or_path:
+        logger.debug(f"normalize_genre: пустой raw_genre -> 'Other'")
         return "Other"
-    raw_norm = normalize_for_genre_compare(raw_genre)
-    logger.debug(f"normalize_genre: original genre: '{raw_genre}', normalized: '{raw_norm}'")
+    tokens = extract_relevant_tokens(raw_genre_or_path)
+    logger.debug(f"normalize_genre: tokens extracted: {tokens}")
     for key in sorted(genre_settings, key=len, reverse=True):
         key_norm = normalize_for_genre_compare(key)
-        logger.debug(f"  Сравнение с ключом: '{key}' -> '{key_norm}'")
-        if key_norm in raw_norm:
-            logger.debug(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') для жанра '{raw_genre}' -> '{genre_settings[key]}'")
-            return genre_settings[key]
-    logger.debug(f"normalize_genre: не найдено совпадение для '{raw_genre}' -> 'Other'")
+        for token in tokens:
+            if key_norm in token or token in key_norm:
+                logger.debug(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') c токеном '{token}' -> '{genre_settings[key]}'")
+                return genre_settings[key]
+    logger.debug(f"normalize_genre: не найдено совпадение в '{raw_genre_or_path}' -> 'Other'")
     return "Other"
 
 def load_genre_settings():
@@ -393,6 +400,7 @@ def train_genre_model(force=False, global_state=None):
         if os.path.exists(folder):
             total_files += sum(1 for file in os.listdir(folder) if file.endswith(".mp3"))
     processed = 0
+    genre_counter = {}
     for genre, folder in genre_dirs.items():
         if os.path.exists(folder):
             for file in os.listdir(folder):
@@ -412,6 +420,7 @@ def train_genre_model(force=False, global_state=None):
                             continue
                         # Используем только нормализованный жанр (только один!)
                         genre_norm = normalize_genre(genre, genre_settings)
+                        genre_counter[genre_norm] = genre_counter.get(genre_norm, 0) + 1
                         samples.append(features)
                         labels.append(genre_norm)
                     except Exception as e:
@@ -439,6 +448,7 @@ def train_genre_model(force=False, global_state=None):
             genre = track["genre"]
             # Только один жанр по словарю!
             genre_norm = normalize_genre(genre, genre_settings)
+            genre_counter[genre_norm] = genre_counter.get(genre_norm, 0) + 1
             path = track["path"]
             try:
                 y, sr = librosa.load(
@@ -460,6 +470,13 @@ def train_genre_model(force=False, global_state=None):
         logger.info(f"Фактически добавлено {added} треков Reckordbox в обучение.")
 
     # === Блок обучения (когда все samples и labels собраны) ===
+    # статистика по жанрам
+    logger.info("\n====== Статистика по жанрам ======")
+    total = sum(genre_counter.values())
+    for genre in sorted(set(genre_settings.values()), key=str):
+        count = genre_counter.get(genre, 0)
+        logger.info(f"Genre: {genre} найдено треков: {count}")
+    logger.info(f"ВСЕГО треков: {total}")
     if not samples:
         print("[ОШИБКА] Нет обучающих примеров! Проверьте папки с треками и JSON.")
         return

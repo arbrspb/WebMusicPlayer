@@ -21,6 +21,75 @@
             <b>Уверенность:</b> {{ (result.confidence or 0) | round(3) }}
         </div>
     {% endif %}
+
+    <hr>
+<form id="analyzeForm" method="POST" class="row g-3 align-items-center mb-3">
+    <div class="col-auto">
+        <label for="folder_path" class="col-form-label">Папка для анализа:</label>
+    </div>
+    <div class="col-auto">
+        <input type="text" id="folder_path" name="folder_path" class="form-control" placeholder="Например, Z:\2025\Prime Time DJ\06-03-25">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Показать статистику</button>
+    </div>
+</form>
+    <div id="progressBar" style="display:none;">
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+    <p>Анализируем папку, подождите...</p>
+</div>
+<script>
+document.getElementById('analyzeForm').onsubmit = function() {
+    document.getElementById('progressBar').style.display = 'block';
+};
+</script>
+
+    {# === БЛОК СТАТИСТИКИ ПО ЖАНРАМ (samples/) === #}
+    <h5>Статистика по жанрам (samples/):</h5>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Жанр</th>
+                <th>Треков</th>
+                <th>Папка</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for stat in samples_stats %}
+            <tr>
+                <td>{{ stat.genre }}</td>
+                <td>{{ stat.count }}</td>
+                <td>{{ stat.folder }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p><b>ВСЕГО треков:</b> {{ samples_total }}</p>
+
+    {% if user_genre_stats %}
+    <hr>
+    <h5>Статистика по определённым жанрам ({{ current_folder }}/):</h5>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Жанр</th>
+                <th>Треков</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for genre, cnt in user_genre_stats.items() %}
+            <tr>
+                <td>{{ genre }}</td>
+                <td>{{ cnt }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p><b>ВСЕГО треков проанализировано:</b> {{ user_total_files }}</p>
+{% endif %}
+
     <hr>
     <h5>Инструкция по тесту и работе с базой</h5>
     <ul>

@@ -4,6 +4,8 @@ import json
 from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from .reckordbox_parser import parse_reckordbox_xml
+from app.utils import get_genre_stats_by_folders
+from .utils import get_genre_stats_by_model
 import logging
 
 logger = logging.getLogger(__name__)
@@ -124,9 +126,33 @@ def librosa_settings_test():
 def librosa_test():
     result = None
     settings = load_librosa_settings()
-    if request.method == "POST":
+
+    # --- Всегда анализ samples ---
+    samples_folder = "samples"
+    samples_stats = get_genre_stats_by_folders(samples_folder, max_tracks_per_genre=200)
+    samples_total = sum(item['count'] for item in samples_stats)
+
+    # --- Анализ по выбранной пользователем папке ---
+    folder_path = request.form.get("folder_path") if request.method == "POST" else None
+    user_genre_stats = None
+    user_total_files = None
+    current_folder = None
+
+    if folder_path:
+        current_folder = folder_path
+        if os.path.isdir(folder_path):
+            user_genre_stats, user_total_files = get_genre_stats_by_model(
+                folder_path, librosa_settings=settings, max_files=700   # Лимит на количество тестируемых треков
+            )
+        else:
+            user_genre_stats = {}
+            user_total_files = 0
+
+    # --- Обработка загрузки трека для анализа ---
+    if request.method == "POST" and "audiofile" in request.files:
         file = request.files.get("audiofile")
         if file and file.filename:
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             filename = secure_filename(file.filename)
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
@@ -137,7 +163,19 @@ def librosa_test():
                 "genre": genre,
                 "confidence": conf
             }
-    return render_template("librosa/librosa_test.html", result=result, settings=settings)
+
+    return render_template(
+        "librosa/librosa_test.html",
+        result=result,
+        settings=settings,
+
+        samples_stats=samples_stats,
+        samples_total=samples_total,
+
+        user_genre_stats=user_genre_stats,
+        user_total_files=user_total_files,
+        current_folder=current_folder
+    )
 
 @librosa_settings_bp.route("/librosa-settings/upload-rekordbox", methods=["POST"])
 def upload_rekordbox_xml():

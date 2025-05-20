@@ -68,10 +68,11 @@ document.getElementById('analyzeForm').onsubmit = function() {
     </table>
     <p><b>ВСЕГО треков:</b> {{ samples_total }}</p>
 
-    {% if user_genre_stats %}
+   {% if user_genre_stats %}
     <hr>
-    <h5>Статистика по определённым жанрам ({{ current_folder }}/):</h5>
-    <table class="table table-sm table-bordered">
+    <h5>Статистика по определённым жанрам <div id="genreStatsRoot" data-folder="{{ current_folder }}"></div></h5>
+    <button id="exportJsonBtn" class="btn btn-outline-secondary btn-sm mb-2">Экспортировать в JSON</button>
+    <table id="genreStatsTable" class="table table-sm table-bordered">
         <thead>
             <tr>
                 <th>Жанр</th>
@@ -80,7 +81,7 @@ document.getElementById('analyzeForm').onsubmit = function() {
         </thead>
         <tbody>
         {% for genre, cnt in user_genre_stats.items() %}
-            <tr>
+            <tr class="genre-row" data-genre="{{ genre }}">
                 <td>{{ genre }}</td>
                 <td>{{ cnt }}</td>
             </tr>
@@ -88,7 +89,26 @@ document.getElementById('analyzeForm').onsubmit = function() {
         </tbody>
     </table>
     <p><b>ВСЕГО треков проанализировано:</b> {{ user_total_files }}</p>
+    <p>Треков без "Other": {{ user_total_files - (user_genre_stats.get("Other", 0) or 0) }}<br>
+    Треков с "Other": {{ user_genre_stats.get("Other", 0) or 0 }}</p>
 {% endif %}
+
+<!-- Модальное окно для треков жанра -->
+<div class="modal fade" id="genreTracksModal" tabindex="-1" aria-labelledby="genreTracksModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="genreTracksModalLabel">Треки жанра</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body" id="genreTracksModalBody">
+        <!-- Сюда подгружаются треки -->
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/librosa_stats.js') }}"></script>
 
     <hr>
     <h5>Инструкция по тесту и работе с базой</h5>

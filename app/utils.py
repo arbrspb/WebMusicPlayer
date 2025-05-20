@@ -51,44 +51,87 @@ def get_genre_stats_by_folders(root_dir, max_tracks_per_genre=200, track_exts=('
         })
     return genre_stats
 #функция для сбора статистики по найденному количеству жанров обученной модели на странице librosa_test.html  и функция в librosa_settings.py @librosa_test_bp.route
-def get_genre_stats_by_model(
-    folder_path,
-    librosa_settings,
-    exts=('.mp3', '.wav', '.flac', '.ogg', '.m4a'),
-    max_files=None
-):
+# def get_genre_stats_by_model(
+#     folder_path,
+#     librosa_settings,
+#     exts=('.mp3', '.wav', '.flac', '.ogg', '.m4a'),
+#     max_files=None
+# ):
+#     from .models import get_genre
+#     genre_counts = {}
+#     files_checked = 0
+#     file_paths = []
+#
+#     print(f"[DEBUG] get_genre_stats_by_model: Сканируем папку {folder_path}")
+#
+#     # 1. Собираем все файлы
+#     for root, _, files in os.walk(folder_path):
+#         for f in files:
+#             if f.lower().endswith(exts):
+#                 file_path = os.path.join(root, f)
+#                 file_paths.append(file_path)
+#     print(f"[DEBUG] Найдено файлов: {len(file_paths)}")
+#
+#     # 2. Ограничиваем количество файлов, если надо
+#     if max_files is not None:
+#         file_paths = file_paths[:max_files]
+#         print(f"[DEBUG] Лимит файлов для анализа: {max_files}. Используем: {len(file_paths)}")
+#
+#     # 3. Анализируем каждый файл
+#     for idx, file_path in enumerate(file_paths, 1):
+#         print(f"[DEBUG] Анализируем файл {idx}/{len(file_paths)}: {file_path}")
+#         try:
+#             genre, conf = get_genre(file_path, librosa_params=librosa_settings)
+#             print(f"[DEBUG] → Результат: genre={genre}, confidence={conf}")
+#             genre = genre or "Unknown"
+#             genre_counts[genre] = genre_counts.get(genre, 0) + 1
+#             files_checked += 1
+#         except Exception as e:
+#             print(f"[ERROR] Ошибка при анализе {file_path}: {e}")
+#
+#     print(f"[DEBUG] Анализ завершён. Всего файлов обработано: {files_checked}")
+#     print(f"[DEBUG] Статистика по жанрам: {genre_counts}")
+#     return genre_counts, files_checked
+#функция, возвращающую словарь {жанр: [пути к трекам]} для папки.
+def get_genre_stats_and_tracks_by_model(folder_path, librosa_settings=None, max_files=700, logger=None):
+    """
+    Возвращает:
+    - user_genre_stats: {genre: count}
+    - user_total_files: int
+    - genre_tracks: {genre: [file_path1, ...]}
+    """
     from .models import get_genre
-    genre_counts = {}
-    files_checked = 0
-    file_paths = []
+    genre_tracks = {}
+    genre_stats = {}
+    file_list = []
 
-    print(f"[DEBUG] get_genre_stats_by_model: Сканируем папку {folder_path}")
-
-    # 1. Собираем все файлы
+    # Собираем все файлы (чтобы знать общее количество для красивой нумерации)
     for root, _, files in os.walk(folder_path):
-        for f in files:
-            if f.lower().endswith(exts):
-                file_path = os.path.join(root, f)
-                file_paths.append(file_path)
-    print(f"[DEBUG] Найдено файлов: {len(file_paths)}")
+        for fname in files:
+            if fname.lower().endswith(('.mp3', '.wav', '.flac', '.ogg')):
+                file_list.append(os.path.join(root, fname))
+    total_files = len(file_list)
 
-    # 2. Ограничиваем количество файлов, если надо
     if max_files is not None:
-        file_paths = file_paths[:max_files]
-        print(f"[DEBUG] Лимит файлов для анализа: {max_files}. Используем: {len(file_paths)}")
+        file_list = file_list[:max_files]
+        msg = f"[DEBUG] Лимит файлов для анализа: {max_files}. Используем: {len(file_list)} (из {total_files})"
+        if logger:
+            logger.debug(msg)
+        else:
+            print(msg)
 
-    # 3. Анализируем каждый файл
-    for idx, file_path in enumerate(file_paths, 1):
-        print(f"[DEBUG] Анализируем файл {idx}/{len(file_paths)}: {file_path}")
-        try:
-            genre, conf = get_genre(file_path, librosa_params=librosa_settings)
-            print(f"[DEBUG] → Результат: genre={genre}, confidence={conf}")
-            genre = genre or "Unknown"
-            genre_counts[genre] = genre_counts.get(genre, 0) + 1
-            files_checked += 1
-        except Exception as e:
-            print(f"[ERROR] Ошибка при анализе {file_path}: {e}")
+    for idx, full_path in enumerate(file_list, 1):
+        if logger:
+            logger.debug(f"[DEBUG] Анализируем файл {idx}/{len(file_list)}: {full_path}")
+        else:
+            print(f"[DEBUG] Анализируем файл {idx}/{len(file_list)}: {full_path}")
+        genre, conf = get_genre(full_path, librosa_params=librosa_settings)
+        genre_stats[genre] = genre_stats.get(genre, 0) + 1
+        genre_tracks.setdefault(genre, []).append(full_path)
+        # Можно добавить подробный лог по результату
+        if logger:
+            logger.debug(f"[DEBUG] Предсказано: {genre}, уверенность: {conf}")
+        else:
+            print(f"[DEBUG] Предсказано: {genre}, уверенность: {conf}")
 
-    print(f"[DEBUG] Анализ завершён. Всего файлов обработано: {files_checked}")
-    print(f"[DEBUG] Статистика по жанрам: {genre_counts}")
-    return genre_counts, files_checked
+    return genre_stats, len(file_list), genre_tracks

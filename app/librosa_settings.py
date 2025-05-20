@@ -5,11 +5,11 @@ from flask import Blueprint, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from .reckordbox_parser import parse_reckordbox_xml
 from app.utils import get_genre_stats_by_folders
-from .utils import get_genre_stats_by_model
+from .utils import get_genre_stats_and_tracks_by_model
 import logging
 
 logger = logging.getLogger(__name__)
-
+MAX_FILES_LIBROSA = 700  # Лимит анализа треков для всех функций
 LIBROSA_CONFIG_FILE = "librosa_config.json"
 librosa_settings_bp = Blueprint('librosa_settings', __name__)
 librosa_test_bp = Blueprint('librosa_test', __name__)
@@ -137,16 +137,18 @@ def librosa_test():
     user_genre_stats = None
     user_total_files = None
     current_folder = None
+    genre_tracks = None
 
     if folder_path:
         current_folder = folder_path
         if os.path.isdir(folder_path):
-            user_genre_stats, user_total_files = get_genre_stats_by_model(
-                folder_path, librosa_settings=settings, max_files=700   # Лимит на количество тестируемых треков
+            user_genre_stats, user_total_files, genre_tracks = get_genre_stats_and_tracks_by_model(
+                folder_path, librosa_settings=settings, max_files=MAX_FILES_LIBROSA, logger=logger # Лимит на количество тестируемых треков
             )
         else:
             user_genre_stats = {}
             user_total_files = 0
+            genre_tracks = {}
 
     # --- Обработка загрузки трека для анализа ---
     if request.method == "POST" and "audiofile" in request.files:
@@ -174,7 +176,8 @@ def librosa_test():
 
         user_genre_stats=user_genre_stats,
         user_total_files=user_total_files,
-        current_folder=current_folder
+        current_folder=current_folder,
+        genre_tracks=genre_tracks or {}
     )
 
 @librosa_settings_bp.route("/librosa-settings/upload-rekordbox", methods=["POST"])
@@ -237,3 +240,32 @@ def rekordbox_status():
             return jsonify({"status": "xml_uploaded", "count": 0})
         else:
             return jsonify({"status": "not_ready", "count": 0})
+
+@librosa_test_bp.route("/librosa-genre-stats-export") # Экспорт статистики в JSON
+def librosa_genre_stats_export():
+    import urllib.parse
+    folder = request.args.get("folder")
+    print(f"[DEBUG] folder from request: {folder} (type: {type(folder)})")
+    folder = urllib.parse.unquote(folder) if folder else folder
+    if os.name == "nt" and folder:
+        folder = folder.replace('/', '\\')
+        print(f"[DEBUG] folder after slash fix: {folder}")
+    folder = folder.rstrip("\\/")
+    print(f"[DEBUG] os.path.exists(folder): {os.path.exists(folder)}")
+    print(f"[DEBUG] os.path.isdir(folder): {os.path.isdir(folder)}")
+    print(f"[DEBUG] abs path: {os.path.abspath(folder)}")
+    if not folder or not os.path.isdir(folder):
+        print(f"[DEBUG] folder not found or not a directory: {folder}")
+        return jsonify({"error": "folder not found"}), 400
+    settings = load_librosa_settings()
+    with_links = bool(int(request.args.get("with_links", "0")))
+    user_genre_stats, user_total_files, genre_tracks = get_genre_stats_and_tracks_by_model(
+        folder, librosa_settings=settings, max_files=MAX_FILES_LIBROSA, logger=logger
+    )
+    data = []
+    for genre, count in user_genre_stats.items():
+        item = {"genre": genre, "count": count}
+        if with_links:
+            item["files"] = genre_tracks.get(genre, [])
+        data.append(item)
+    return jsonify(data)

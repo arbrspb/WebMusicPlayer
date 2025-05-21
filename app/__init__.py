@@ -33,6 +33,29 @@ def create_app():
     app.register_blueprint(librosa_settings_bp)
     app.register_blueprint(librosa_test_bp)
 
+    # Маршрут для librosa settings.py
+    from flask import request, send_from_directory
+    import urllib.parse
+
+    @app.route('/musicfile')
+    def musicfile():
+        path = request.args.get("path")
+        if not path:
+            return "No path", 404
+        # Декодируем из URL
+        abs_path = os.path.abspath(urllib.parse.unquote(path))
+        # Для Windows: заменяем / на \
+        if os.name == "nt":
+            abs_path = abs_path.replace("/", "\\")
+        # Безопасность: только внутри Desktop!
+        allowed_root = os.path.abspath(r"d:\WinUsers\ARTUR\Desktop")
+        if not abs_path.lower().startswith(allowed_root.lower()):
+            return "Forbidden", 403
+        if not os.path.exists(abs_path):
+            return "File not found", 404
+        directory, filename = os.path.split(abs_path)
+        return send_from_directory(directory, filename, as_attachment=False)
     return app
+
 
 

@@ -33,11 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (files.length === 0) {
                         modalBody.innerHTML = 'Нет треков для этого жанра.';
                     } else {
-                        files.forEach((f, idx) => {
+                        files.forEach(f => {
                             let div = document.createElement('div');
                             div.className = "mb-2";
-                            div.innerHTML = `<b>${idx + 1}. ${f.name}</b><br>
-                                <audio controls src="/static/music/${f.path}"></audio>`;
+                            // Нумерация треков + имя
+                            div.innerHTML = `<b>${f.idx || ''}. ${f.name}</b><br>
+    <audio controls src="${f.url}"></audio>`;
                             modalBody.appendChild(div);
                         });
                     }

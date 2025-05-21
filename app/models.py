@@ -53,7 +53,7 @@ DEFAULT_FOLDER_KEYWORDS = {
     "русские ремиксы": "Русские Ремиксы"
 }
 GENRE_SETTINGS_FILE = "folder_keywords.json"
-REKORDBOX_TRACK_LIMIT = 0  # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
+REKORDBOX_TRACK_LIMIT = 5000  # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
 
 import re
 

@@ -90,19 +90,36 @@ def extract_relevant_tokens(s):
             tokens.append(normalize_for_genre_compare(part))
     return tokens
 
-def normalize_genre(raw_genre_or_path, genre_settings):
+def normalize_genre(raw_genre_or_path, genre_settings, logger=None):
+    """
+    Нормализует жанр или путь, возвращая каноническое имя жанра из genre_settings.
+    Если совпадение не найдено — возвращает 'Other'.
+    """
     if not raw_genre_or_path:
-        logger.debug(f"normalize_genre: пустой raw_genre -> 'Other'")
+        if logger:
+            logger.debug(f"normalize_genre: пустой raw_genre -> 'Other'")
         return "Other"
     tokens = extract_relevant_tokens(raw_genre_or_path)
-    logger.debug(f"normalize_genre: tokens extracted: {tokens}")
+    if logger:
+        logger.debug(f"normalize_genre: tokens extracted: {tokens}")
+    for key in sorted(genre_settings, key=len, reverse=True):
+        key_norm = normalize_for_genre_compare(key)
+        for token in tokens:
+            # Сначала точное совпадение
+            if key_norm == token:
+                if logger:
+                    logger.debug(f"    -> Найдено ТОЧНОЕ совпадение по ключу '{key}' (normalized '{key_norm}') c токеном '{token}' -> '{genre_settings[key]}'")
+                return genre_settings[key]
+    # Если ни одно точное совпадение не найдено — ищем частичное совпадение
     for key in sorted(genre_settings, key=len, reverse=True):
         key_norm = normalize_for_genre_compare(key)
         for token in tokens:
             if key_norm in token or token in key_norm:
-                logger.debug(f"    -> Найдено совпадение по ключу '{key}' (normalized '{key_norm}') c токеном '{token}' -> '{genre_settings[key]}'")
+                if logger:
+                    logger.debug(f"    -> Найдено ПОДСТРОЧНОЕ совпадение по ключу '{key}' (normalized '{key_norm}') c токеном '{token}' -> '{genre_settings[key]}'")
                 return genre_settings[key]
-    logger.debug(f"normalize_genre: не найдено совпадение в '{raw_genre_or_path}' -> 'Other'")
+    if logger:
+        logger.debug(f"normalize_genre: не найдено совпадение в '{raw_genre_or_path}' -> 'Other'")
     return "Other"
 
 def load_genre_settings():
@@ -489,6 +506,13 @@ def train_genre_model(force=False, global_state=None):
     if not samples:
         print("[ОШИБКА] Нет обучающих примеров! Проверьте папки с треками и JSON.")
         return
+    from collections import Counter
+
+    logger.info("=== Баланс классов в обучении ===")
+    logger.info(Counter(labels))
+
+    logger.info("=== Уникальные классы в обучении ===")
+    logger.info(set(labels))
     try:
         X = np.stack(samples)
     except Exception as e:

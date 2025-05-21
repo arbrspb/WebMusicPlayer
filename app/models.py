@@ -58,7 +58,7 @@ REKORDBOX_TRACK_LIMIT = 0  # None или 0 чтобы отключить лим�
 import re
 
 # Флаг для однократного логирования использования функции
-normalize_for_genre_compare_used = False
+normalize_for_genre_compare_used = True
 
 def normalize_for_genre_compare(s):
     """
@@ -250,8 +250,9 @@ def get_genre(path, librosa_params=None):
 
     # Попытка взять жанр по папке
     folder_name = os.path.basename(os.path.dirname(path))
+    print(f"[DEBUG] folder_name: '{folder_name}'")
     genre_settings = load_genre_settings()
-    print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
+    print("[DEBUG] genre_settings keys:", list(genre_settings.keys()))
     candidate_genre = normalize_genre(folder_name, genre_settings,logger)
     print(f"[DEBUG] candidate_genre after normalize: {candidate_genre}")
     for key, val in genre_settings.items():
@@ -393,59 +394,51 @@ def train_genre_model(force=False, global_state=None):
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
 
-    # Загружаем твой словарь жанров
-    genre_settings = load_genre_settings()
-
+    # === Сбор признаков из папок ===
     samples = []
     labels = []
-    genre_dirs = {
-        "Chillout": "samples/Chillout",
-        "Club House": "samples/Club House",
-        "Deep House": "samples/Deep House",
-        "Drum&Bass": "samples/Drum&Bass",
-        "GBass House": "samples/GBass House",
-        "Hip-Hop": "samples/Hip-Hop",
-        "House": "samples/House",
-        "Moombathon": "samples/Moombathon",
-        "Nu disco": "samples/Nu disco",
-        "Pop": "samples/Pop",
-        "Russian House": "samples/Russian House",
-        "Trap": "samples/Trap"
-    }
-
-    # === Сбор признаков из папок ===
-    total_files = 0
-    for folder in genre_dirs.values():
-        if os.path.exists(folder):
-            total_files += sum(1 for file in os.listdir(folder) if file.endswith(".mp3"))
-    processed = 0
     genre_counter = {}
-    for genre, folder in genre_dirs.items():
-        if os.path.exists(folder):
-            for file in os.listdir(folder):
-                if file.endswith(".mp3"):
-                    path = os.path.join(folder, file)
-                    try:
-                        y, sr = librosa.load(
-                            path,
-                            sr=librosa_params.get("sample_rate", 22050),
-                            duration=librosa_params.get("duration", 30)
-                        )
-                        features = extract_features(y, sr, librosa_params)
-                        # Для унификации размерности (с JSON треками) добавляем "заглушки"
-                        features = extract_features_from_track(None, features)
-                        if features.size == 0:
-                            logger.warning(f"No features extracted from {path}, skipping.")
-                            continue
-                        # Используем только нормализованный жанр (только один!)
-                        genre_norm = normalize_genre(genre, genre_settings)
-                        genre_counter[genre_norm] = genre_counter.get(genre_norm, 0) + 1
-                        samples.append(features)
-                        labels.append(genre_norm)
-                    except Exception as e:
-                        logger.error("Error processing %s: %s", path, e)
-                    processed += 1
-                    set_progress(int((processed / max(1, total_files)) * 100))
+    samples_dir = "samples"
+    genre_settings = load_genre_settings()
+
+    # 1. Собираем список всех папок (жанров) в samples
+    folders = [f for f in os.listdir(samples_dir) if os.path.isdir(os.path.join(samples_dir, f))]
+
+    # 2. Считаем общее кол-во файлов для прогресс-бара
+    total_files = sum(
+        len([file for file in os.listdir(os.path.join(samples_dir, folder)) if file.lower().endswith(".mp3")])
+        for folder in folders
+    )
+
+    processed = 0
+    for folder in folders:
+        folder_path = os.path.join(samples_dir, folder)
+        genre = normalize_genre(folder, genre_settings)
+        print(f"[DEBUG] folder: {folder} → genre: {genre}")
+        if genre == "Other":
+            logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
+            continue
+        for file in os.listdir(folder_path):
+            if file.lower().endswith(".mp3"):
+                path = os.path.join(folder_path, file)
+                try:
+                    y, sr = librosa.load(
+                        path,
+                        sr=librosa_params.get("sample_rate", 22050),
+                        duration=librosa_params.get("duration", 30)
+                    )
+                    features = extract_features(y, sr, librosa_params)
+                    features = extract_features_from_track(None, features)
+                    if features.size == 0:
+                        logger.warning(f"No features extracted from {path}, skipping.")
+                        continue
+                    genre_counter[genre] = genre_counter.get(genre, 0) + 1
+                    samples.append(features)
+                    labels.append(genre)
+                except Exception as e:
+                    logger.error("Error processing %s: %s", path, e)
+                processed += 1
+                set_progress(int((processed / max(1, total_files)) * 100))
 
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):

@@ -252,7 +252,7 @@ def get_genre(path, librosa_params=None):
     folder_name = os.path.basename(os.path.dirname(path))
     genre_settings = load_genre_settings()
     print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
-    candidate_genre = normalize_genre(folder_name, genre_settings)
+    candidate_genre = normalize_genre(folder_name, genre_settings,logger)
     print(f"[DEBUG] candidate_genre after normalize: {candidate_genre}")
     for key, val in genre_settings.items():
         if key in folder_name:

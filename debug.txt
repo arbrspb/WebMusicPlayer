@@ -5,7 +5,7 @@
  * Running on http://127.0.0.1:8080
  * Running on http://172.19.0.1:8080
 02:09:55 INFO: [33mPress CTRL+C to quit[0m
-02:09:59 INFO: 127.0.0.1 - - [22/May/2025 02:09:59] "GET /settings HTTP/1.1" 200 -
+02:09:58 INFO: 127.0.0.1 - - [22/May/2025 02:09:59] "GET /settings HTTP/1.1" 200 -
 02:09:59 INFO: 127.0.0.1 - - [22/May/2025 02:09:59] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
 02:09:59 INFO: 127.0.0.1 - - [22/May/2025 02:09:59] "[36mGET /static/js/settings.js HTTP/1.1[0m" 304 -
 02:09:59 DEBUG: Получение конфигурации сканирования: {'music_dir': '\\\\192.168.1.120\\Music', 'playback_mode': 'host', 'default_volume': 100, 'scan_mode': 'new', 'favorite_mode': 'stay', 'sound_quality': 'high', 'selected_device': 1}

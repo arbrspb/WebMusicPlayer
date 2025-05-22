@@ -60,6 +60,40 @@ import re
 # Флаг для однократного логирования использования функции
 normalize_for_genre_compare_used = True
 
+def normalize_genre_rekordbox(raw_genre, genre_settings, logger=None):
+    """
+    Для Reckordbox: берём только первый подходящий жанр из строки вида "A, B, C".
+    Если ни один не найден — Other.
+    """
+    if not raw_genre:
+        if logger:
+            logger.debug(f"normalize_genre_rekordbox: пустой raw_genre -> 'Other'")
+        return "Other"
+    # Разбиваем по запятой, с учётом пробелов
+    tokens = [t.strip() for t in raw_genre.split(",") if t.strip()]
+    if logger:
+        logger.debug(f"normalize_genre_rekordbox: tokens: {tokens}")
+    for token in tokens:
+        token_norm = normalize_for_genre_compare(token)
+        # Точное совпадение
+        for key in sorted(genre_settings, key=len, reverse=True):
+            key_norm = normalize_for_genre_compare(key)
+            if key_norm == token_norm:
+                if logger:
+                    logger.debug(f"  -> ТОЧНО: '{token}' == '{key}' -> {genre_settings[key]}")
+                return genre_settings[key]
+        # Частичное совпадение ТОЛЬКО для длинных ключей (>4)
+        for key in sorted(genre_settings, key=len, reverse=True):
+            key_norm = normalize_for_genre_compare(key)
+            if len(key_norm) > 4:
+                if key_norm in token_norm or token_norm in key_norm:
+                    if logger:
+                        logger.debug(f"  -> ПОДСТРОКА: '{token}' ~ '{key}' -> {genre_settings[key]}")
+                    return genre_settings[key]
+    if logger:
+        logger.debug(f"normalize_genre_rekordbox: ни один жанр не подошёл -> 'Other'")
+    return "Other"
+
 def normalize_for_genre_compare(s):
     """
     Универсальная нормализация строки для сравнения жанров:

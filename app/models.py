@@ -445,40 +445,41 @@ def train_genre_model(force=False, global_state=None):
     )
 
     processed = 0
-    for folder in folders:
-        folder_path = os.path.join(samples_dir, folder)
-        genre = normalize_genre(folder, genre_settings)
-        print(f"[DEBUG] folder: {folder} → genre: {genre}")
-        if genre == "Other":
-            logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
-            continue
-        for file in os.listdir(folder_path):
-            if file.lower().endswith(".mp3"):
-                path = os.path.join(folder_path, file)
-                try:
-                    y, sr = librosa.load(
-                        path,
-                        sr=librosa_params.get("sample_rate", 22050),
-                        duration=librosa_params.get("duration", 30)
-                    )
-                    features = extract_features(y, sr, librosa_params)
-                    features = extract_features_from_track(None, features)
-                    if features.size == 0:
-                        logger.warning(f"No features extracted from {path}, skipping.")
-                        continue
-                    genre_counter[genre] = genre_counter.get(genre, 0) + 1
-                    samples.append(features)
-                    labels.append(genre)
-                except Exception as e:
-                    logger.error("Error processing %s: %s", path, e)
-                processed += 1
-                set_progress(int((processed / max(1, total_files)) * 100))
+    # for folder in folders:
+    #     folder_path = os.path.join(samples_dir, folder)
+    #     genre = normalize_genre(folder, genre_settings)
+    #     print(f"[DEBUG] folder: {folder} → genre: {genre}")
+    #     if genre == "Other":
+    #         logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
+    #         continue
+    #     for file in os.listdir(folder_path):
+    #         if file.lower().endswith(".mp3"):
+    #             path = os.path.join(folder_path, file)
+    #             try:
+    #                 y, sr = librosa.load(
+    #                     path,
+    #                     sr=librosa_params.get("sample_rate", 22050),
+    #                     duration=librosa_params.get("duration", 30)
+    #                 )
+    #                 features = extract_features(y, sr, librosa_params)
+    #                 features = extract_features_from_track(None, features)
+    #                 if features.size == 0:
+    #                     logger.warning(f"No features extracted from {path}, skipping.")
+    #                     continue
+    #                 genre_counter[genre] = genre_counter.get(genre, 0) + 1
+    #                 samples.append(features)
+    #                 labels.append(genre)
+    #             except Exception as e:
+    #                 logger.error("Error processing %s: %s", path, e)
+    #             processed += 1
+    #             set_progress(int((processed / max(1, total_files)) * 100))
 
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):
         if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
             logger.warning(f"[LIMT] Включён лимит на количество треков Reckordbox: {REKORDBOX_TRACK_LIMIT}")
         rk_json = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reckordbox_parcer_file_output", "parsed_rekordbox.json"))
+        logger.info(f"Используется файл: {rk_json}")
         logger.info(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
         rk_tracks = []
         if os.path.exists(rk_json):
@@ -497,9 +498,8 @@ def train_genre_model(force=False, global_state=None):
             if REKORDBOX_TRACK_LIMIT and added >= REKORDBOX_TRACK_LIMIT:
                 logger.info(f"Достигнут лимит Reckordbox: {added}")
                 break
-            genre = track["genre"]
-            # Только один жанр по словарю!
-            genre_norm = normalize_genre(genre, genre_settings)
+            genre = get_track_val(track, "Genre")
+            genre_norm = normalize_genre_rekordbox(genre, genre_settings)
             genre_counter[genre_norm] = genre_counter.get(genre_norm, 0) + 1
             path = track["path"]
             try:

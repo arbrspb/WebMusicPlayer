@@ -61,6 +61,9 @@ import re
 normalize_for_genre_compare_used = True
 
 def normalize_genre_rekordbox(raw_genre, genre_settings, logger=None):
+    known = set(normalize_for_genre_compare(k) for k in genre_settings.keys())
+    print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
+    print("DEBUG: raw_genre:", raw_genre)
     """
     Для Reckordbox: берём только первый подходящий жанр из строки вида "A, B, C".
     Если ни один не найден — Other.
@@ -69,12 +72,13 @@ def normalize_genre_rekordbox(raw_genre, genre_settings, logger=None):
         if logger:
             logger.debug(f"normalize_genre_rekordbox: пустой raw_genre -> 'Other'")
         return "Other"
-    # Разбиваем по запятой, с учётом пробелов
     tokens = [t.strip() for t in raw_genre.split(",") if t.strip()]
     if logger:
         logger.debug(f"normalize_genre_rekordbox: tokens: {tokens}")
     for token in tokens:
         token_norm = normalize_for_genre_compare(token)
+        if token_norm in known:
+            print("DEBUG: Нашёл жанр!", token_norm)
         # Точное совпадение
         for key in sorted(genre_settings, key=len, reverse=True):
             key_norm = normalize_for_genre_compare(key)
@@ -494,12 +498,18 @@ def train_genre_model(force=False, global_state=None):
 
         added = 0
         rk_track_count = 0  # <--- счетчик
+        # Показываем genre_settings один раз перед циклом
+        print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
         for track in rk_tracks:
             if REKORDBOX_TRACK_LIMIT and added >= REKORDBOX_TRACK_LIMIT:
                 logger.info(f"Достигнут лимит Reckordbox: {added}")
                 break
             genre = get_track_val(track, "Genre")
             genre_norm = normalize_genre_rekordbox(genre, genre_settings)
+            print("DEBUG: raw_genre:", genre, "-> genre_norm:", genre_norm)
+            # === Фильтрация: пропускаем пустые и "Other" ===
+            if not genre_norm or genre_norm == "Other":
+                continue
             genre_counter[genre_norm] = genre_counter.get(genre_norm, 0) + 1
             path = track["path"]
             try:

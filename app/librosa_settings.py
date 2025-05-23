@@ -31,6 +31,7 @@ REKORDBOX_JSON_PARSED_STATE = {"status": "not_ready", "count": 0}
 
 DEFAULT_LIBROSA_SETTINGS = {
     "sample_rate": 22050,
+    "offset": 60,
     "duration": 30,
     "n_mfcc": 13,
     "hop_length": 512,

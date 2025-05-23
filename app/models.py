@@ -1,3 +1,11 @@
+# TODO: offset=librosa_params.get("offset", 0),  добавить на клиентскую часть
+# TODO: REKORDBOX_TRACK_LIMIT = 5000  добавить на клиентскую часть
+# TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть
+# TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками
+# TODO: файл librosa_config.json переименовать и подвязать где будет использоваться все настройки из него + из config json перенести параметр "scan_mode": "new",
+# TODO: Поменять с учетом измененной модели сканирование треков в базу
+
+
 # app/models.py 18-05-25 21-22
 # Перед новым обучением желательно удалить файл pkl
 import os
@@ -449,34 +457,37 @@ def train_genre_model(force=False, global_state=None):
     )
 
     processed = 0
-    # for folder in folders:
-    #     folder_path = os.path.join(samples_dir, folder)
-    #     genre = normalize_genre(folder, genre_settings)
-    #     print(f"[DEBUG] folder: {folder} → genre: {genre}")
-    #     if genre == "Other":
-    #         logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
-    #         continue
-    #     for file in os.listdir(folder_path):
-    #         if file.lower().endswith(".mp3"):
-    #             path = os.path.join(folder_path, file)
-    #             try:
-    #                 y, sr = librosa.load(
-    #                     path,
-    #                     sr=librosa_params.get("sample_rate", 22050),
-    #                     duration=librosa_params.get("duration", 30)
-    #                 )
-    #                 features = extract_features(y, sr, librosa_params)
-    #                 features = extract_features_from_track(None, features)
-    #                 if features.size == 0:
-    #                     logger.warning(f"No features extracted from {path}, skipping.")
-    #                     continue
-    #                 genre_counter[genre] = genre_counter.get(genre, 0) + 1
-    #                 samples.append(features)
-    #                 labels.append(genre)
-    #             except Exception as e:
-    #                 logger.error("Error processing %s: %s", path, e)
-    #             processed += 1
-    #             set_progress(int((processed / max(1, total_files)) * 100))
+    # Блок обучения Начало(можно закоментировать для теста)
+    for folder in folders:
+        folder_path = os.path.join(samples_dir, folder)
+        genre = normalize_genre(folder, genre_settings)
+        print(f"[DEBUG] folder: {folder} → genre: {genre}")
+        if genre == "Other":
+            logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
+            continue
+        for file in os.listdir(folder_path):
+            if file.lower().endswith(".mp3"):
+                path = os.path.join(folder_path, file)
+                try:
+                    y, sr = librosa.load(
+                        path,
+                        sr=librosa_params.get("sample_rate", 22050),
+                        offset=librosa_params.get("offset", 0),
+                        duration=librosa_params.get("duration", 30)
+                    )
+                    features = extract_features(y, sr, librosa_params)
+                    features = extract_features_from_track(None, features)
+                    if features.size == 0:
+                        logger.warning(f"No features extracted from {path}, skipping.")
+                        continue
+                    genre_counter[genre] = genre_counter.get(genre, 0) + 1
+                    samples.append(features)
+                    labels.append(genre)
+                except Exception as e:
+                    logger.error("Error processing %s: %s", path, e)
+                processed += 1
+                set_progress(int((processed / max(1, total_files)) * 100))
+    # Блок обучения Конец(можно закоментировать для теста)
 
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):
@@ -516,6 +527,7 @@ def train_genre_model(force=False, global_state=None):
                 y, sr = librosa.load(
                     path,
                     sr=librosa_params.get("sample_rate", 22050),
+                    offset=librosa_params.get("offset", 0),
                     duration=librosa_params.get("duration", 30)
                 )
                 base_features = extract_features(y, sr, librosa_params)
@@ -526,7 +538,7 @@ def train_genre_model(force=False, global_state=None):
                 samples.append(full_features)
                 labels.append(genre_norm)
                 added += 1
-                logger.info(f"Rekordbox track added for train: {path} (genre: {genre_norm})")
+                logger.info(f"[{added}] Rekordbox track added for train: {path} (genre: {genre_norm})")
             except Exception as e:
                 logger.error(f"Error processing Rekordbox track {path}: {e}")
             rk_track_count += 1  # <--- увеличиваем после успешной попытки

@@ -446,25 +446,9 @@ def train_genre_model(force=False, global_state=None):
 
     # Загружаем актуальные настройки librosa из файла
     try:
-        from .librosa_settings import load_librosa_settings
-        librosa_params = load_librosa_settings()
+        from .librosa_settings import DEFAULT_LIBROSA_SETTINGS
     except Exception:
-        librosa_params = {
-            "sample_rate": 22050,
-            "duration": 30,
-            "n_mfcc": 13,
-            "hop_length": 512,
-            "n_fft": 2048,
-            "win_length": 2048,
-            "window": "hann",
-            "features": {
-                "mfcc": True,
-                "chroma": False,
-                "spectral_contrast": False,
-                "zcr": False,
-                "tonnetz": False
-            }
-        }
+        librosa_params = DEFAULT_LIBROSA_SETTINGS.copy()
 
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))

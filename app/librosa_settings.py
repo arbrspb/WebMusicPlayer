@@ -13,7 +13,7 @@ import urllib.parse
 genre_stats_cache = {}
 
 logger = logging.getLogger(__name__)
-MAX_FILES_LIBROSA = 700  # Лимит анализа треков для всех функций
+MAX_FILES_LIBROSA = 0  # Лимит анализа треков для всех функций
 LIBROSA_CONFIG_FILE = "librosa_config.json"
 librosa_settings_bp = Blueprint('librosa_settings', __name__)
 librosa_test_bp = Blueprint('librosa_test', __name__)
@@ -31,8 +31,11 @@ REKORDBOX_JSON_PARSED_STATE = {"status": "not_ready", "count": 0}
 
 DEFAULT_LIBROSA_SETTINGS = {
     "sample_rate": 22050,
-    "offset": 60,
     "duration": 30,
+    "offset": 0,
+    "REKORDBOX_TRACK_LIMIT": 5000,
+    "min_tracks_per_genre": 130,
+    "max_tracks_per_genre": 130,
     "n_mfcc": 13,
     "hop_length": 512,
     "n_fft": 2048,

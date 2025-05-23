@@ -5,6 +5,7 @@
 # TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками
 # TODO: файл librosa_config.json переименовать и подвязать где будет использоваться все настройки из него + из config json перенести параметр "scan_mode": "new",
 # TODO: Поменять с учетом измененной модели сканирование треков в базу
+# TODO: Настроить прогресс бар обучения с учетом новой логики
 
 
 # app/models.py 18-05-25 21-22
@@ -65,7 +66,7 @@ DEFAULT_FOLDER_KEYWORDS = {
     "русские ремиксы": "Русские Ремиксы"
 }
 GENRE_SETTINGS_FILE = "folder_keywords.json"
-REKORDBOX_TRACK_LIMIT = 500 # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
+REKORDBOX_TRACK_LIMIT = 1000 # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
 
 import re
 
@@ -552,14 +553,15 @@ def train_genre_model(force=False, global_state=None):
             max_per_genre=max_tracks_per_genre,
             logger=logger
         )
+        # Лимитируем итоговый список треков после балансировки
+        if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
+            balanced_rk_tracks = balanced_rk_tracks[:REKORDBOX_TRACK_LIMIT]
         added = 0
         rk_track_count = 0  # <--- счетчик
         # Показываем genre_settings один раз перед циклом
         print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
         for track in balanced_rk_tracks:
-            if REKORDBOX_TRACK_LIMIT and added >= REKORDBOX_TRACK_LIMIT:
-                logger.info(f"Достигнут лимит Reckordbox: {added}")
-                break
+
             genre = get_track_val(track, "Genre")
             genre_norm = normalize_genre_rekordbox(genre, genre_settings)
             print("DEBUG: raw_genre:", genre, "-> genre_norm:", genre_norm)

@@ -1,6 +1,6 @@
+# TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть
 # TODO: offset=librosa_params.get("offset", 0),  добавить на клиентскую часть
 # TODO: REKORDBOX_TRACK_LIMIT = 5000  добавить на клиентскую часть
-# TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть
 # TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками
 # TODO: файл librosa_config.json переименовать и подвязать где будет использоваться все настройки из него + из config json перенести параметр "scan_mode": "new",
 # TODO: Поменять с учетом измененной модели сканирование треков в базу
@@ -22,6 +22,9 @@ from .config import DEFAULT_CONFIG
 import getpass
 import re
 import logging
+import pandas as pd
+from sklearn.utils import resample
+
 
 global_state = None
 
@@ -400,6 +403,30 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
         scan_progress["status"] = "completed"
     scan_progress["results"] = results
     logger.info("Scanning finished. Results: %s", results)
+
+def balance_rekordbox_tracks(tracks, genres, max_per_genre, logger=None):
+    """
+    Балансировка списка треков по жанрам.
+    tracks: список dict, каждый с полями 'genre', 'path' и др.
+    genres: список жанров, которые нужно оставить.
+    max_per_genre: максимальное количество треков на жанр.
+    """
+    df = pd.DataFrame(tracks)
+    balanced = pd.DataFrame()
+    for genre in genres:
+        genre_df = df[df['genre'] == genre]
+        n = min(len(genre_df), max_per_genre)
+        if n == 0:
+            if logger:
+                logger.info(f"[BALANCE] Пропускаем жанр '{genre}', треков нет.")
+            continue
+        balanced = pd.concat([
+            balanced,
+            resample(genre_df, replace=False, n_samples=n, random_state=42)
+        ])
+        if logger:
+            logger.info(f"[BALANCE] Жанр '{genre}': взято {n} треков из {len(genre_df)}")
+    return balanced.to_dict(orient='records')
 
 def train_genre_model(force=False, global_state=None):
     print("=== DEBUG INFO ===")

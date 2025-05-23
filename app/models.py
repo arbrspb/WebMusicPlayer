@@ -1,8 +1,8 @@
-# TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть
-# TODO: offset=librosa_params.get("offset", 0),  добавить на клиентскую часть
-# TODO:min_tracks_per_genre max_tracks_per_genre  добавить на клиенсткую часть
-# TODO: REKORDBOX_TRACK_LIMIT = 5000  добавить на клиентскую часть
-# TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками
+# TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть ОК
+# TODO: offset=librosa_params.get("offset", 0),  добавить на клиентскую часть ОК
+# TODO:min_tracks_per_genre max_tracks_per_genre  добавить на клиенсткую часть ОК
+# TODO: REKORDBOX_TRACK_LIMIT = 5000  добавить на клиентскую часть ОК
+# TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками ЧАстично
 # TODO: файл librosa_config.json переименовать и подвязать где будет использоваться все настройки из него + из config json перенести параметр "scan_mode": "new",
 # TODO: Поменять с учетом измененной модели сканирование треков в базу
 # TODO: Настроить прогресс бар обучения с учетом новой логики
@@ -27,7 +27,7 @@ import logging
 import pandas as pd
 from sklearn.utils import resample
 import copy
-from .librosa_settings import load_librosa_settings, DEFAULT_LIBROSA_SETTINGS
+
 
 global_state = None
 
@@ -70,11 +70,6 @@ DEFAULT_FOLDER_KEYWORDS = {
 
 import re
 GENRE_SETTINGS_FILE = "folder_keywords.json"
-offset = librosa_params.get("offset", 0)
-duration = librosa_params.get("duration", 30)
-REKORDBOX_TRACK_LIMIT = librosa_params.get("REKORDBOX_TRACK_LIMIT", 130)
-min_tracks_per_genre = librosa_params.get("min_tracks_per_genre", 130)
-max_tracks_per_genre = librosa_params.get("max_tracks_per_genre", 130)
 
 # Флаг для однократного логирования использования функции
 normalize_for_genre_compare_used = True
@@ -436,6 +431,8 @@ def balance_rekordbox_tracks(tracks, genres, max_per_genre, logger=None):
             logger.info(f"[BALANCE] Жанр '{genre}': взято {n} треков из {len(genre_df)}")
     return balanced.to_dict(orient='records')
 
+from .librosa_settings import load_librosa_settings
+
 def train_genre_model(force=False, global_state=None):
     print("=== DEBUG INFO ===")
     print("Current working directory:", os.getcwd())
@@ -459,7 +456,13 @@ def train_genre_model(force=False, global_state=None):
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
 
-
+    # Извлекаем все нужные параметры из настроек
+    offset = librosa_params.get("offset", 0)
+    duration = librosa_params.get("duration", 30)
+    REKORDBOX_TRACK_LIMIT = librosa_params.get("REKORDBOX_TRACK_LIMIT", 10000)
+    min_tracks_per_genre = librosa_params.get("min_tracks_per_genre", 130)
+    max_tracks_per_genre = librosa_params.get("max_tracks_per_genre", 130)
+    sample_rate = librosa_params.get("sample_rate", 22050)
 
     # === Сбор признаков из папок ===
     samples = []
@@ -492,9 +495,9 @@ def train_genre_model(force=False, global_state=None):
     #             try:
     #                 y, sr = librosa.load(
     #                     path,
-    #                     sr=librosa_params.get("sample_rate", 22050),
-    #                     offset=librosa_params.get("offset", 0),
-    #                     duration=librosa_params.get("duration", 30)
+    #                     sr=sample_rate,
+    #                     offset=offset,
+    #                     duration=duration
     #                 )
     #                 features = extract_features(y, sr, librosa_params)
     #                 features = extract_features_from_track(None, features)
@@ -513,7 +516,7 @@ def train_genre_model(force=False, global_state=None):
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):
         if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
-            logger.warning(f"[LIMT] Включён лимит на количество треков Reckordbox: {REKORDBOX_TRACK_LIMIT}")
+            logger.warning(f"[LIMIT] Включён лимит на количество треков Reckordbox: {REKORDBOX_TRACK_LIMIT}")
         rk_json = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reckordbox_parcer_file_output", "parsed_rekordbox.json"))
         logger.info(f"Используется файл: {rk_json}")
         logger.info(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
@@ -534,8 +537,6 @@ def train_genre_model(force=False, global_state=None):
             normalize_genre_rekordbox(get_track_val(t, "Genre"), genre_settings)
             for t in rk_tracks if get_track_val(t, "Genre")
         ]).value_counts()
-        min_tracks_per_genre = 130 # Жанры с меньшим количеством треков будут исключены из обучения
-        max_tracks_per_genre = 130 # Максимум треков из каждого жанра для балансировки (чтобы классы были равны)
         top_genres = list(genre_counts[genre_counts >= min_tracks_per_genre].index)
         logger.info(f"[BALANCE] Оставляем жанры: {top_genres}")
         # Балансировка
@@ -565,9 +566,9 @@ def train_genre_model(force=False, global_state=None):
             try:
                 y, sr = librosa.load(
                     path,
-                    sr=librosa_params.get("sample_rate", 22050),
-                    offset=librosa_params.get("offset", 0),
-                    duration=librosa_params.get("duration", 30)
+                    sr=sample_rate,
+                    offset=offset,
+                    duration=duration
                 )
                 base_features = extract_features(y, sr, librosa_params)
                 full_features = extract_features_from_track(track, base_features)

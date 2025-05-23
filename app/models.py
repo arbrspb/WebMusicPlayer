@@ -485,35 +485,35 @@ def train_genre_model(force=False, global_state=None):
 
     processed = 0
     # Блок обучения Начало(можно закоментировать для теста)
-    for folder in folders:
-        folder_path = os.path.join(samples_dir, folder)
-        genre = normalize_genre(folder, genre_settings)
-        print(f"[DEBUG] folder: {folder} → genre: {genre}")
-        if genre == "Other":
-            logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
-            continue
-        for file in os.listdir(folder_path):
-            if file.lower().endswith(".mp3"):
-                path = os.path.join(folder_path, file)
-                try:
-                    y, sr = librosa.load(
-                        path,
-                        sr=librosa_params.get("sample_rate", 22050),
-                        offset=librosa_params.get("offset", 0),
-                        duration=librosa_params.get("duration", 30)
-                    )
-                    features = extract_features(y, sr, librosa_params)
-                    features = extract_features_from_track(None, features)
-                    if features.size == 0:
-                        logger.warning(f"No features extracted from {path}, skipping.")
-                        continue
-                    genre_counter[genre] = genre_counter.get(genre, 0) + 1
-                    samples.append(features)
-                    labels.append(genre)
-                except Exception as e:
-                    logger.error("Error processing %s: %s", path, e)
-                processed += 1
-                set_progress(int((processed / max(1, total_files)) * 100))
+    # for folder in folders:
+    #     folder_path = os.path.join(samples_dir, folder)
+    #     genre = normalize_genre(folder, genre_settings)
+    #     print(f"[DEBUG] folder: {folder} → genre: {genre}")
+    #     if genre == "Other":
+    #         logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
+    #         continue
+    #     for file in os.listdir(folder_path):
+    #         if file.lower().endswith(".mp3"):
+    #             path = os.path.join(folder_path, file)
+    #             try:
+    #                 y, sr = librosa.load(
+    #                     path,
+    #                     sr=librosa_params.get("sample_rate", 22050),
+    #                     offset=librosa_params.get("offset", 0),
+    #                     duration=librosa_params.get("duration", 30)
+    #                 )
+    #                 features = extract_features(y, sr, librosa_params)
+    #                 features = extract_features_from_track(None, features)
+    #                 if features.size == 0:
+    #                     logger.warning(f"No features extracted from {path}, skipping.")
+    #                     continue
+    #                 genre_counter[genre] = genre_counter.get(genre, 0) + 1
+    #                 samples.append(features)
+    #                 labels.append(genre)
+    #             except Exception as e:
+    #                 logger.error("Error processing %s: %s", path, e)
+    #             processed += 1
+    #             set_progress(int((processed / max(1, total_files)) * 100))
     # Блок обучения Конец(можно закоментировать для теста)
 
     # === Сбор признаков из Reckordbox (если включено) ===
@@ -534,11 +534,27 @@ def train_genre_model(force=False, global_state=None):
         else:
             logger.warning("Файл Reckordbox JSON не найден, треки Rekordbox не будут добавлены.")
 
+        # --- АВТОМАТИЧЕСКАЯ БАЛАНСИРОВКА ЖАНРОВ REKORDBOX ---
+        # Получаем счетчик жанров
+        genre_counts = pd.Series([
+            normalize_genre_rekordbox(get_track_val(t, "Genre"), genre_settings)
+            for t in rk_tracks if get_track_val(t, "Genre")
+        ]).value_counts()
+        min_tracks_per_genre = 130
+        top_genres = list(genre_counts[genre_counts >= min_tracks_per_genre].index)
+        logger.info(f"[BALANCE] Оставляем жанры: {top_genres}")
+        # Балансировка
+        balanced_rk_tracks = balance_rekordbox_tracks(
+            [t for t in rk_tracks if normalize_genre_rekordbox(get_track_val(t, "Genre"), genre_settings) in top_genres],
+            top_genres,
+            max_per_genre=min_tracks_per_genre,
+            logger=logger
+        )
         added = 0
         rk_track_count = 0  # <--- счетчик
         # Показываем genre_settings один раз перед циклом
         print("DEBUG: genre_settings keys:", list(genre_settings.keys()))
-        for track in rk_tracks:
+        for track in balanced_rk_tracks:
             if REKORDBOX_TRACK_LIMIT and added >= REKORDBOX_TRACK_LIMIT:
                 logger.info(f"Достигнут лимит Reckordbox: {added}")
                 break

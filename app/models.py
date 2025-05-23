@@ -1,5 +1,6 @@
 # TODO: Сделать балансировку треков и вывести настройки в librosa_config.json и добавить на клиентскую часть
 # TODO: offset=librosa_params.get("offset", 0),  добавить на клиентскую часть
+# TODO:min_tracks_per_genre max_tracks_per_genre  добавить на клиенсткую часть
 # TODO: REKORDBOX_TRACK_LIMIT = 5000  добавить на клиентскую часть
 # TODO: файл librosa_config.json разделить на две секции настройки librosa и скаинрования и сделать логичекское разделение на страницах с натсройками
 # TODO: файл librosa_config.json переименовать и подвязать где будет использоваться все настройки из него + из config json перенести параметр "scan_mode": "new",
@@ -540,15 +541,15 @@ def train_genre_model(force=False, global_state=None):
             normalize_genre_rekordbox(get_track_val(t, "Genre"), genre_settings)
             for t in rk_tracks if get_track_val(t, "Genre")
         ]).value_counts()
-        min_tracks_per_genre = 130
-        max_tracks_per_genre = 130
+        min_tracks_per_genre = 130 # Жанры с меньшим количеством треков будут исключены из обучения
+        max_tracks_per_genre = 130 # Максимум треков из каждого жанра для балансировки (чтобы классы были равны)
         top_genres = list(genre_counts[genre_counts >= min_tracks_per_genre].index)
         logger.info(f"[BALANCE] Оставляем жанры: {top_genres}")
         # Балансировка
         balanced_rk_tracks = balance_rekordbox_tracks(
             [t for t in rk_tracks if normalize_genre_rekordbox(get_track_val(t, "Genre"), genre_settings) in top_genres],
             top_genres,
-            max_per_genre=min_tracks_per_genre,
+            max_per_genre=max_tracks_per_genre,
             logger=logger
         )
         added = 0

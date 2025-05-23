@@ -528,7 +528,7 @@ def train_genre_model(force=False, global_state=None):
         rk_tracks = []
         if os.path.exists(rk_json):
             try:
-                rk_tracks = load_rekordbox_json_tracks(rk_json)
+                rk_tracks = load_rekordbox_json_tracks(rk_json, genre_settings)
                 logger.info("ВКЛЮЧЕНА опция использования треков Reckordbox для обучения модели.")
                 logger.info(f"Начинаю обработку Reckordbox, всего треков: {len(rk_tracks)}")
             except Exception as e:
@@ -629,7 +629,9 @@ def train_genre_model(force=False, global_state=None):
 def get_track_val(track, key):
     return track.get(key) or track.get(key.lower()) or track.get(key.upper()) or ""
 
-def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json"):
+def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json", genre_settings=None):
+    if genre_settings is None:
+        raise ValueError("genre_settings must be provided")
     if not os.path.exists(json_path):
         return []
     with open(json_path, "r", encoding="utf-8") as f:
@@ -643,7 +645,7 @@ def load_rekordbox_json_tracks(json_path="parsed_rekordbox.json"):
             # Можно извлекать и другие поля: Color, Rating, BPM, Situation, Artist, Title ...
             tracks.append({
                 "path": path,
-                "genre": genre,
+                "genre": normalize_genre_rekordbox(genre, genre_settings),
                 "color": get_track_val(track, "Color"),
                 "rating": get_track_val(track, "Rating"),
                 "bpm": get_track_val(track, "BPM"),

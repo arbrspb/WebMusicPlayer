@@ -26,7 +26,8 @@ import re
 import logging
 import pandas as pd
 from sklearn.utils import resample
-
+import copy
+from .librosa_settings import load_librosa_settings, DEFAULT_LIBROSA_SETTINGS
 
 global_state = None
 
@@ -65,10 +66,15 @@ DEFAULT_FOLDER_KEYWORDS = {
     "future": "Future House",
     "русские ремиксы": "Русские Ремиксы"
 }
-GENRE_SETTINGS_FILE = "folder_keywords.json"
-REKORDBOX_TRACK_LIMIT = 6000 # None или 0 чтобы отключить лимит. Лимит для количетсва обрабатываемых треков по умолчанию 0
+
 
 import re
+GENRE_SETTINGS_FILE = "folder_keywords.json"
+offset = librosa_params.get("offset", 0)
+duration = librosa_params.get("duration", 30)
+REKORDBOX_TRACK_LIMIT = librosa_params.get("REKORDBOX_TRACK_LIMIT", 130)
+min_tracks_per_genre = librosa_params.get("min_tracks_per_genre", 130)
+max_tracks_per_genre = librosa_params.get("max_tracks_per_genre", 130)
 
 # Флаг для однократного логирования использования функции
 normalize_for_genre_compare_used = True
@@ -446,12 +452,14 @@ def train_genre_model(force=False, global_state=None):
 
     # Загружаем актуальные настройки librosa из файла
     try:
-        from .librosa_settings import DEFAULT_LIBROSA_SETTINGS
+        librosa_params = load_librosa_settings()
     except Exception:
-        librosa_params = DEFAULT_LIBROSA_SETTINGS.copy()
+        librosa_params = copy.deepcopy(DEFAULT_LIBROSA_SETTINGS)
 
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
+
+
 
     # === Сбор признаков из папок ===
     samples = []

@@ -58,8 +58,22 @@ DEFAULT_LIBROSA_SETTINGS = {
 def load_librosa_settings():
     if os.path.exists(LIBROSA_CONFIG_FILE):
         with open(LIBROSA_CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return DEFAULT_LIBROSA_SETTINGS.copy()
+            settings = json.load(f)
+        # дополним недостающие параметры из дефолта
+        for key, val in DEFAULT_LIBROSA_SETTINGS.items():
+            if key not in settings:
+                settings[key] = val
+        # вложенные словари (features)
+        if "features" in DEFAULT_LIBROSA_SETTINGS:
+            for fkey, fval in DEFAULT_LIBROSA_SETTINGS["features"].items():
+                if fkey not in settings.get("features", {}):
+                    settings["features"][fkey] = fval
+        return settings
+    else:
+        # ДЛЯ ПОЛНОЙ ЗАЩИТЫ можно использовать deepcopy, но copy достаточно если нет сложной вложенности
+        import copy
+        return copy.deepcopy(DEFAULT_LIBROSA_SETTINGS)
+
 
 def save_librosa_settings(settings):
     with open(LIBROSA_CONFIG_FILE, "w", encoding="utf-8") as f:

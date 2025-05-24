@@ -47,4 +47,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
     });
+
+    // === КНОПКА СБРОСА КЭША ===
+    const clearBtn = document.getElementById('clearCacheBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            fetch('/librosa-clear-cache', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                document.getElementById('clearCacheMsg').innerText = "Кэш очищен!";
+                setTimeout(() => {
+                    document.getElementById('clearCacheMsg').innerText = '';
+                }, 2000);
+                // Можно добавить автоматическое обновление статистики, если нужно
+                // location.reload();
+            });
+        });
+    }
 });

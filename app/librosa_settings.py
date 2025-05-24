@@ -79,14 +79,14 @@ def save_librosa_settings(settings):
     with open(LIBROSA_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
 
-def get_cached_genre_stats(folder, settings, logger):# Кжш для треков
+def get_cached_genre_stats(folder, settings, logger, max_files=None):# Кжш для треков
     folder = os.path.abspath(folder)
     key = (folder, json.dumps(settings, sort_keys=True))
     if key in genre_stats_cache:
         return genre_stats_cache[key]
     # Анализируем и сохраняем!
     stats = get_genre_stats_and_tracks_by_model(
-        folder, librosa_settings=settings, max_files=MAX_FILES_LIBROSA, logger=logger
+        folder, librosa_settings=settings, max_files=max_files or MAX_FILES_LIBROSA, logger=logger
     )
     genre_stats_cache[key] = stats
     return stats
@@ -181,8 +181,9 @@ def librosa_test():
     if folder_path:
         current_folder = folder_path
         if os.path.isdir(folder_path):
+            limit = int(request.form.get("limit", 0))
             user_genre_stats, user_total_files, genre_tracks = get_cached_genre_stats(
-                folder_path, settings=settings, logger=logger
+                folder_path, settings=settings, logger=logger, max_files=limit
             )
         else:
             user_genre_stats = {}

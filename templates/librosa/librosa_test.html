@@ -31,10 +31,22 @@
         <input type="text" id="folder_path" name="folder_path" class="form-control" placeholder="Например, Z:\2025\Prime Time DJ\06-03-25">
     </div>
     <div class="col-auto">
+        <label for="limit" class="col-form-label">Лимит треков:</label>
+    </div>
+    <div class="col-auto">
+        <input type="number" id="limit" name="limit" class="form-control" min="1" max="10000"
+        value="1000"
+        title="Лимит действует только для текущего анализа. После обновления страницы или нового запроса лимит сбросится.">
+    </div>
+    <div class="col-auto d-flex align-items-center">
         <button type="submit" class="btn btn-primary">Показать статистику</button>
+        <button id="clearCacheBtn" class="btn btn-warning ms-2" type="button">
+            Обнулить статистику
+        </button>
+        <span id="clearCacheMsg" class="ms-2 text-success"></span>
     </div>
 </form>
-    <div id="progressBar" style="display:none;">
+<div id="progressBar" style="display:none;">
     <div class="progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
     </div>

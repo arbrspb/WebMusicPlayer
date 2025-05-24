@@ -112,8 +112,8 @@
     <h5 class="mb-3">Балансировка и лимиты</h5>
     <div class="row mb-2">
         <div class="col-md-6 col-lg-4 mb-2">
-            <label for="REKORDBOX_TRACK_LIMIT" class="form-label">Rekordbox Track Limit</label>
-            <input type="number" class="form-control" id="REKORDBOX_TRACK_LIMIT" name="REKORDBOX_TRACK_LIMIT" value="{{ settings.REKORDBOX_TRACK_LIMIT }}">
+            <label for="rekordbox_track_limit" class="form-label">Rekordbox Track Limit</label>
+            <input type="number" class="form-control" id="rekordbox_track_limit" name="rekordbox_track_limit" value="{{ settings.rekordbox_track_limit }}">
             <div class="form-text text-muted">
                 Максимальное количество треков из Reckordbox, используемых для обучения. Позволяет ограничить объём выборки для ускорения работы.
             </div>
@@ -259,7 +259,7 @@
     <h6 class="mb-1">Параметры, влияющие <u>только на Reckordbox</u>:</h6>
     <ul class="mb-0">
         <li>
-            <b>Rekordbox Track Limit (REKORDBOX_TRACK_LIMIT):</b>
+            <b>Rekordbox Track Limit (rekordbox_track_limit):</b>
             Ограничивает количество треков, импортируемых из библиотеки Reckordbox для обучения и сканирования. Не влияет на другие источники.
         </li>
         <li>

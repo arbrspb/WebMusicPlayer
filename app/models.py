@@ -459,7 +459,7 @@ def train_genre_model(force=False, global_state=None):
     # Извлекаем все нужные параметры из настроек
     offset = librosa_params.get("offset", 0)
     duration = librosa_params.get("duration", 30)
-    REKORDBOX_TRACK_LIMIT = librosa_params.get("REKORDBOX_TRACK_LIMIT", 10000)
+    rekordbox_track_limit = librosa_params.get("rekordbox_track_limit", 10000)
     min_tracks_per_genre = librosa_params.get("min_tracks_per_genre", 130)
     max_tracks_per_genre = librosa_params.get("max_tracks_per_genre", 130)
     sample_rate = librosa_params.get("sample_rate", 22050)
@@ -515,8 +515,8 @@ def train_genre_model(force=False, global_state=None):
 
     # === Сбор признаков из Reckordbox (если включено) ===
     if librosa_params.get("use_rekordbox"):
-        if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
-            logger.warning(f"[LIMIT] Включён лимит на количество треков Reckordbox: {REKORDBOX_TRACK_LIMIT}")
+        if rekordbox_track_limit and rekordbox_track_limit > 0:
+            logger.warning(f"[LIMIT] Включён лимит на количество треков Reckordbox: {rekordbox_track_limit}")
         rk_json = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reckordbox_parcer_file_output", "parsed_rekordbox.json"))
         logger.info(f"Используется файл: {rk_json}")
         logger.info(f"[DEBUG] Проверяем наличие файла Reckordbox: {rk_json}, exists: {os.path.exists(rk_json)}")
@@ -547,8 +547,8 @@ def train_genre_model(force=False, global_state=None):
             logger=logger
         )
         # Лимитируем итоговый список треков после балансировки
-        if REKORDBOX_TRACK_LIMIT and REKORDBOX_TRACK_LIMIT > 0:
-            balanced_rk_tracks = balanced_rk_tracks[:REKORDBOX_TRACK_LIMIT]
+        if rekordbox_track_limit and rekordbox_track_limit > 0:
+            balanced_rk_tracks = balanced_rk_tracks[:rekordbox_track_limit]
         added = 0
         rk_track_count = 0  # <--- счетчик
         # Показываем genre_settings один раз перед циклом
@@ -605,11 +605,11 @@ def train_genre_model(force=False, global_state=None):
     try:
         X = np.stack(samples)
     except Exception as e:
-        print(f"[ОШИБКА] Ошибка при формировании матрицы признаков: {e}")
-        print(f"[DEBUG] Форматы features: {[s.shape for s in samples]}")
+        logger.error(f"Ошибка при формировании матрицы признаков: {e}")
+        logger.debug(f"Форматы features: {[s.shape for s in samples]}")
         return
     if X.shape[1] == 0:
-        print("[ОШИБКА] Нет достаточных признаков для обучения! Измените настройки и попробуйте снова.")
+        logger.error("Нет достаточных признаков для обучения! Измените настройки и попробуйте снова.")
         return
     n_estimators = librosa_params.get("n_estimators", 100)
     clf = RandomForestClassifier(n_estimators=n_estimators, n_jobs=-1)

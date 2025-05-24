@@ -385,16 +385,17 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
                 current_mtime = None
             row = load_scan_result(rel_path)
             if row and current_mtime:
-                cached_genre, cached_mtime, cached_confidence = row
+                cached_genre, cached_mtime, cached_confidence, cached_features = row
                 if abs(cached_mtime - current_mtime) < 1:
                     genre = cached_genre
+                    features = cached_features
                 else:
                     genre, conf = get_genre(full_path)
-                    save_scan_result(rel_path, genre, current_mtime, conf)
+                    save_scan_result(rel_path, genre, current_mtime, conf, features)
             else:
                 genre, conf = get_genre(full_path)
                 if current_mtime:
-                    save_scan_result(rel_path, genre, current_mtime, conf)
+                    save_scan_result(rel_path, genre, current_mtime, conf, features)
             results.setdefault(genre, []).append(rel_path)
             scan_progress["scanned"] += 1
             processed += 1

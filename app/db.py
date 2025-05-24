@@ -16,7 +16,8 @@ def init_scan_db():
             rel_path TEXT UNIQUE,
             genre TEXT,
             mtime REAL,
-            confidence REAL
+            confidence REAL,
+            features TEXT
         )
     ''')
     conn.commit()
@@ -33,20 +34,20 @@ def get_unique_scan_count():
     conn.close()
     return count
 
-def load_scan_result(rel_path):
+def load_scan_result(rel_path):  # делаем ее
     conn = sqlite3.connect(SCAN_DB)
     c = conn.cursor()
-    c.execute("SELECT genre, mtime, confidence FROM scan_results WHERE rel_path = ?", (rel_path,))
+    c.execute("SELECT genre, mtime, confidence, features FROM scan_results WHERE rel_path = ?", (rel_path,))
     row = c.fetchone()
     conn.close()
     return row
 
-def save_scan_result(rel_path, genre, mtime, confidence):
+def save_scan_result(rel_path, genre, mtime, confidence, features=None): # следующиую ее
     conn = sqlite3.connect(SCAN_DB)
     c = conn.cursor()
     c.execute(
-        "INSERT OR REPLACE INTO scan_results (rel_path, genre, mtime, confidence) VALUES (?, ?, ?, ?)",
-        (rel_path, genre, mtime, confidence)
+        "INSERT OR REPLACE INTO scan_results (rel_path, genre, mtime, confidence, features) VALUES (?, ?, ?, ?, ?)",
+        (rel_path, genre, mtime, confidence, features)
     )
     conn.commit()
     conn.close()

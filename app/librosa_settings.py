@@ -9,6 +9,32 @@ from .utils import get_genre_stats_and_tracks_by_model
 import logging
 import urllib.parse
 
+# Глобальный дефолтный словарь жанров
+DEFAULT_GENRE_KEYWORDS = {
+    'club': 'Club House',
+    'club house': 'Club House',
+    'clubhouse': 'Club House',
+    'deep house': 'Deep House',
+    'deep-house': 'Deep House',
+    'deephouse': 'Deep House',
+    'drum and bass': 'Drum & Bass',
+    'drum & bass': 'Drum & Bass',
+    'drumandbass': 'Drum & Bass',
+    'drumnbass': 'Drum & Bass',
+    'hip hop': 'Hip-Hop',
+    'hip-hop': 'Hip-Hop',
+    'hiphop': 'Hip-Hop',
+    'moombahton': 'Moombahton',
+    'ru remix': 'Русские Ремиксы',
+    'ruremixes': 'Русские Ремиксы',
+    'русские ремиксы': 'Русские Ремиксы',
+    'русскиеремиксы': 'Русские Ремиксы',
+    'russianremix': 'Русские Ремиксы',
+    'russian remixes': 'Русские Ремиксы',
+    'russian remix': 'Русские Ремиксы'
+}
+
+genre_keywords_cache = {}
 # Глобальный кэш (на время работы flask)
 genre_stats_cache = {}
 
@@ -74,10 +100,39 @@ def load_librosa_settings():
         import copy
         return copy.deepcopy(DEFAULT_LIBROSA_SETTINGS)
 
-
 def save_librosa_settings(settings):
     with open(LIBROSA_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
+
+def load_folder_keywords(folder, logger=None):
+    """
+    Загружает кастомный словарь жанров из folder.keywords.json в папке folder.
+    Если нет такого файла — возвращает дефолтный словарь.
+    Кэширует результат для каждой папки.
+    """
+    abs_folder = os.path.abspath(folder)
+    if abs_folder in genre_keywords_cache:
+        return genre_keywords_cache[abs_folder]
+
+    keywords_path = os.path.join(abs_folder, 'folder.keywords.json')
+    if os.path.exists(keywords_path):
+        try:
+            with open(keywords_path, 'r', encoding='utf-8') as f:
+                keywords = json.load(f)
+            if logger:
+                logger.info(f"Custom genre keywords loaded from {keywords_path}")
+            genre_keywords_cache[abs_folder] = keywords
+            return keywords
+        except Exception as e:
+            if logger:
+                logger.warning(f"Failed to load custom genre keywords from {keywords_path}: {e}")
+            # fallback на дефолтный
+    else:
+        if logger:
+            logger.info(f"No custom genre keywords found at {keywords_path}, using default.")
+
+    genre_keywords_cache[abs_folder] = DEFAULT_GENRE_KEYWORDS
+    return DEFAULT_GENRE_KEYWORDS
 
 def get_cached_genre_stats(folder, settings, logger, max_files=None):# Кжш для треков
     folder = os.path.abspath(folder)
@@ -158,7 +213,10 @@ def librosa_settings_test():
     from .models import get_genre
     test_path = request.json.get("test_path")
     settings = load_librosa_settings()
-    genre, conf = get_genre(test_path, librosa_params=settings)
+    # Подгружаем кастомный словарь жанров по папке файла
+    folder = os.path.dirname(test_path)
+    genre_keywords = load_folder_keywords(folder, logger=logger)
+    genre, conf = get_genre(test_path, librosa_params=settings, genre_keywords=genre_keywords)
     return jsonify({"genre": genre, "confidence": conf})
 
 @librosa_test_bp.route("/librosa-test", methods=["GET", "POST"])
@@ -199,7 +257,9 @@ def librosa_test():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
             from .models import get_genre
-            genre, conf = get_genre(filepath, librosa_params=settings)
+            folder = os.path.dirname(filepath)
+            genre_keywords = load_folder_keywords(folder, logger=logger)
+            genre, conf = get_genre(filepath, librosa_params=settings, genre_keywords=genre_keywords)
             result = {
                 "filename": filename,
                 "genre": genre,
@@ -338,3 +398,4 @@ def librosa_genre_tracks():
     ]
     print(f"[DEBUG] files_short: {files_short}")
     return jsonify(files_short)
+

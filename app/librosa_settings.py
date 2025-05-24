@@ -58,19 +58,19 @@ REKORDBOX_JSON_PARSED_STATE = {"status": "not_ready", "count": 0}
 DEFAULT_LIBROSA_SETTINGS = {
     "sample_rate": 22050,
     "duration": 30,
-    "offset": 0,
+    "offset": 45,
     "rekordbox_track_limit": 5000,
     "min_tracks_per_genre": 130,
-    "max_tracks_per_genre": 130,
-    "n_mfcc": 13,
+    "max_tracks_per_genre": 159,
+    "n_mfcc": 40,
     "hop_length": 512,
-    "n_fft": 2048,
+    "n_fft": 4096,
     "win_length": 2048,
     "window": "hann",
     "use_id3": True,
     "use_folder": True,
-    "genre_threshold": 0.6,
-    "n_estimators": 100,
+    "genre_threshold": 0.5,
+    "n_estimators": 500,
     "features": {
         "mfcc": True,
         "chroma": True,
@@ -78,7 +78,8 @@ DEFAULT_LIBROSA_SETTINGS = {
         "zcr": True,
         "tonnetz": True
     },
-    "use_rekordbox": False
+    "use_rekordbox": True,
+    "rekordbox_source": "json"
 }
 
 def load_librosa_settings():
@@ -209,14 +210,10 @@ def librosa_settings_save():
 
 @librosa_settings_bp.route("/librosa-settings/test", methods=["POST"])
 def librosa_settings_test():
-    # Протестировать текущие настройки на тестовом файле
     from .models import get_genre
     test_path = request.json.get("test_path")
     settings = load_librosa_settings()
-    # Подгружаем кастомный словарь жанров по папке файла
-    folder = os.path.dirname(test_path)
-    genre_keywords = load_folder_keywords(folder, logger=logger)
-    genre, conf = get_genre(test_path, librosa_params=settings, genre_keywords=genre_keywords)
+    genre, conf = get_genre(test_path, librosa_params=settings)
     return jsonify({"genre": genre, "confidence": conf})
 
 @librosa_test_bp.route("/librosa-test", methods=["GET", "POST"])
@@ -257,9 +254,7 @@ def librosa_test():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
             from .models import get_genre
-            folder = os.path.dirname(filepath)
-            genre_keywords = load_folder_keywords(folder, logger=logger)
-            genre, conf = get_genre(filepath, librosa_params=settings, genre_keywords=genre_keywords)
+            genre, conf = get_genre(filepath, librosa_params=settings)
             result = {
                 "filename": filename,
                 "genre": genre,
@@ -398,4 +393,3 @@ def librosa_genre_tracks():
     ]
     print(f"[DEBUG] files_short: {files_short}")
     return jsonify(files_short)
-

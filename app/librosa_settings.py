@@ -10,29 +10,30 @@ import logging
 import urllib.parse
 
 # Глобальный дефолтный словарь жанров
-DEFAULT_GENRE_KEYWORDS = {
-    'club': 'Club House',
-    'club house': 'Club House',
-    'clubhouse': 'Club House',
-    'deep house': 'Deep House',
-    'deep-house': 'Deep House',
-    'deephouse': 'Deep House',
-    'drum and bass': 'Drum & Bass',
-    'drum & bass': 'Drum & Bass',
-    'drumandbass': 'Drum & Bass',
-    'drumnbass': 'Drum & Bass',
-    'hip hop': 'Hip-Hop',
-    'hip-hop': 'Hip-Hop',
-    'hiphop': 'Hip-Hop',
-    'moombahton': 'Moombahton',
-    'ru remix': 'Русские Ремиксы',
-    'ruremixes': 'Русские Ремиксы',
-    'русские ремиксы': 'Русские Ремиксы',
-    'русскиеремиксы': 'Русские Ремиксы',
-    'russianremix': 'Русские Ремиксы',
-    'russian remixes': 'Русские Ремиксы',
-    'russian remix': 'Русские Ремиксы'
-}
+# DEFAULT_GENRE_KEYWORDS = {
+#     'Кастом': 'Кастом',
+#     'club': 'Club House',
+#     'club house': 'Club House',
+#     'clubhouse': 'Club House',
+#     'deep house': 'Deep House',
+#     'deep-house': 'Deep House',
+#     'deephouse': 'Deep House',
+#     'drum and bass': 'Drum & Bass',
+#     'drum & bass': 'Drum & Bass',
+#     'drumandbass': 'Drum & Bass',
+#     'drumnbass': 'Drum & Bass',
+#     'hip hop': 'Hip-Hop',
+#     'hip-hop': 'Hip-Hop',
+#     'hiphop': 'Hip-Hop',
+#     'moombahton': 'Moombahton',
+#     'ru remix': 'Русские Ремиксы',
+#     'ruremixes': 'Русские Ремиксы',
+#     'русские ремиксы': 'Русские Ремиксы',
+#     'русскиеремиксы': 'Русские Ремиксы',
+#     'russianremix': 'Русские Ремиксы',
+#     'russian remixes': 'Русские Ремиксы',
+#     'russian remix': 'Русские Ремиксы'
+# }
 
 genre_keywords_cache = {}
 # Глобальный кэш (на время работы flask)
@@ -104,36 +105,6 @@ def load_librosa_settings():
 def save_librosa_settings(settings):
     with open(LIBROSA_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
-
-def load_folder_keywords(folder, logger=None):
-    """
-    Загружает кастомный словарь жанров из folder.keywords.json в папке folder.
-    Если нет такого файла — возвращает дефолтный словарь.
-    Кэширует результат для каждой папки.
-    """
-    abs_folder = os.path.abspath(folder)
-    if abs_folder in genre_keywords_cache:
-        return genre_keywords_cache[abs_folder]
-
-    keywords_path = os.path.join(abs_folder, 'folder.keywords.json')
-    if os.path.exists(keywords_path):
-        try:
-            with open(keywords_path, 'r', encoding='utf-8') as f:
-                keywords = json.load(f)
-            if logger:
-                logger.info(f"Custom genre keywords loaded from {keywords_path}")
-            genre_keywords_cache[abs_folder] = keywords
-            return keywords
-        except Exception as e:
-            if logger:
-                logger.warning(f"Failed to load custom genre keywords from {keywords_path}: {e}")
-            # fallback на дефолтный
-    else:
-        if logger:
-            logger.info(f"No custom genre keywords found at {keywords_path}, using default.")
-
-    genre_keywords_cache[abs_folder] = DEFAULT_GENRE_KEYWORDS
-    return DEFAULT_GENRE_KEYWORDS
 
 def get_cached_genre_stats(folder, settings, logger, max_files=None):# Кжш для треков
     folder = os.path.abspath(folder)
@@ -213,6 +184,7 @@ def librosa_settings_test():
     from .models import get_genre
     test_path = request.json.get("test_path")
     settings = load_librosa_settings()
+    logger.debug(f"Call get_genre for: {test_path}")
     genre, conf = get_genre(test_path, librosa_params=settings)
     return jsonify({"genre": genre, "confidence": conf})
 
@@ -254,7 +226,9 @@ def librosa_test():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
             from .models import get_genre
+            logger.debug(f"Call get_genre for uploaded file: {filepath}")
             genre, conf = get_genre(filepath, librosa_params=settings)
+            logger.debug(f"Result from get_genre: genre={genre}, confidence={conf}")
             result = {
                 "filename": filename,
                 "genre": genre,
@@ -371,13 +345,13 @@ def librosa_genre_stats_export():
 def librosa_genre_tracks():
     folder = request.args.get("folder")
     genre = request.args.get("genre")
-    print(f"[DEBUG] os.path.exists(folder): {os.path.exists(folder)}")
-    print(f"[DEBUG] os.path.isdir(folder): {os.path.isdir(folder)}")
-    print(f"[DEBUG] abs path: {os.path.abspath(folder)}")
-    print(f"[DEBUG] folder: {folder}")
+    logger.debug(f"os.path.exists(folder): {os.path.exists(folder)}")
+    logger.debug(f"os.path.isdir(folder): {os.path.isdir(folder)}")
+    logger.debug(f"abs path: {os.path.abspath(folder)}")
+    logger.debug(f"folder: {folder}")
     settings = load_librosa_settings()
     if not folder or not genre or not os.path.isdir(folder):
-        print(f"[DEBUG] folder not found or not a directory: {folder}")
+        logger.debug(f"folder not found or not a directory: {folder}")
         return jsonify([])
     _, _, genre_tracks = get_cached_genre_stats(
         folder, settings=settings, logger=logger
@@ -391,5 +365,5 @@ def librosa_genre_tracks():
         }
         for i, f in enumerate(files)
     ]
-    print(f"[DEBUG] files_short: {files_short}")
+    logger.debug(f"files_short: {files_short}")
     return jsonify(files_short)

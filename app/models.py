@@ -53,6 +53,7 @@ SITUATION_MAP = {
 }
 
 DEFAULT_FOLDER_KEYWORDS = {
+    "Слоаврь из models.py не внешний": "Club House",
     "club house": "Club House",
     "drum & bass": "Drum & Bass",
     "hip-hop & rap": "Hip-Hop",

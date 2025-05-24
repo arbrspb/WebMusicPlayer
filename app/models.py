@@ -15,7 +15,6 @@ import threading
 import json
 import pickle
 import numpy as np
-import pandas as pd
 import librosa
 from mutagen.easyid3 import EasyID3
 from sklearn.ensemble import RandomForestClassifier
@@ -27,7 +26,7 @@ import logging
 import pandas as pd
 from sklearn.utils import resample
 import copy
-
+from .librosa_settings import DEFAULT_LIBROSA_SETTINGS
 
 global_state = None
 
@@ -68,7 +67,7 @@ DEFAULT_FOLDER_KEYWORDS = {
 }
 
 
-import re
+
 GENRE_SETTINGS_FILE = "folder_keywords.json"
 
 # Флаг для однократного логирования использования функции
@@ -453,6 +452,7 @@ def train_genre_model(force=False, global_state=None):
     except Exception:
         librosa_params = copy.deepcopy(DEFAULT_LIBROSA_SETTINGS)
 
+    logger.info("Librosa settings loaded: %s", librosa_params)
     logger.info("librosa_params for training: %s", librosa_params)
     logger.info("Rekordbox use: %s", librosa_params.get("use_rekordbox"))
 
@@ -482,35 +482,35 @@ def train_genre_model(force=False, global_state=None):
 
     processed = 0
     # Блок обучения Начало(можно закоментировать для теста)
-    # for folder in folders:
-    #     folder_path = os.path.join(samples_dir, folder)
-    #     genre = normalize_genre(folder, genre_settings)
-    #     print(f"[DEBUG] folder: {folder} → genre: {genre}")
-    #     if genre == "Other":
-    #         logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
-    #         continue
-    #     for file in os.listdir(folder_path):
-    #         if file.lower().endswith(".mp3"):
-    #             path = os.path.join(folder_path, file)
-    #             try:
-    #                 y, sr = librosa.load(
-    #                     path,
-    #                     sr=sample_rate,
-    #                     offset=offset,
-    #                     duration=duration
-    #                 )
-    #                 features = extract_features(y, sr, librosa_params)
-    #                 features = extract_features_from_track(None, features)
-    #                 if features.size == 0:
-    #                     logger.warning(f"No features extracted from {path}, skipping.")
-    #                     continue
-    #                 genre_counter[genre] = genre_counter.get(genre, 0) + 1
-    #                 samples.append(features)
-    #                 labels.append(genre)
-    #             except Exception as e:
-    #                 logger.error("Error processing %s: %s", path, e)
-    #             processed += 1
-    #             set_progress(int((processed / max(1, total_files)) * 100))
+    for folder in folders:
+        folder_path = os.path.join(samples_dir, folder)
+        genre = normalize_genre(folder, genre_settings)
+        print(f"[DEBUG] folder: {folder} → genre: {genre}")
+        if genre == "Other":
+            logger.warning(f"Пропускаю папку '{folder}': не удалось определить жанр.")
+            continue
+        for file in os.listdir(folder_path):
+            if file.lower().endswith(".mp3"):
+                path = os.path.join(folder_path, file)
+                try:
+                    y, sr = librosa.load(
+                        path,
+                        sr=sample_rate,
+                        offset=offset,
+                        duration=duration
+                    )
+                    features = extract_features(y, sr, librosa_params)
+                    features = extract_features_from_track(None, features)
+                    if features.size == 0:
+                        logger.warning(f"No features extracted from {path}, skipping.")
+                        continue
+                    genre_counter[genre] = genre_counter.get(genre, 0) + 1
+                    samples.append(features)
+                    labels.append(genre)
+                except Exception as e:
+                    logger.error("Error processing %s: %s", path, e)
+                processed += 1
+                set_progress(int((processed / max(1, total_files)) * 100))
     # Блок обучения Конец(можно закоментировать для теста)
 
     # === Сбор признаков из Reckordbox (если включено) ===

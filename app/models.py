@@ -391,10 +391,12 @@ def scan_library_async(MUSIC_DIR, scan_mode, scan_stop_event, scan_progress):
                     features = cached_features
                 else:
                     genre, conf = get_genre(full_path)
+                    features = None
                     save_scan_result(rel_path, genre, current_mtime, conf, features)
             else:
                 genre, conf = get_genre(full_path)
                 if current_mtime:
+                    features = None
                     save_scan_result(rel_path, genre, current_mtime, conf, features)
             results.setdefault(genre, []).append(rel_path)
             scan_progress["scanned"] += 1

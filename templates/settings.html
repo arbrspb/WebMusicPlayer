@@ -1,0 +1,979 @@
+<!-- settings.html 14-08-25 01-50 -->
+<!-- TODO: Доработать счетчик что бы показывал все обучение Samples+Reckordbox(Изменения: PY+JS+HTML -->
+<!-- TODO: Возможно поменять логику и название некоторых кнопок -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Настройки</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <style>
+    body { padding-top: 0 !important; }
+   .modal-body .btn {
+  width: auto !important;
+  min-width: 0 !important;
+  display: inline-block !important;
+}
+  </style>
+</head>
+<body>
+<!-- Навигационный бар (точно как в main.html!) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <span class="navbar-brand">My Music Player</span>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+       <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+       <ul class="navbar-nav me-auto">
+         <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-music-note-beamed me-1"></i>Плеер</a></li>
+         <li class="nav-item"><a class="nav-link" href="/?open=favorites"><i class="bi bi-heart me-1"></i>Моя музыка</a></li>
+         <li class="nav-item"><a class="nav-link active" href="/settings"><i class="bi bi-gear me-1"></i>Настройки</a></li>
+       </ul>
+       <span class="navbar-text text-white">
+          Режим: {{ config.playback_mode }} | Громкость: {{ config.default_volume }}%
+       </span>
+    </div>
+  </div>
+</nav>
+
+  <div class="container mt-5 pt-4" style="padding-top: 70px;">
+    <h3>Настройки</h3>
+
+    <nav class="settings-jump-nav" aria-label="Разделы настроек">
+      <a class="btn btn-sm btn-outline-secondary" href="#settings-basic"><i class="bi bi-sliders me-1"></i>Основные</a>
+      <a class="btn btn-sm btn-outline-secondary" href="#settings-playback"><i class="bi bi-play-circle me-1"></i>Воспроизведение</a>
+      <a class="btn btn-sm btn-outline-secondary" href="#intelligence-preferences"><i class="bi bi-stars me-1"></i>Подбор и вкус</a>
+      <a class="btn btn-sm btn-outline-secondary" href="#settings-library"><i class="bi bi-database me-1"></i>Библиотека и модели</a>
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#logModal"><i class="bi bi-activity me-1"></i>Диагностика</button>
+    </nav>
+
+    <section id="settings-basic" class="settings-group">
+      <h4 class="settings-group-title">Основные</h4>
+
+    <!-- Общие настройки -->
+<!--    <form method="POST" action="/settings">-->
+    <form id="settingsForm" method="POST" action="/settings">
+      <div class="mb-3">
+        <label for="music_dir" class="form-label">Путь к библиотеке музыки</label>
+        <input type="text" class="form-control" id="music_dir" name="music_dir" value="{{ config.music_dir }}">
+        <div class="form-text">Например: \\NAS\Music или D:\Music</div>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="remember_recent_folders" name="remember_recent_folders" value="1" {% if config.remember_recent_folders|default(false) %}checked{% endif %}>
+        <label class="form-check-label" for="remember_recent_folders">Запоминать последнюю открытую папку</label>
+        <div class="form-text">Плеер откроет последнюю папку при следующем запуске, а проводник автоматически раскроет дерево до неё. При отключении сохранённый путь очищается.</div>
+      </div>
+      <div class="mb-3">
+        <label for="playback_mode" class="form-label">Режим воспроизведения</label>
+        <select class="form-select" id="playback_mode" name="playback_mode">
+          <option value="host" {% if config.playback_mode=='host' %}selected{% endif %}>На компьютере-хосте (VLC)</option>
+          <option value="plyr" {% if config.playback_mode=='plyr' %}selected{% endif %}>Plyr.js</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="default_volume" class="form-label">Громкость по умолчанию</label>
+        <input type="number" class="form-control" id="default_volume" name="default_volume" value="{{ config.default_volume }}">
+      </div>
+      <div class="mb-3">
+        <label for="sound_quality" class="form-label">Качество звука</label>
+        <select class="form-select" id="sound_quality" name="sound_quality">
+          <option value="high" {% if config.sound_quality=='high' %}selected{% endif %}>Высокое</option>
+          <option value="medium" {% if config.sound_quality=='medium' %}selected{% endif %}>Среднее</option>
+          <option value="low" {% if config.sound_quality=='low' %}selected{% endif %}>Низкое</option>
+        </select>
+        <div class="form-text">
+          Выберите качество звука для воспроизведения. По умолчанию – максимальное (Высокое).
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+    </form>
+
+    <!-- Блок выбора аудиоустройства (только для режима host) -->
+    {% if config.playback_mode == 'host' %}
+    <hr>
+    <h4>Выбор аудиоустройства для режима воспроизведения на хосте</h4>
+    <form method="POST" action="/set_device" id="deviceForm">
+      <div class="mb-3">
+        <label for="device" class="form-label">Аудиоустройство</label>
+        <select name="device" id="device" class="form-select">
+          {% for dev in devices %}
+            <option value="{{ loop.index0 }}" {% if loop.index0 == config.selected_device %}selected{% endif %}>{{ dev.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить аудиоустройство</button>
+    </form>
+    {% endif %}
+
+    </section>
+
+    <section id="settings-playback" class="settings-group">
+    <h4 class="settings-group-title">Воспроизведение и режимы</h4>
+    <h5>Поведение избранных треков</h5>
+    <form id="favSettingsForm" method="POST" action="/update_fav_settings">
+      <div class="mb-3">
+        <label class="form-label">Режим работы избранных треков:</label><br>
+        <label class="form-check-label me-3">
+          <input type="radio" name="favorite_mode" value="stay" class="form-check-input" {% if session.get('favorite_mode', config.favorite_mode) == 'stay' %}checked{% endif %}>
+          Оставаться в текущем плейлисте
+        </label>
+        <label class="form-check-label">
+          <input type="radio" name="favorite_mode" value="switch" class="form-check-input" {% if session.get('favorite_mode', config.favorite_mode) == 'switch' %}checked{% endif %}>
+          Переходить в плейлист трека
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary">Сохранить настройки избранных</button>
+    </form>
+    <hr>
+        <div class="form-check form-switch my-4">
+      <input class="form-check-input" type="checkbox" id="advancedModeSwitch" {% if config.advanced_mode %}checked{% endif %}>
+      <label class="form-check-label" for="advancedModeSwitch">
+        Использовать расширенные функции (жанры, база, сканирование, поиск похожих)
+      </label>
+      <div class="form-text">При отключении доступен только простой режим проигрывателя без сканирования и жанровой классификации.</div>
+    </div>
+    <div class="form-check form-switch hide-in-simple-mode">
+    <input class="form-check-input" type="checkbox" id="forceModelForRecommendSwitch" {% if config.force_model_for_recommend %}checked{% endif %}>
+    <label class="form-check-label" for="forceModelForRecommendSwitch">
+      Всегда использовать модель для поиска похожего трека
+    </label>
+    <div class="form-text">
+      При включении поиск похожего трека всегда будет через ML-модель, даже если база отсканирована (медленнее, но надёжнее при новых треках).
+    </div>
+    </div>
+
+    </section>
+
+    <section id="intelligence-preferences" class="card my-4 hide-in-simple-mode settings-group">
+      <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+          <div>
+            <h4 class="card-title mb-1">Постоянные предпочтения умного подбора</h4>
+            <p class="text-muted mb-0">Эти веса определяют, что для вас означает «похожий трек». Фильтры конкретного сборника задаются в окне подбора в плеере.</p>
+          </div>
+          <a class="btn btn-sm btn-outline-info" href="/intelligence">Открыть интеллектуальный каталог</a>
+        </div>
+        <form method="POST" action="/update_intelligence_preferences" class="row g-3 mt-1">
+          {% set weights = intelligence_preferences.weights %}
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_deep_weight">Глубокое звучание</label>
+            <input class="form-control" id="intelligence_deep_weight" name="intelligence_deep_weight" type="number" min="0" max="100" step="1" value="{{ weights.deep|round|int }}">
+            <div class="form-text">Музыкальная похожесть Discogs Multi-EffNet.</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_acoustic_weight">Базовое звучание</label>
+            <input class="form-control" id="intelligence_acoustic_weight" name="intelligence_acoustic_weight" type="number" min="0" max="100" step="1" value="{{ weights.acoustic|round|int }}">
+            <div class="form-text">Акустический отпечаток трека.</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_character_weight">Характер</label>
+            <input class="form-control" id="intelligence_character_weight" name="intelligence_character_weight" type="number" min="0" max="100" step="1" value="{{ weights.character|round|int }}">
+            <div class="form-text">Энергия, плотность, яркость и вокал.</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_semantic_weight">YAMNet-смысл</label>
+            <input class="form-control" id="intelligence_semantic_weight" name="intelligence_semantic_weight" type="number" min="0" max="100" step="1" value="{{ weights.semantic|round|int }}">
+            <div class="form-text">Работает точнее для глубоко проанализированных треков.</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_bpm_weight">BPM</label>
+            <input class="form-control" id="intelligence_bpm_weight" name="intelligence_bpm_weight" type="number" min="0" max="100" step="1" value="{{ weights.bpm|round|int }}">
+            <div class="form-text">Близость темпа с учётом half/double time.</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label" for="intelligence_personal_weight">Личный вкус</label>
+            <input class="form-control" id="intelligence_personal_weight" name="intelligence_personal_weight" type="number" min="0" max="100" step="1" value="{{ weights.personal|round|int }}">
+            <div class="form-text">Ваши реальные звёзды и прогноз персональной модели.</div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <label class="form-label" for="intelligence_result_limit">Результатов по умолчанию</label>
+            <input class="form-control" id="intelligence_result_limit" name="intelligence_result_limit" type="number" min="1" max="100" value="{{ intelligence_preferences.result_limit }}">
+          </div>
+          <div class="col-sm-6 col-lg-5 d-flex align-items-end">
+            <div class="form-check mb-2">
+              <input class="form-check-input" id="intelligence_exclude_versions" name="intelligence_exclude_versions" type="checkbox" {% if intelligence_preferences.exclude_versions %}checked{% endif %}>
+              <label class="form-check-label" for="intelligence_exclude_versions">Не предлагать другие версии эталонного трека</label>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-text mb-2">Сумма может быть любой: алгоритм автоматически приводит веса к 100%.</div>
+            <button class="btn btn-primary" type="submit">Сохранить предпочтения подбора</button>
+          </div>
+        </form>
+        <hr>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h5 class="mb-1">Персональная модель вкуса</h5>
+            <div id="personalization-status" class="text-muted">Загрузка состояния…</div>
+            <div id="personalization-metrics" class="small text-muted mt-1"></div>
+          </div>
+          <button id="train-personalization" class="btn btn-success" type="button">Обучить / обновить по звёздам</button>
+        </div>
+        <div class="progress mt-3 d-none" id="personalization-progress-wrap" style="height: 18px;">
+          <div id="personalization-progress" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">0%</div>
+        </div>
+        <div class="form-text mt-2">Источниками могут быть оценки внутри плеера и, при желании, Rekordbox. Оценка 0 считается отсутствием разметки.</div>
+      </div>
+    </section>
+    <section id="settings-library" class="settings-group hide-in-simple-mode">
+    <h4 class="settings-group-title">Библиотека и модели</h4>
+    <p class="text-muted">Единый центр обработки коллекции: основной анализ, язык, глубокая похожесть и персонализация запускаются независимо.</p>
+    <section id="collection-health" class="collection-health-card" aria-labelledby="collection-health-title">
+      <div class="collection-health-main">
+        <div class="collection-health-gauge" id="collection-health-gauge" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="collection-health-percent">0%</span>
+        </div>
+        <div class="collection-health-copy">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <h4 id="collection-health-title" class="mb-0">Готовность музыкальной коллекции</h4>
+            <span id="collection-health-badge" class="badge text-bg-secondary">Проверяем…</span>
+          </div>
+          <p id="collection-health-summary" class="text-muted mb-2">Собираем состояние индексов и персонализации.</p>
+          <div class="collection-health-action">
+            <div>
+              <strong id="collection-next-title">Следующий шаг</strong>
+              <div id="collection-next-detail" class="small text-muted"></div>
+            </div>
+            <button id="collection-next-action" class="btn btn-primary" type="button" disabled>Подождите…</button>
+          </div>
+        </div>
+      </div>
+      <div id="collection-health-stages" class="collection-health-stages" aria-live="polite"></div>
+<div id="progress-container" class="scan-monitor mt-3" style="display: block;">
+  <button class="scan-monitor-toggle" type="button" data-bs-toggle="collapse"
+          data-bs-target="#scan-progress-details" aria-expanded="false"
+          aria-controls="scan-progress-details">
+    <span class="scan-monitor-icon" aria-hidden="true"><i class="bi bi-cpu"></i></span>
+    <span class="scan-monitor-heading">
+      <strong>Подробный прогресс обработки</strong>
+      <small id="scan-summary-text">RF и уточнение языка готовы к запуску</small>
+    </span>
+    <span id="scan-summary-badge" class="scan-monitor-badge">Ожидание</span>
+    <i class="bi bi-chevron-down scan-monitor-chevron" aria-hidden="true"></i>
+  </button>
+  <div class="scan-monitor-overall progress" aria-hidden="true">
+    <div id="scan-summary-progress" class="progress-bar" style="width: 0%;"></div>
+  </div>
+  <div id="scan-progress-details" class="collapse">
+  <div class="scan-monitor-body">
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <strong>Основной индекс: <span id="main-index-engine">RF</span></strong>
+    <span id="progress-text">Ожидание запуска</span>
+  </div>
+  <!-- Анимационный прогресс-бар (loading) -->
+  <div id="progress-bar-loading" class="progress" style="height: 12px; display: none;">
+    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%;"></div>
+  </div>
+  <!-- Обычный прогресс-бар -->
+  <div id="progress-bar-normal" class="progress" style="height: 12px; display: none;">
+    <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%; min-width: 2px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
+  <div id="scan-speed-text" class="form-text mt-1"></div>
+  <hr>
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <strong>Уточнение языка: Whisper</strong>
+    <span id="language-progress-text">Ожидание основного индекса</span>
+  </div>
+  <div class="progress" style="height: 12px;">
+    <div id="language-progress-bar" class="progress-bar bg-info" role="progressbar"
+         style="width: 0%; min-width: 2px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
+  <div id="language-progress-detail" class="form-text mt-1"></div>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <button type="button" class="btn btn-sm btn-outline-primary" id="language-index-start-compact" onclick="startLanguageEnrichment(false);">
+      Продолжить уточнение языка
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="language-index-stop-compact" onclick="stopLanguageEnrichment();">
+      Приостановить язык
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-warning" id="language-index-retry-compact" onclick="startLanguageEnrichment(true);">
+      Повторить ошибки языка
+    </button>
+  </div>
+  <hr>
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <strong>Глубокая похожесть: Multi-EffNet</strong>
+    <span id="deep-progress-text">Ожидание</span>
+  </div>
+  <div class="progress" style="height: 12px;">
+    <div id="deep-progress-bar" class="progress-bar bg-primary" role="progressbar"
+         style="width: 0%; min-width: 2px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
+  <div id="deep-progress-detail" class="form-text mt-1">Дополнительный индекс можно запускать после основного сканирования.</div>
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <button type="button" class="btn btn-sm btn-outline-primary" id="deep-index-start-compact">Продолжить EffNet</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="deep-index-stop-compact">Приостановить</button>
+    <button type="button" class="btn btn-sm btn-outline-warning" id="deep-index-retry-compact">Повторить ошибки</button>
+  </div>
+  </div>
+  </div>
+</div>
+    </section>
+    <div class="model-center-launcher mt-3">
+      <div>
+        <strong><i class="bi bi-stars me-2"></i>Инструменты музыкальной коллекции</strong>
+        <div class="form-text">Откройте центр, чтобы выбрать нужный этап и увидеть доступное ускорение.</div>
+        <div id="training-page-status" class="small text-muted mt-1 d-none"></div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-outline-primary" id="training-dataset-open" data-bs-toggle="modal" data-bs-target="#trainingDatasetModal">
+          <i class="bi bi-diagram-3 me-1"></i>Обучающая выборка
+          <span id="training-page-badge" class="badge text-bg-primary ms-1 d-none">0%</span>
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modelCenterModal">
+          <i class="bi bi-grid-1x2 me-1"></i>Центр обработки
+        </button>
+      </div>
+    </div>
+    </section>
+  <div class="modal fade" id="modelCenterModal" tabindex="-1" aria-labelledby="modelCenterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content model-center-modal">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="modelCenterModalLabel">Центр обработки коллекции</h5>
+            <div class="small text-muted">Каждый этап независим: включайте только то, что нужно вашей системе.</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-pills model-center-tabs mb-3" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#model-center-indexes" type="button">Индексы</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#model-center-sources" type="button">Источники вкуса</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#model-center-performance" type="button">Производительность</button></li>
+          </ul>
+          <div class="tab-content">
+            <section class="tab-pane fade show active" id="model-center-indexes">
+              <div class="pipeline-grid">
+                <article class="pipeline-card">
+                  <div class="pipeline-card-icon"><i class="bi bi-soundwave"></i></div>
+                  <div class="pipeline-card-body">
+                    <div class="d-flex justify-content-between gap-2"><strong>1. Основной анализ</strong><span class="badge text-bg-secondary">обязательный</span></div>
+                    <p>Librosa + RF определяют базовое звучание и ваш стиль. YAMNet можно подключить как дополнительную проверку.</p>
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" id="pipeline-yamnet-enabled" type="checkbox">
+                      <label class="form-check-label" for="pipeline-yamnet-enabled">Использовать YAMNet</label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" id="pipeline-yamnet-cuda" type="checkbox">
+                      <label class="form-check-label" for="pipeline-yamnet-cuda">Разрешить CUDA для YAMNet</label>
+                    </div>
+                    <div id="main-index-card-status" class="pipeline-card-status">Ожидание состояния индекса</div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <button class="btn btn-sm btn-primary" id="main-index-start" type="button" onclick="startScan();">Продолжить индекс</button>
+                      <button class="btn btn-sm btn-outline-warning" id="main-index-stop" type="button" onclick="stopScan();" disabled>Пауза</button>
+                      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#scanSettingsModal">Настройки сканирования</button>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="pipeline-card">
+                  <div class="pipeline-card-icon is-info"><i class="bi bi-translate"></i></div>
+                  <div class="pipeline-card-body">
+                    <div class="d-flex justify-content-between gap-2"><strong>2. Язык вокала</strong><span class="badge text-bg-info">опционально</span></div>
+                    <p>Whisper уточняет русский, английский и другие языки после основного индекса.</p>
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" id="pipeline-whisper-enabled" type="checkbox">
+                      <label class="form-check-label" for="pipeline-whisper-enabled">Включить уточнение языка</label>
+                    </div>
+                    <label class="form-label small" for="pipeline-whisper-device">Устройство</label>
+                    <select class="form-select form-select-sm mb-3" id="pipeline-whisper-device">
+                      <option value="auto">Автоматически</option><option value="cpu">CPU</option><option value="cuda">CUDA с откатом на CPU</option>
+                    </select>
+                    <div id="language-card-status" class="pipeline-card-status">Ожидание основного индекса</div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <button class="btn btn-sm btn-outline-primary" id="language-index-start" type="button" onclick="startLanguageEnrichment(false);">Продолжить</button>
+                      <button class="btn btn-sm btn-outline-secondary" id="language-index-stop" type="button" onclick="stopLanguageEnrichment();" disabled>Пауза</button>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="pipeline-card pipeline-card-featured">
+                  <div class="pipeline-card-icon is-primary"><i class="bi bi-stars"></i></div>
+                  <div class="pipeline-card-body">
+                    <div class="d-flex justify-content-between gap-2"><strong>3. Глубокая похожесть</strong><span class="badge text-bg-primary">новое</span></div>
+                    <p>Discogs Multi-EffNet создаёт музыкальный вектор для точного поиска похожих по звучанию треков.</p>
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" id="pipeline-effnet-enabled" type="checkbox">
+                      <label class="form-check-label" for="pipeline-effnet-enabled">Использовать глубокий индекс</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" id="pipeline-effnet-genre-fusion" type="checkbox">
+                      <label class="form-check-label" for="pipeline-effnet-genre-fusion">Уточнять жанр через EffNet при обучении</label>
+                      <div class="form-text">Компонент сохранится только если не ухудшит контрольную проверку и прежние стили.</div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                      <div class="col-sm-6">
+                        <label class="form-label small" for="pipeline-effnet-device">Устройство</label>
+                        <select class="form-select form-select-sm" id="pipeline-effnet-device">
+                          <option value="auto">Автоматически</option><option value="cpu">Только CPU</option><option value="cuda">CUDA с откатом на CPU</option>
+                        </select>
+                      </div>
+                      <div class="col-sm-6">
+                        <label class="form-label small" for="pipeline-effnet-workers">Подготовка аудио</label>
+                        <select class="form-select form-select-sm" id="pipeline-effnet-workers">
+                          <option value="0">Автоматически</option><option value="1">1 поток</option><option value="2">2 потока</option><option value="4">4 потока</option>
+                        </select>
+                      </div>
+                    </div>
+                    <label class="form-label small" for="pipeline-effnet-offsets">Фрагменты трека, секунды</label>
+                    <input class="form-control form-control-sm mb-2" id="pipeline-effnet-offsets" value="30, 60, 90">
+                    <div id="pipeline-effnet-model-status" class="small text-muted mb-3">Проверяем модель…</div>
+                    <div id="deep-index-card-status" class="pipeline-card-status">Ожидание состояния индекса</div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <button class="btn btn-sm btn-primary" id="deep-index-start" type="button">Продолжить индекс</button>
+                      <button class="btn btn-sm btn-outline-secondary" id="deep-index-stop" type="button">Пауза</button>
+                      <button class="btn btn-sm btn-outline-warning" id="deep-index-retry" type="button">Повторить ошибки</button>
+                      <button class="btn btn-sm btn-outline-info d-none" id="deep-model-download" type="button">Скачать модель</button>
+                      <a class="btn btn-sm btn-link px-1" href="https://github.com/MTG/essentia-models/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">Лицензия модели</a>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-outline-info" type="button" data-bs-toggle="modal" data-bs-target="#genreSettingsModal">Правила распознавания папок</button>
+                <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#trainingDatasetModal">Обучающая выборка и обучение</button>
+                <a class="btn btn-outline-secondary" href="/librosa-settings">Технические настройки анализа</a>
+                <button class="btn btn-sm btn-link text-secondary" type="button" data-bs-toggle="modal" data-bs-target="#modelParamsModal">Параметры RF</button>
+              </div>
+            </section>
+
+            <section class="tab-pane fade" id="model-center-sources">
+              <div class="pipeline-grid pipeline-grid-two">
+                <article class="pipeline-card">
+                  <div class="pipeline-card-icon is-success"><i class="bi bi-heart"></i></div>
+                  <div class="pipeline-card-body">
+                    <strong>Оценки внутри плеера</strong>
+                    <p>Универсальный источник предпочтений — работает без внешних программ.</p>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" id="pipeline-player-ratings" type="checkbox">
+                      <label class="form-check-label" for="pipeline-player-ratings">Использовать оценки плеера</label>
+                    </div>
+                  </div>
+                </article>
+                <article class="pipeline-card">
+                  <div class="pipeline-card-icon"><i class="bi bi-box-arrow-in-down"></i></div>
+                  <div class="pipeline-card-body">
+                    <strong>Rekordbox</strong>
+                    <p>Дополнительный источник звёзд и разметки. Не требуется для работы плеера.</p>
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" id="pipeline-rekordbox-enabled" type="checkbox">
+                      <label class="form-check-label" for="pipeline-rekordbox-enabled">Использовать данные Rekordbox</label>
+                    </div>
+                    <a class="btn btn-sm btn-outline-secondary" href="/librosa-settings#rekordbox-section">Импорт и проверка данных</a>
+                  </div>
+                </article>
+              </div>
+              <div class="alert alert-secondary mt-3 mb-0">
+                <strong>Персональная модель</strong> учится только на явных оценках 1–5★. После построения EffNet-индекса её рекомендуется обучить повторно.
+                <button id="train-personalization-center" class="btn btn-sm btn-success ms-2" type="button">Обучить по оценкам</button>
+              </div>
+            </section>
+
+            <section class="tab-pane fade" id="model-center-performance">
+              <div id="pipeline-engine-grid" class="runtime-grid"><div class="text-muted">Проверяем оборудование и библиотеки…</div></div>
+              <div class="alert alert-info mt-3 mb-0">
+                Режим «Автоматически» использует доступный ускоритель и безопасно возвращается на CPU. Librosa, RF и персональная ExtraTrees-модель выполняются на CPU; ONNX-модели и Whisper могут использовать CUDA.
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <span id="pipeline-save-status" class="small text-muted"></span>
+          <div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            <button type="button" class="btn btn-primary" id="pipeline-save">Сохранить настройки моделей</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Безопасные настройки сканирования и отдельное разовое действие полного сброса -->
+  <div class="modal fade" id="scanSettingsModal" tabindex="-1" aria-labelledby="scanSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="scanSettingsModalLabel">Настройки сканирования</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-primary py-2 small">
+            Обычная кнопка <strong>«Проверить новые треки»</strong> всегда сохраняет текущий индекс,
+            пропускает уже известные файлы и добавляет новые.
+          </div>
+          <label for="scanPrioritySelect" class="form-label">Приоритет сканирования</label>
+          <select class="form-select" id="scanPrioritySelect">
+            <option value="low">Низкий (экономия ресурсов)</option>
+            <option value="medium">Средний (баланс)</option>
+            <option value="high">Высокий (максимальная скорость)</option>
+          </select>
+          <details class="border rounded p-3 mt-3">
+            <summary class="text-danger fw-semibold">Опасные действия</summary>
+            <p class="small text-muted mt-2 mb-2">
+              Полное пересканирование создаст резервную копию непустой базы, затем удалит основной и связанные
+              производные индексы из scan_results.db и заново проанализирует библиотеку. Жанровая модель,
+              обучающая разметка и музыкальные файлы не удаляются.
+            </p>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="full-rescan-start">
+              Удалить индекс и пересканировать с нуля
+            </button>
+          </details>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" id="saveScanModeBtn">Сохранить приоритет</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Конец настроек сканирования -->
+
+  <!-- Модальное окно для редактирования жанровых настроек -->
+<div class="modal fade" id="trainingDatasetModal" tabindex="-1" aria-labelledby="trainingDatasetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content training-dataset-modal">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="trainingDatasetModalLabel"><i class="bi bi-diagram-3 me-2"></i>Конструктор обучающей выборки</h5>
+          <div class="small text-muted">Папки размечаются предварительно. В RF попадут только подтверждённые строки.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <div id="training-dataset-alert" class="alert d-none" role="alert"></div>
+        <div class="training-dataset-summary mb-3">
+          <div><span id="training-source-count">0</span><small>источников</small></div>
+          <div><span id="training-folder-count">0</span><small>папок с MP3</small></div>
+          <div><span id="training-track-count">0</span><small>найдено треков</small></div>
+          <div class="is-ready"><span id="training-confirmed-count">0</span><small>подтверждено</small></div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <section class="training-dataset-panel h-100">
+              <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div><strong>1. Источники</strong><div class="small text-muted">Выберите одну или несколько папок библиотеки.</div></div>
+                <button id="training-tree-reset" class="btn btn-sm btn-outline-secondary" type="button" title="К корню"><i class="bi bi-house"></i></button>
+              </div>
+              <div id="training-folder-tree" class="training-folder-tree mb-2"></div>
+              <div class="input-group input-group-sm mb-2">
+                <input id="training-source-path" class="form-control" placeholder="Или полный путь к папке">
+                <button id="training-source-add-path" class="btn btn-outline-primary" type="button">Добавить</button>
+              </div>
+              <div class="small text-muted mb-2">Можно указать локальный, сетевой или относительный к музыкальной библиотеке путь.</div>
+              <div id="training-source-list" class="training-source-list"></div>
+            </section>
+          </div>
+          <div class="col-lg-8">
+            <section class="training-dataset-panel mb-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div><strong>2. Предварительная разметка</strong><div id="training-preview-text" class="small text-muted">Добавьте источники и запустите анализ структуры папок.</div></div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button id="training-preview-start" class="btn btn-sm btn-primary" type="button"><i class="bi bi-magic me-1"></i>Разметить папки</button>
+                  <button id="training-confirm-high" class="btn btn-sm btn-outline-success" type="button"><i class="bi bi-check2-all me-1"></i>Подтвердить точные ≥85%</button>
+                </div>
+              </div>
+              <div class="progress mt-3" style="height:8px"><div id="training-preview-progress" class="progress-bar" style="width:0%"></div></div>
+            </section>
+
+            <section class="training-dataset-panel training-plan-panel mb-3">
+              <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                  <strong>3. План обучения</strong>
+                  <div id="training-plan-summary" class="small text-muted">Расчёт ещё не выполнен.</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <label class="small text-muted text-nowrap" for="training-style-limit">Максимум на стиль</label>
+                  <select id="training-style-limit" class="form-select form-select-sm training-limit-select">
+                    <option value="600">600</option>
+                    <option value="800">800</option>
+                    <option value="1000">1 000</option>
+                    <option value="1200">1 200</option>
+                    <option value="1500">1 500</option>
+                    <option value="2000">2 000</option>
+                    <option value="3000">3 000</option>
+                  </select>
+                  <button id="training-plan-refresh" class="btn btn-sm btn-outline-secondary" type="button" title="Пересчитать план"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+              </div>
+              <div class="training-source-controls mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" id="training-use-builder" type="checkbox">
+                  <label class="form-check-label" for="training-use-builder"><strong>Подтверждённые папки конструктора</strong></label>
+                  <div class="small text-muted">Основной источник: выбранные папки NAS, локального или другого диска.</div>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" id="training-use-samples" type="checkbox">
+                  <label class="form-check-label" for="training-use-samples"><strong>Эталонная выборка Samples</strong></label>
+                  <div class="small text-muted">Необязательные вручную отобранные примеры. Можно хранить вне проекта.</div>
+                </div>
+                <div class="input-group input-group-sm training-samples-path-row">
+                  <span class="input-group-text">Путь</span>
+                  <input id="training-samples-path" class="form-control" placeholder="По умолчанию: общая папка samples">
+                  <button id="training-samples-path-save" class="btn btn-outline-primary" type="button">Сохранить</button>
+                </div>
+                <div id="training-samples-path-status" class="small text-muted"></div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" id="training-use-rekordbox" type="checkbox">
+                  <label class="form-check-label" for="training-use-rekordbox"><strong>Разметка Rekordbox</strong></label>
+                  <div class="small text-muted">Опциональный источник; выключение не мешает работе плеера и конструктора.</div>
+                </div>
+              </div>
+              <div id="training-rf-progress-card" class="training-rf-progress-card d-none mb-3" aria-live="polite">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                  <div>
+                    <strong id="training-rf-progress-title">Обучение модели</strong>
+                    <div id="training-rf-progress-message" class="small text-muted">Ожидание запуска</div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span id="training-rf-progress-percent" class="badge text-bg-primary">0%</span>
+                    <button id="training-rf-stop" class="btn btn-sm btn-outline-danger" type="button">
+                      <i class="bi bi-stop-circle me-1"></i>Остановить
+                    </button>
+                  </div>
+                </div>
+                <div class="progress" style="height:10px">
+                  <div id="training-rf-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                </div>
+                <div id="training-rf-progress-detail" class="small text-muted mt-2"></div>
+                <div id="training-rf-progress-timing" class="small text-muted mt-1 d-none"></div>
+                <div id="training-rf-preflight" class="d-none mt-2"></div>
+              </div>
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span id="training-plan-minimum" class="small text-muted me-auto">Минимум: 200 треков на стиль</span>
+                <button id="training-enable-ready" class="btn btn-sm btn-outline-success" type="button"><i class="bi bi-check2-square me-1"></i>Включить пригодные</button>
+                <button id="training-disable-weak" class="btn btn-sm btn-outline-warning" type="button"><i class="bi bi-funnel me-1"></i>Отключить слабые</button>
+              </div>
+              <div class="table-responsive training-plan-table-wrap">
+                <table class="table table-sm align-middle mb-0 training-plan-table">
+                  <thead><tr><th title="Включить стиль в обучение">Вкл.</th><th>Стиль</th><th>Папки</th><th>Доступно</th><th>В RF</th><th>Результат</th></tr></thead>
+                  <tbody id="training-plan-rows"><tr><td colspan="6" class="text-muted text-center py-3">План загружается…</td></tr></tbody>
+                </table>
+              </div>
+              <div class="small text-muted mt-2">Отключённые и слишком редкие стили не анализируются. Лимит применяется независимо к каждому стилю; разница в размерах компенсируется весами классов.</div>
+              <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                <button id="training-quick-quality" class="btn btn-sm btn-outline-primary" type="button">
+                  <i class="bi bi-speedometer2 me-1"></i>Быстрая оценка качества
+                </button>
+                <span class="small text-muted">Только cached 134D · без extraction, Auto Tune, EffNet и изменения рабочей модели</span>
+              </div>
+              <div id="training-quick-quality-result" class="training-last-report d-none mt-3" aria-live="polite"></div>
+              <div id="training-last-report" class="training-last-report d-none mt-3"></div>
+            </section>
+
+            <section class="training-dataset-panel training-assistant-panel">
+              <div class="training-assistant-heading">
+                <div><strong><i class="bi bi-magic me-1"></i>Помощник подготовки выборки</strong><div class="small text-muted">Собирает понятный план из существующей диагностики. Ничего не меняет без подтверждения.</div></div>
+                <button id="training-assistant-analyze" class="btn btn-sm btn-primary" type="button">Сформировать план</button>
+              </div>
+              <div id="training-assistant-result" class="d-none mt-3">
+                <div id="training-assistant-totals" class="training-assistant-totals"></div>
+                <div id="training-assistant-pipeline" class="training-assistant-pipeline small text-muted"></div>
+                <div class="training-assistant-style-wrap mt-2"><div id="training-assistant-styles"></div></div>
+                <div id="training-assistant-preview" class="training-assistant-preview d-none mt-2"></div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                  <button id="training-assistant-apply" class="btn btn-sm btn-danger" type="button" disabled>Применить безопасные рекомендации</button>
+                  <button id="training-assistant-show-problems" class="btn btn-sm btn-outline-primary" type="button">Показать проблемные папки</button>
+                  <button id="training-assistant-keep" class="btn btn-sm btn-outline-secondary" type="button">Оставить текущую выборку</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="training-dataset-panel" id="training-review-section">
+              <div class="mb-2"><strong>4. Проверка обучающей выборки</strong><div class="small text-muted">Папки остаются основой разметки; отдельные спорные треки можно проверить, не исключая весь источник.</div></div>
+              <div class="training-review-tabs mb-3" role="tablist" aria-label="Режим проверки выборки">
+                <button id="training-review-folders-tab" class="btn btn-sm btn-primary" type="button" role="tab" aria-selected="true"><i class="bi bi-folder2-open me-1"></i>Папки</button>
+                <button id="training-review-tracks-tab" class="btn btn-sm btn-outline-primary" type="button" role="tab" aria-selected="false"><i class="bi bi-music-note-list me-1"></i>Спорные треки <span id="training-review-track-count" class="badge text-bg-secondary ms-1">0</span></button>
+              </div>
+              <div id="training-folder-review-pane">
+              <div class="training-folder-toolbar mb-3">
+                <label class="training-folder-filter-label" for="training-folder-status"><span>Статус</span>
+                  <select id="training-folder-status" class="form-select form-select-sm">
+                    <option value="all">Все</option><option value="problematic">Проблемные для обучения</option><option value="suggested">Предложено</option><option value="confirmed">Подтверждено</option><option value="ambiguous">Есть конфликт</option><option value="unmapped">Без стиля</option><option value="excluded">Исключено</option>
+                  </select>
+                </label>
+                <label class="training-folder-filter-label" for="training-folder-style"><span>Стиль</span>
+                  <select id="training-folder-style" class="form-select form-select-sm"><option value="all">Все</option></select>
+                </label>
+                <label class="training-folder-filter-label" for="training-folder-tracks"><span>Треков</span>
+                  <select id="training-folder-tracks" class="form-select form-select-sm">
+                    <option value="all">Любое количество</option><option value="lt20">До 20</option><option value="20-49">20–49</option><option value="50-99">50–99</option><option value="100plus">100 и больше</option>
+                  </select>
+                </label>
+                <div class="training-folder-search-wrap">
+                  <span>Поиск</span>
+                  <input id="training-folder-search" class="form-control form-control-sm" placeholder="Папка или стиль">
+                </div>
+                <button id="training-folder-refresh" class="btn btn-sm btn-outline-secondary training-folder-refresh" type="button" title="Обновить список" aria-label="Обновить список"><i class="bi bi-arrow-clockwise"></i></button>
+              </div>
+              <div id="training-problem-summary" class="small text-muted mb-2 d-none"></div>
+              <div id="training-problem-tools" class="training-problem-tools d-none mb-2">
+                <div class="training-problem-filters" role="group" aria-label="Фильтр проблемных папок">
+                  <button class="btn btn-sm btn-primary training-problem-filter" type="button" data-problem-filter="attention">Требуют внимания</button>
+                  <button class="btn btn-sm btn-outline-danger training-problem-filter" type="button" data-problem-filter="high">Высокий риск</button>
+                  <button class="btn btn-sm btn-outline-warning training-problem-filter" type="button" data-problem-filter="medium">Средний риск</button>
+                  <button class="btn btn-sm btn-outline-secondary training-problem-filter" type="button" data-problem-filter="low">Низкий риск</button>
+                  <button class="btn btn-sm btn-outline-secondary training-problem-filter" type="button" data-problem-filter="conflicts">С конфликтами</button>
+                  <button class="btn btn-sm btn-outline-success training-problem-filter" type="button" data-problem-filter="reviewed">Проверенные</button>
+                  <button class="btn btn-sm btn-outline-secondary training-problem-filter" type="button" data-problem-filter="all">Исторически проблемные</button>
+                </div>
+                <div class="training-problem-diagnostic-filters">
+                  <label class="training-problem-diagnostic-label" for="training-problem-confused-with">
+                    <span>Путается с</span>
+                    <select id="training-problem-confused-with" class="form-select form-select-sm" disabled>
+                      <option value="all">Сначала выберите стиль</option>
+                    </select>
+                  </label>
+                </div>
+                <label class="training-problem-sort-label">
+                  <span>Сортировка</span>
+                  <select id="training-problem-sort" class="form-select form-select-sm">
+                    <option value="risk">По риску</option>
+                    <option value="contribution">По вкладу в ошибки</option>
+                    <option value="issues">По review / ошибкам</option>
+                    <option value="disputed">По % спорных</option>
+                    <option value="tracks">По числу треков</option>
+                    <option value="style">По стилю</option>
+                  </select>
+                </label>
+                <button id="training-select-high-risk" class="btn btn-sm btn-outline-danger" type="button">Выделить все высокого риска</button>
+              </div>
+              <div class="table-responsive training-folder-table-wrap">
+                <table class="table table-sm align-middle mb-0 training-folder-table">
+                  <colgroup><col class="training-col-check"><col class="training-col-folder"><col class="training-col-tracks"><col class="training-col-style"><col class="training-col-status"></colgroup>
+                  <thead><tr id="training-folder-head"><th><input id="training-select-page" class="form-check-input" type="checkbox"></th><th>Папка</th><th>Треки</th><th>Стиль</th><th>Статус</th></tr></thead>
+                  <tbody id="training-folder-rows"><tr><td colspan="5" class="text-muted text-center py-4">Предварительная разметка ещё не построена.</td></tr></tbody>
+                </table>
+              </div>
+              <div class="training-bulk-bar mt-3">
+                <div class="training-selection-state me-auto"><span id="training-selected-count" class="small text-muted">Не выбрано</span><small id="training-action-hint">Выберите одну или несколько папок.</small></div>
+                <button id="training-edit-taxonomy" class="btn btn-sm btn-outline-primary" type="button"><i class="bi bi-pencil me-1"></i>Изменить разметку</button>
+                <div id="training-taxonomy-fields" class="training-taxonomy-fields d-none">
+                  <select id="training-bulk-style" class="form-select form-select-sm"><option value="">Стиль без изменения</option></select>
+                  <select id="training-bulk-language" class="form-select form-select-sm"><option value="">Язык без изменения</option></select>
+                  <select id="training-bulk-version" class="form-select form-select-sm"><option value="">Версия без изменения</option></select>
+                </div>
+                <button id="training-bulk-keep" class="btn btn-sm btn-outline-secondary" type="button">Снять выделение</button>
+                <button id="training-bulk-confirm" class="btn btn-sm btn-success" type="button">Оставить</button>
+                <button id="training-bulk-exclude" class="btn btn-sm btn-outline-danger" type="button">Исключить</button>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <button id="training-page-prev" class="btn btn-sm btn-outline-secondary" type="button">Назад</button>
+                <span id="training-page-text" class="small text-muted">0 из 0</span>
+                <button id="training-page-next" class="btn btn-sm btn-outline-secondary" type="button">Далее</button>
+              </div>
+              </div>
+              <div id="training-track-review-pane" class="d-none">
+                <div class="training-track-review-toolbar mb-2">
+                  <select id="training-track-style" class="form-select form-select-sm" aria-label="Стиль спорных треков"><option value="all">Все стили</option></select>
+                  <select id="training-track-confused-with" class="form-select form-select-sm" aria-label="Смешение спорных треков"><option value="all">Все пары</option></select>
+                  <select id="training-track-status" class="form-select form-select-sm" aria-label="Статус проверки спорных треков">
+                    <option value="all">Все решения</option><option value="pending">Ожидают проверки</option><option value="reviewed">Оставлены / исправлены</option><option value="excluded">Исключены вручную</option><option value="automatic">Не участвуют автоматически</option>
+                  </select>
+                  <input id="training-track-search" class="form-control form-control-sm" placeholder="Поиск по треку или папке">
+                  <button id="training-track-refresh" class="btn btn-sm btn-outline-secondary" type="button" title="Обновить"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+                <div class="training-preview-settings mb-2">
+                  <span><i class="bi bi-play-circle me-1"></i>Предпрослушивание начинается</span>
+                  <select id="training-preview-mode" class="form-select form-select-sm"><option value="percent">с процента трека</option><option value="time">с заданного времени</option></select>
+                  <label id="training-preview-percent-wrap"><input id="training-preview-percent" class="form-control form-control-sm" type="number" min="0" max="95" step="5" value="30">%</label>
+                  <label id="training-preview-seconds-wrap" class="d-none"><input id="training-preview-seconds" class="form-control form-control-sm" type="number" min="0" max="3600" step="5" value="60">сек</label>
+                  <button id="training-preview-save" class="btn btn-sm btn-outline-primary" type="button">Сохранить</button>
+                </div>
+                <div id="training-track-review-summary" class="small text-muted mb-2"></div>
+                <div class="training-track-bulk-bar mb-2">
+                  <label class="form-check mb-0"><input id="training-track-select-page-check" class="form-check-input" type="checkbox"><span class="form-check-label">Видимые</span></label>
+                  <button id="training-track-select-visible" class="btn btn-sm btn-outline-primary" type="button">Выбрать видимые</button>
+                  <button id="training-track-select-filtered" class="btn btn-sm btn-outline-primary" type="button">Выбрать все по фильтру</button>
+                  <button id="training-track-clear-selection" class="btn btn-sm btn-outline-secondary" type="button">Снять выделение</button>
+                  <span id="training-track-selected-count" class="small text-muted">Выбрано: 0</span>
+                  <button id="training-track-bulk-exclude" class="btn btn-sm btn-outline-danger ms-auto" type="button" disabled>Исключить выбранные только из обучения</button>
+                </div>
+                <div class="small text-muted mb-2"><i class="bi bi-save2 me-1"></i>Решения по трекам сохраняются в журнале по аудиоотпечатку и учитываются при следующих запусках обучения, даже если файл был переименован или перемещён.</div>
+                <div id="training-track-review-list" class="training-track-review-list"><div class="text-muted text-center py-4">Откройте список спорных треков.</div></div>
+                <audio id="training-review-audio" preload="metadata"></audio>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <button id="training-track-prev" class="btn btn-sm btn-outline-secondary" type="button">Назад</button>
+                  <span id="training-track-page-text" class="small text-muted">0 из 0</span>
+                  <button id="training-track-next" class="btn btn-sm btn-outline-secondary" type="button">Далее</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <div class="small text-muted"><i class="bi bi-shield-check me-1"></i>Музыкальные файлы и рабочая модель не изменяются до отдельного запуска обучения.</div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+          <button type="button" class="btn btn-success" id="training-dataset-retrain"><i class="bi bi-cpu me-1"></i>Обучить на подтверждённых</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="genreSettingsModal" tabindex="-1" aria-labelledby="genreSettingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="genreSettingsForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="genreSettingsModalLabel">Редактировать жанровые настройки</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="genreSettingsInput" class="form-label">Введите пары ключ:значение через запятую</label>
+            <input type="text" id="genreSettingsInput" class="form-control">
+            <div class="form-text">
+              Пример: club house:Club House, hiphop:Hip-Hop, future:Future House, русские ремиксы:Русские Ремиксы
+            </div>
+          </div>
+          <!-- ... -->
+          <div class="mb-3">
+            <label class="form-label">Выберите жанры для обучения:</label>
+            <div id="genreTrainableList" class="d-flex flex-wrap gap-2"></div>
+            <div class="form-text">Отмеченные жанры будут использоваться для обучения, остальные — только для сканирования и отображения.</div>
+            <!-- Подсказка о папках для выбранных жанров -->
+            <div id="genreFolderHint" class="alert alert-warning d-none mt-3"></div>
+          </div>
+          <!-- ... -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" onclick="saveGenreSettings();">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для параметров модели и переобучения -->
+<div class="modal fade" id="modelParamsModal" tabindex="-1" aria-labelledby="modelParamsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modelParamsModalLabel">Параметры модели</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body text-center">
+        <a href="/librosa-settings" class="btn btn-info mb-2 me-2">Настроить параметры модели</a>
+        <button type="button" class="btn btn-success mb-2" id="retrain-btn-modal">Переобучить модель</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для уведомления о сбросе папки -->
+<div class="modal fade" id="settingsSavedModal" tabindex="-1" aria-labelledby="settingsSavedModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="settingsSavedModalLabel">Настройки сохранены</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <p>После изменения настроек текущая папка будет сброшена.<br>Вы попадёте в корневую директорию при следующем открытии.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно для подтверждения остановки звука -->
+<div class="modal fade" id="deviceChangeModal" tabindex="-1" aria-labelledby="deviceChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deviceChangeModalLabel">Смена аудиоустройства</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        Внимание! При смене аудиоустройства воспроизведение будет остановлено. Продолжить?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelDeviceChangeBtn">Не менять</button>
+        <button type="button" class="btn btn-primary" id="confirmDeviceChangeBtn">Сменить устройство и остановить звук</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно Логирования -->
+<div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="logForm" method="post" action="/log_settings">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logModalLabel">Настройки логирования</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body" id="logFlagsContainer">
+          <!-- чекбоксы будут рендериться JS-ом -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Модальное окно ошибки памяти (MemoryError) при обучении и сканировании -->
+<div class="modal fade" id="memoryErrorModal" tabindex="-1" aria-labelledby="memoryErrorModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="memoryErrorModalLabel">Ошибка памяти</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <p id="memoryErrorText"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- ВАЖНО: до подключения settings.js! -->
+<!-- DEBUG: config.debug_enabled = {{ config.debug_enabled }}, config.debugEnabled = {{ config.debugEnabled }} -->
+<script>
+window.settingsConfig = {
+  musicDir: {{ config.music_dir|default('')|tojson }},
+  playbackMode: {{ config.playback_mode|default('')|tojson }},
+  defaultVolume: {{ config.default_volume|default(100)|tojson }},
+  soundQuality: {{ config.sound_quality|default('')|tojson }},
+  selectedDevice: {{ config.selected_device|default(0)|tojson }},
+devices: [
+  {% if devices %}
+    {% for dev in devices %}
+      { name: {{ dev.name|default('Unknown')|tojson }} }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  {% endif %}
+],
+  isHost: {{ 'true' if config.playback_mode == 'host' else 'false' }},
+  favoriteMode: {{ session.get('favorite_mode', config.favorite_mode)|default('stay')|tojson }},
+  advancedMode: {{ 'true' if config.advanced_mode else 'false' }},
+  forceModelForRecommend: {{ 'true' if config.force_model_for_recommend else 'false' }},
+  debugEnabled: {{ 'true' if config.debug_enabled else 'false' }},
+};
+</script>
+<!--как вариант вместо блока который выше-->
+<!--<script>-->
+<!--window.settingsConfig = {{ config|tojson }};-->
+<!--</script>-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+</body>
+</html>

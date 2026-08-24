@@ -1,0 +1,946 @@
+<!-- librosa_settings.html UPDATED: добавлены бейджи [R]/[RT], секция YAMNet Fusion (runtime), легенда -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Librosa: Технические настройки</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .setting-badge { font-size: 0.65rem; vertical-align: middle; }
+        .form-text { line-height: 1.2; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="/settings" class="btn btn-outline-secondary">
+            &larr; Назад к настройкам
+        </a>
+    </div>
+    <h3>Настройки аудиоанализа (librosa)</h3>
+    {% set active_report = active_model.get('classification_report', {}) %}
+    {% set active_macro = active_report.get('macro avg', {}) %}
+    <section class="card border-primary mb-3" aria-labelledby="active-model-title">
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start">
+                <div>
+                    <h5 id="active-model-title" class="mb-1">Активная жанровая модель</h5>
+                    {% if active_model %}
+                    <div><strong>{{ active_model.get('classes', [])|length }} класса · {{ active_model.get('expected_feature_len', '—') }}D</strong></div>
+                    <div class="small text-muted">{{ active_model.get('classes', [])|join(' · ') }}</div>
+                    {% else %}
+                    <div class="text-muted">Манифест активной модели недоступен.</div>
+                    {% endif %}
+                </div>
+                {% if active_model %}
+                <div class="small text-end">
+                    {% if active_macro.get('f1-score') is not none %}<div>Macro F1: <strong>{{ '%.1f%%'|format(active_macro.get('f1-score', 0) * 100) }}</strong></div>{% endif %}
+                    {% if active_report.get('accuracy') is not none %}<div>Accuracy: {{ '%.1f%%'|format(active_report.get('accuracy', 0) * 100) }}</div>{% endif %}
+                    <div class="text-muted">Версия: {{ active_model.get('version', '—') }}</div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="form-text mt-2">Это фактически используемая модель. Поля формы ниже задают параметры следующего обучения и не описывают автоматически подобранные параметры активной модели.</div>
+        </div>
+    </section>
+    <div class="row g-2 mb-4" aria-label="Группы технических настроек">
+        <div class="col-sm-6 col-xl-3"><div class="border rounded p-2 h-100"><strong>A. Аудиопризнаки</strong><div class="small text-muted">Изменение может поменять feature contract и потребовать повторного расчёта аудиопризнаков.</div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="border rounded p-2 h-100"><strong>B. Следующее обучение RF</strong><div class="small text-muted">Меняет следующий кандидат. Совместимый 134D не требует повторного чтения MP3.</div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="border rounded p-2 h-100"><strong>C. Дополнительные модели</strong><div class="small text-muted">YAMNet, Whisper и EffNet работают отдельными этапами.</div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="border rounded p-2 h-100"><strong>D. Runtime</strong><div class="small text-muted">Устройства, CUDA, потоки и приоритет выполнения.</div></div></div>
+    </div>
+    <form id="librosa-form">
+        <!-- ОСНОВНЫЕ ПАРАМЕТРЫ -->
+        <div class="mb-4 pb-2 border-bottom">
+            <h5 class="mb-1">A. Основные аудиопараметры</h5>
+            <p class="small text-muted">Изменение sample rate, сегментов, MFCC, FFT или набора признаков может потребовать нового расчёта аудиопризнаков.</p>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="sample_rate" class="form-label">
+                        Sample Rate <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="sample_rate" id="sample_rate" type="number" value="{{ settings.sample_rate }}">
+                    <div class="form-text text-muted">
+                        Частота дискретизации (Hz). Меняет спектр признаков. Требует переобучения.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="duration" class="form-label">
+                        Длительность (сек) <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="duration" id="duration" type="number" value="{{ settings.duration }}">
+                    <div class="form-text text-muted">
+                        Сколько секунд анализируется. Влияет на усреднение признаков.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="offset" class="form-label">
+                        Смещение (сек) <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" type="number" step="any" id="offset" name="offset" value="{{ settings.offset }}">
+                    <div class="form-text text-muted">
+                        С какого места брать сегмент. Меняет данные -> retrain.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="n_mfcc" class="form-label">
+                        MFCC (коэффициентов) <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="n_mfcc" id="n_mfcc" type="number" value="{{ settings.n_mfcc }}">
+                    <div class="form-text text-muted">
+                        Размерность MFCC. Изменение = другая длина вектора -> retrain.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- КОНТРОЛЬ УВЕРЕННОСТИ И СЕГМЕНТЫ -->
+        <div class="mb-4 pb-2 border-bottom">
+            <h5 class="mb-1">B. Параметры следующего обучения RF и принятия решения</h5>
+            <p class="small text-muted">Эти настройки относятся к следующему обучению; текущая активная модель показана отдельно выше.</p>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="n_estimators" class="form-label">n_estimators (деревьев) <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                    <input class="form-control" name="n_estimators" id="n_estimators" type="number" min="10" max="1000" value="{{ settings.n_estimators or 100 }}">
+                    <div class="form-text text-muted">Количество деревьев следующей RandomForest-модели.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="genre_threshold" class="form-label">Порог (genre_threshold) <span class="badge bg-info text-dark setting-badge">[RT]</span></label>
+                    <input class="form-control" name="genre_threshold" id="genre_threshold" type="number" step="0.01" value="{{ settings.genre_threshold }}">
+                    <div class="form-text text-muted">Runtime: меняет решение Unknown, но не параметры активного RF.</div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="calibrate_probabilities"
+                               id="calibrate_probabilities" {% if settings.calibrate_probabilities %}checked{% endif %}>
+                        <label class="form-check-label" for="calibrate_probabilities">
+                            Калибровать вероятности <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">Делает проценты RF ближе к реальной точности.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="calibration_method" class="form-label">
+                        Метод калибровки <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <select class="form-select" name="calibration_method" id="calibration_method">
+                        <option value="sigmoid" {% if settings.calibration_method == 'sigmoid' %}selected{% endif %}>sigmoid (рекомендуется)</option>
+                        <option value="isotonic" {% if settings.calibration_method == 'isotonic' %}selected{% endif %}>isotonic</option>
+                    </select>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="calibration_cv" class="form-label">
+                        Calibration CV <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="calibration_cv" id="calibration_cv" type="number"
+                           min="2" max="5" value="{{ settings.calibration_cv or 3 }}">
+                    <div class="form-text text-muted">3 — хороший баланс качества и времени обучения.</div>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="auto_class_thresholds_enabled"
+                               id="auto_class_thresholds_enabled" {% if settings.auto_class_thresholds_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="auto_class_thresholds_enabled">
+                            Автопороги по жанрам <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">Использует пороги, рассчитанные во время последнего обучения.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="target_class_precision" class="form-label">
+                        Целевая точность принятых результатов <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="target_class_precision" id="target_class_precision"
+                           type="number" step="0.01" min="0.50" max="0.99"
+                           value="{{ settings.target_class_precision }}">
+                    <div class="form-text text-muted">0.90 означает цель: не менее 90% верных принятых результатов на validation.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="min_genre_margin" class="form-label">
+                        Минимальный отрыв top-1 от top-2 <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                    </label>
+                    <input class="form-control" name="min_genre_margin" id="min_genre_margin"
+                           type="number" step="0.01" min="0" max="0.95"
+                           value="{{ settings.min_genre_margin }}">
+                    <div class="form-text text-muted">Если два жанра слишком близки, результат будет Unknown.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="language_threshold" class="form-label">
+                        Порог определения языка <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                    </label>
+                    <input class="form-control" name="language_threshold" id="language_threshold"
+                           type="number" step="0.01" min="0.50" max="0.99"
+                           value="{{ settings.language_threshold }}">
+                    <div class="form-text text-muted">Если язык не указан в Rekordbox/ID3, используется отдельная аудиомодель.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="segment_disagreement_penalty" class="form-label">
+                        Штраф при расхождении сегментов <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                    </label>
+                    <input class="form-control" name="segment_disagreement_penalty" id="segment_disagreement_penalty"
+                           type="number" step="0.01" min="0" max="0.40"
+                           value="{{ settings.segment_disagreement_penalty }}">
+                    <div class="form-text text-muted">Добавляется к порогу, если части трека голосуют за разные стили. Рекомендуется 0.10.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="max_base_class_ratio" class="form-label">
+                        Максимальный перевес класса <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="max_base_class_ratio" id="max_base_class_ratio"
+                           type="number" step="0.1" min="1" max="5"
+                           value="{{ settings.max_base_class_ratio }}">
+                    <div class="form-text text-muted">1.5 ограничивает крупный класс до 1.5× минимального и помогает recall DnB.</div>
+                </div>
+            </div>
+
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">C/D. Whisper: дополнительная модель и устройство</h6>
+                    {% if vocal_language_status.dependency_available %}
+                    <span class="badge bg-success">faster-whisper установлен</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">faster-whisper не установлен</span>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="vocal_language_enabled"
+                                   id="vocal_language_enabled" {% if settings.vocal_language_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="vocal_language_enabled">
+                                Анализировать язык вокала <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                            </label>
+                        </div>
+                        <div class="form-text text-muted">При первом включении модель будет загружена в {{ vocal_language_status.download_root }}.</div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <label for="vocal_language_model" class="form-label">Модель Whisper</label>
+                        <select class="form-select" name="vocal_language_model" id="vocal_language_model">
+                            {% for model_name in ['tiny', 'base', 'small'] %}
+                            <option value="{{ model_name }}" {% if settings.vocal_language_model == model_name %}selected{% endif %}>{{ model_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text text-muted">base — рекомендуемый баланс скорости и качества.</div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <label for="vocal_language_device" class="form-label">Устройство</label>
+                        <select class="form-select" name="vocal_language_device" id="vocal_language_device">
+                            <option value="auto" {% if settings.vocal_language_device == 'auto' %}selected{% endif %}>Авто: CUDA → CPU</option>
+                            <option value="cuda" {% if settings.vocal_language_device == 'cuda' %}selected{% endif %}>CUDA с откатом на CPU</option>
+                            <option value="cpu" {% if settings.vocal_language_device == 'cpu' %}selected{% endif %}>Только CPU</option>
+                        </select>
+                        <div class="form-text text-muted">
+                            CPU использует int8. CUDA использует float16 и требует совместимые CUDA 12/cuDNN 9.
+                            Проверка сейчас: {% if vocal_language_status.cuda_available %}
+                            <span class="text-success">CUDA доступна (устройств: {{ vocal_language_status.cuda_device_count }})</span>
+                            {% else %}<span class="text-warning">CUDA не обнаружена — будет CPU</span>{% endif %}.
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <label for="vocal_language_min_probability" class="form-label">Минимальная вероятность языка</label>
+                        <input class="form-control" name="vocal_language_min_probability" id="vocal_language_min_probability"
+                               type="number" step="0.01" min="0.40" max="0.99" value="{{ settings.vocal_language_min_probability }}">
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <label for="vocal_language_min_speech_seconds" class="form-label">Минимум речи, сек</label>
+                        <input class="form-control" name="vocal_language_min_speech_seconds" id="vocal_language_min_speech_seconds"
+                               type="number" step="0.5" min="0" max="15" value="{{ settings.vocal_language_min_speech_seconds }}">
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <label for="vocal_language_detection_segments" class="form-label">Сегментов для языка</label>
+                        <input class="form-control" name="vocal_language_detection_segments" id="vocal_language_detection_segments"
+                               type="number" min="1" max="5" value="{{ settings.vocal_language_detection_segments }}">
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="form-check mt-4">
+                            <input type="checkbox" class="form-check-input" name="vocal_language_rf_fallback"
+                                   id="vocal_language_rf_fallback" {% if settings.vocal_language_rf_fallback %}checked{% endif %}>
+                            <label class="form-check-label" for="vocal_language_rf_fallback">RF как резерв</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="vocal_language_mark_instrumental"
+                                   id="vocal_language_mark_instrumental" {% if settings.vocal_language_mark_instrumental %}checked{% endif %}>
+                            <label class="form-check-label" for="vocal_language_mark_instrumental">
+                                Нет речи → Instrumental (экспериментально)
+                            </label>
+                        </div>
+                        <div class="form-text text-muted">По умолчанию выключено: VAD иногда не слышит вокал внутри плотного микса.</div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="vocal_language_music_fallback_enabled"
+                                   id="vocal_language_music_fallback_enabled" {% if settings.vocal_language_music_fallback_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="vocal_language_music_fallback_enabled">Строгий повтор без VAD</label>
+                        </div>
+                        <div class="form-text text-muted">Помогает распознавать обработанный вокал в ремиксах.</div>
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <label for="vocal_language_music_min_probability" class="form-label">Порог повтора без VAD</label>
+                        <input class="form-control" name="vocal_language_music_min_probability" id="vocal_language_music_min_probability"
+                               type="number" step="0.01" min="0.70" max="0.99" value="{{ settings.vocal_language_music_min_probability }}">
+                    </div>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="vocal_language_segment_consensus_enabled"
+                                   id="vocal_language_segment_consensus_enabled" {% if settings.vocal_language_segment_consensus_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="vocal_language_segment_consensus_enabled">Согласование отдельных фрагментов</label>
+                        </div>
+                        <div class="form-text text-muted">Если VAD пропустил вокал, язык принимается только при совпадении минимум двух частей трека.</div>
+                    </div>
+                </div>
+                <div class="small text-muted">
+                    Порядок: Rekordbox/ID3/имя → Whisper → старая RF-модель. Возможные значения: Russian, English, Other, Instrumental, Unknown.
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="auto_tune_model"
+                               id="auto_tune_model" {% if settings.auto_tune_model %}checked{% endif %}>
+                        <label class="form-check-label" for="auto_tune_model">
+                            Автоподбор параметров RF <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">Оптимизация по macro F1 с группировкой версий одного трека.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="auto_tune_iterations" class="form-label">
+                        Попыток автоподбора <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="auto_tune_iterations" id="auto_tune_iterations"
+                           type="number" min="4" max="30" value="{{ settings.auto_tune_iterations }}">
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="auto_tune_cv" class="form-label">
+                        Group CV <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="auto_tune_cv" id="auto_tune_cv"
+                           type="number" min="2" max="5" value="{{ settings.auto_tune_cv }}">
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="multi_segment_enabled"
+                               id="multi_segment_enabled" {% if settings.multi_segment_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="multi_segment_enabled">
+                            Анализировать несколько частей трека <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">Применяется одинаково при обучении и распознавании.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="multi_segment_offsets" class="form-label">
+                        Начало сегментов, сек <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="multi_segment_offsets" id="multi_segment_offsets"
+                           type="text" value="{{ settings.multi_segment_offsets }}">
+                    <div class="form-text text-muted">Через запятую, например: 30,60,90.</div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <label for="multi_segment_duration" class="form-label">
+                        Длина каждого сегмента, сек <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="multi_segment_duration" id="multi_segment_duration"
+                           type="number" min="5" max="60" value="{{ settings.multi_segment_duration }}">
+                    <div class="form-text text-muted">Три участка по 15 секунд обычно достаточно.</div>
+                </div>
+            </div>
+
+            {% if training_quality_gate %}
+                {% if training_quality_gate.get('passed') %}
+                <div class="alert alert-success py-2 mt-2 mb-2">
+                    Последний кандидат прошёл автоматическую проверку качества.
+                </div>
+                {% else %}
+                <div class="alert alert-warning py-2 mt-2 mb-2">
+                    <strong>Последний кандидат отклонён — рабочая модель не изменена.</strong>
+                    {% if training_quality_gate.get('reasons') %}
+                    <ul class="mb-1 mt-1">
+                        {% for reason in training_quality_gate.get('reasons', []) %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <a href="/librosa-settings/training-quality-gate.json">Скачать полный JSON-отчёт</a>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            {% if model_confidence.class_thresholds %}
+            <div class="alert alert-light border mt-2 mb-2">
+                <h6>Результат последнего обучения</h6>
+                {% if not model_confidence.taxonomy_active %}
+                <div class="alert alert-warning py-2 mb-2">
+                    Сейчас загружена совместимая старая модель {{ model_confidence.version }}.
+                    Разделение на базовый стиль, язык и тип версии включится после переобучения.
+                </div>
+                {% else %}
+                <div class="small text-success mb-2">
+                    Многомерная классификация активна (модель {{ model_confidence.version }}).
+                </div>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-2">
+                        <thead><tr><th>Базовый стиль</th><th>Автопорог</th><th>Precision на подборе</th><th>Принято треков</th></tr></thead>
+                        <tbody>
+                        {% for genre, threshold in model_confidence.class_thresholds.items() %}
+                            {% set diag = model_confidence.threshold_diagnostics.get(genre, {}) %}
+                            <tr>
+                                <td>{{ genre }}</td>
+                                <td>{{ '%.3f'|format(threshold) }}</td>
+                                <td>{{ '%.1f%%'|format((diag.get('validation_precision', 0) * 100)) }}</td>
+                                <td>{{ diag.get('accepted_validation_tracks', 0) }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% set policy = model_confidence.rejection_policy_report %}
+                {% if policy %}
+                <div class="small">
+                    Отдельная проверка: точность принятых результатов
+                    <strong>{{ '%.1f%%'|format(policy.get('accepted_precision', 0) * 100) }}</strong>,
+                    покрытие <strong>{{ '%.1f%%'|format(policy.get('coverage', 0) * 100) }}</strong>,
+                    Unknown: {{ policy.get('unknown_tracks', 0) }} из {{ policy.get('total_tracks', 0) }}.
+                </div>
+                {% endif %}
+                {% set language_report = model_confidence.language_validation_report %}
+                {% if language_report and language_report.get('accuracy') is not none %}
+                <div class="small">
+                    Проверка языка (Russian/Foreign):
+                    <strong>{{ '%.1f%%'|format(language_report.get('accuracy', 0) * 100) }}</strong>.
+                </div>
+                {% endif %}
+                {% set language_policy = model_confidence.language_rejection_policy_report %}
+                {% if language_policy %}
+                <div class="small">
+                    Язык после индивидуальных порогов: точность
+                    <strong>{{ '%.1f%%'|format(language_policy.get('accepted_precision', 0) * 100) }}</strong>,
+                    покрытие <strong>{{ '%.1f%%'|format(language_policy.get('coverage', 0) * 100) }}</strong>.
+                    {% for language, threshold in model_confidence.language_class_thresholds.items() %}
+                        {{ language }}={{ '%.3f'|format(threshold) }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% set tuning = model_confidence.hyperparameter_tuning %}
+                {% if tuning and tuning.get('enabled') %}
+                <div class="small">
+                    Автоподбор RF по macro F1:
+                    <strong>{{ '%.3f'|format(tuning.get('best_score', 0)) }}</strong>,
+                    вариантов: {{ tuning.get('iterations', 0) }}, CV: {{ tuning.get('cv', 0) }}.
+                </div>
+                {% endif %}
+                {% set hierarchy = model_confidence.hierarchical_genre %}
+                {% if hierarchy and hierarchy.get('enabled') %}
+                <div class="small text-success">
+                    Иерархия семейств активна: {{ hierarchy.get('families', [])|join(', ') }}.
+                    Точные классы при этом остаются названиями вашей структуры.
+                </div>
+                {% endif %}
+                {% set deep_genre = model_confidence.effnet_genre_training %}
+                {% if deep_genre %}
+                <div class="small {{ 'text-success' if deep_genre.get('enabled') else 'text-muted' }}">
+                    Уточнение жанров EffNet:
+                    {% if deep_genre.get('enabled') %}
+                        принято автоматической проверкой
+                        (macro F1 {{ '%.3f'|format(deep_genre.get('fusion', {}).get('hybrid_validation_macro_f1', 0)) }}).
+                    {% else %}
+                        не используется — {{ deep_genre.get('reason', 'нет подходящих данных') }}.
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="mt-2">
+                    <a class="btn btn-sm btn-outline-primary" href="/librosa-settings/training-errors.csv">Скачать CSV ошибок</a>
+                    <a class="btn btn-sm btn-outline-primary" href="/librosa-settings/training-language-errors.csv">CSV ошибок языка</a>
+                    <a class="btn btn-sm btn-outline-secondary" href="/librosa-settings/training-duplicates.csv">Скачать группы дубликатов</a>
+                    <a class="btn btn-sm btn-outline-danger" href="/librosa-settings/training-label-conflicts.csv">Дубли и конфликты меток</a>
+                    <a class="btn btn-sm btn-outline-warning" href="/librosa-settings/training-conflicts.csv">Конфликты стилей</a>
+                    <a class="btn btn-sm btn-outline-success" href="/librosa-settings/training-review-queue.csv">Очередь ручной проверки</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-light border py-2 mt-2 mb-2">
+                Подробные пороги находятся внутри рабочего файла модели и намеренно не загружаются на этой странице.
+                Сводка фактически активной модели показана выше из компактного read-only манифеста.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ПАРАМЕТРЫ ПРЕОБРАЗОВАНИЯ -->
+        <div class="mb-4 pb-2 border-bottom">
+            <h5 class="mb-1">A. FFT, окно и шаг аудиопризнаков</h5>
+            <p class="small text-muted">Изменение этих значений влияет на извлекаемый 134D-вектор.</p>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-3 mb-2">
+                    <label for="hop_length" class="form-label">
+                        hop_length <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="hop_length" id="hop_length" type="number" value="{{ settings.hop_length }}">
+                    <div class="form-text text-muted">
+                        Шаг окна. Меняет временную дискретизацию признаков.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-2">
+                    <label for="n_fft" class="form-label">
+                        n_fft <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="n_fft" id="n_fft" type="number" value="{{ settings.n_fft }}">
+                    <div class="form-text text-muted">
+                        Размер окна Фурье. Влияет на спектральные признаки.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-2">
+                    <label for="win_length" class="form-label">
+                        win_length <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input class="form-control" name="win_length" id="win_length" type="number" value="{{ settings.win_length }}">
+                    <div class="form-text text-muted">
+                        Длина окна (обычно = n_fft). Изменение = retrain.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-2">
+                    <label for="window" class="form-label">
+                        window <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <select class="form-select" name="window" id="window">
+                        <option value="hann" {% if settings.window=='hann' %}selected{% endif %}>hann</option>
+                        <option value="hamming" {% if settings.window=='hamming' %}selected{% endif %}>hamming</option>
+                        <option value="blackman" {% if settings.window=='blackman' %}selected{% endif %}>blackman</option>
+                    </select>
+                    <div class="form-text text-muted">
+                        Тип окна влияет на спектр → retrain.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- БАЛАНСИРОВКА И ЛИМИТЫ (Rekordbox) -->
+        <div id="rekordbox-balance-section" class="mb-4 pb-2 border-bottom" {% if not settings.use_rekordbox %}style="display:none"{% endif %}>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Балансировка и лимиты (Rekordbox)</h5>
+                <!-- Значок с tooltip -->
+                <span
+                    class="ms-2 text-secondary"
+                    style="cursor:help;font-size:1.1rem; line-height:1;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    title="Эти параметры применяются ТОЛЬКО к трекам из Rekordbox (parsed_rekordbox.json / XML). Папки samples/ сейчас ими не ограничиваются. Для samples действует внутренняя балансировка (усечение до минимального числа среди жанров) и отдельно внедряемый лимит, если вы его добавите в код.">
+                    &#9432;
+                </span>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="rekordbox_track_limit" class="form-label">
+                        Rekordbox Track Limit <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input type="number" class="form-control" id="rekordbox_track_limit" name="rekordbox_track_limit" value="{{ settings.rekordbox_track_limit }}">
+                    <div class="form-text text-muted">
+                        Ограничение треков из Rekordbox при обучении (только Rekordbox).
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="min_tracks_per_genre" class="form-label">
+                        Min Tracks per Genre <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input type="number" class="form-control" id="min_tracks_per_genre" name="min_tracks_per_genre" value="{{ settings.min_tracks_per_genre }}">
+                    <div class="form-text text-muted">
+                        (Rekordbox) Жанры с меньшим количеством исключаются.
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="max_tracks_per_genre" class="form-label">
+                        Max Tracks per Genre <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <input type="number" class="form-control" id="max_tracks_per_genre" name="max_tracks_per_genre" value="{{ settings.max_tracks_per_genre }}">
+                    <div class="form-text text-muted">
+                        (Rekordbox) Верхний лимит треков на жанр при балансировке.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ + YAMNET -->
+        <div class="mb-4 pb-2 border-bottom">
+            <h5 class="mb-1">C/D. Дополнительные модели и runtime</h5>
+            <p class="small text-muted">YAMNet, устройства и runtime-переключатели не меняют музыкальные файлы.</p>
+
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="use_id3" id="use_id3" {% if settings.use_id3 %}checked{% endif %}>
+                        <label class="form-check-label" for="use_id3">
+                            Использовать ID3 <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="use_folder" id="use_folder" {% if settings.use_folder %}checked{% endif %}>
+                        <label class="form-check-label" for="use_folder">
+                            Жанр по папке <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="enable_learning_curve" id="enable_learning_curve"
+                               {% if settings.enable_learning_curve %}checked{% endif %}>
+                        <label class="form-check-label" for="enable_learning_curve">
+                            Learning Curve <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-3">
+
+            <div class="row mb-2">
+                <div class="col-12">
+                    <span class="badge bg-secondary setting-badge">Легенда</span>
+                    <span class="badge bg-warning text-dark setting-badge ms-2">[R] требует переобучения</span>
+                    <span class="badge bg-info text-dark setting-badge ms-2">[RT] применяется сразу</span>
+                </div>
+            </div>
+
+            <!-- YAMNET RUNTIME -->
+            <div class="row mb-2">
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="yamnet_enabled" id="yamnet_enabled"
+                               {% if settings.yamnet_enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="yamnet_enabled">
+                            YAMNet Fusion <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                        </label>
+                    </div>
+                    <div class="form-text text-muted">
+                        Включает смешивание RF и YAMNet без retrain. Влияет только при сканировании. Если хотите улучшить рекомендации после включения — пересканируйте библиотеку
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="yamnet_alpha" class="form-label">
+                        YAMNet Alpha <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                    </label>
+                    <input type="number" step="0.01" min="0" max="1" class="form-control" name="yamnet_alpha" id="yamnet_alpha"
+                           value="{{ settings.yamnet_alpha or 0.35 }}">
+                    <div class="form-text text-muted">
+                        fused = (1 - alpha) * RF + alpha * YAMNet
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-2">
+                    <label for="yamnet_model_path" class="form-label">
+                        YAMNet ONNX путь <span class="badge bg-info text-dark setting-badge">[RT]</span>
+                    </label>
+                    <input type="text" class="form-control" name="yamnet_model_path" id="yamnet_model_path"
+                           value="{{ settings.yamnet_model_path or 'YamNet.onnx' }}">
+                    <div class="form-text text-muted">
+                        Путь к локальному YamNet.onnx.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРИЗНАКИ -->
+        <details class="mb-4 pb-2 border-bottom">
+            <summary class="h5 mb-2">A. Признаки для извлечения <span class="small text-muted fw-normal">(развернуть)</span></summary>
+            <p class="small text-muted">Блок свёрнут по умолчанию. Переключение признаков может изменить feature contract.</p>
+            <div class="row mb-2">
+                <!-- MFCC -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.mfcc" id="feature_mfcc" {% if settings.features.mfcc %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_mfcc">MFCC <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Тембральные коэффициенты</div>
+                    </div>
+                </div>
+                <!-- Chroma -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.chroma" id="feature_chroma" {% if settings.features.chroma %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_chroma">Chroma <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Хромограмма (гармония)</div>
+                    </div>
+                </div>
+                <!-- Spectral Contrast -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_contrast" id="feature_spectral_contrast" {% if settings.features.spectral_contrast %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_contrast">Spectral Contrast <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Контрасты спектра</div>
+                    </div>
+                </div>
+                <!-- Zero Crossing Rate -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.zcr" id="feature_zcr" {% if settings.features.zcr %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_zcr">Zero Crossing Rate <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Частота переходов</div>
+                    </div>
+                </div>
+                <!-- Tonnetz -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.tonnetz" id="feature_tonnetz" {% if settings.features.tonnetz %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_tonnetz">Tonnetz <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Тональное пространство</div>
+                    </div>
+                </div>
+                <!-- Spectral Centroid -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_centroid" id="feature_spectral_centroid" {% if settings.features.spectral_centroid %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_centroid">Spectral Centroid <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Яркость звучания</div>
+                    </div>
+                </div>
+                <!-- Spectral Bandwidth -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_bandwidth" id="feature_spectral_bandwidth" {% if settings.features.spectral_bandwidth %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_bandwidth">Spectral Bandwidth <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Ширина спектра</div>
+                    </div>
+                </div>
+                <!-- Spectral Rolloff -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_rolloff" id="feature_spectral_rolloff" {% if settings.features.spectral_rolloff %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_rolloff">Spectral Rolloff <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Частота 85% энергии</div>
+                    </div>
+                </div>
+                <!-- RMS -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.rms" id="feature_rms" {% if settings.features.rms %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_rms">RMS Energy <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Средняя энергия</div>
+                    </div>
+                </div>
+                <!-- Onset Strength -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.onset_strength" id="feature_onset_strength" {% if settings.features.onset_strength %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_onset_strength">Onset Strength <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Сила атак</div>
+                    </div>
+                </div>
+                <!-- Tempo -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.tempo" id="feature_tempo" {% if settings.features.tempo %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_tempo">BPM (Tempo) <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Темп из beat_track</div>
+                    </div>
+                </div>
+                <!-- Tempogram -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.tempogram" id="feature_tempogram" {% if settings.features.tempogram %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_tempogram">Tempogram <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Дисперсия ритма</div>
+                    </div>
+                </div>
+                <!-- Delta MFCC -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.delta_mfcc" id="feature_delta_mfcc" {% if settings.features.delta_mfcc %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_delta_mfcc">Delta MFCC <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">1-я производная MFCC</div>
+                    </div>
+                </div>
+                <!-- Delta2 MFCC -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.delta2_mfcc" id="feature_delta2_mfcc" {% if settings.features.delta2_mfcc %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_delta2_mfcc">Delta-Delta MFCC <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">2-я производная MFCC</div>
+                    </div>
+                </div>
+                <!-- Spectral Flatness -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_flatness" id="feature_spectral_flatness" {% if settings.features.spectral_flatness %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_flatness">Spectral Flatness <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">"Шумность"</div>
+                    </div>
+                </div>
+                <!-- Pitch -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.pitch" id="feature_pitch" {% if settings.features.pitch %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_pitch">Pitch (pyin) <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Основная частота + доверие</div>
+                    </div>
+                </div>
+                <!-- Silence Ratio -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.silence_ratio" id="feature_silence_ratio" {% if settings.features.silence_ratio %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_silence_ratio">Silence Ratio <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Доля тишины</div>
+                    </div>
+                </div>
+                <!-- Energy Entropy -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.energy_entropy" id="feature_energy_entropy" {% if settings.features.energy_entropy %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_energy_entropy">Energy Entropy <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Неоднородность энергии</div>
+                    </div>
+                </div>
+                <!-- Spectral Skewness / Kurtosis -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_skewness" id="feature_spectral_skewness" {% if settings.features.spectral_skewness %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_skewness">Spectral Skewness/Kurtosis <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Форма спектра</div>
+                    </div>
+                </div>
+                <!-- Harmonic Ratio -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.harmonic_ratio" id="feature_harmonic_ratio" {% if settings.features.harmonic_ratio %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_harmonic_ratio">Harmonic/Percussive Ratio <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Гармоника vs ударность</div>
+                    </div>
+                </div>
+                <!-- MFCC std -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.mfcc_std" id="feature_mfcc_std" {% if settings.features.mfcc_std %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_mfcc_std">MFCC std <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Стд. отклонение MFCC</div>
+                    </div>
+                </div>
+                <!-- High/Low Energy Ratio -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.energy_ratio" id="feature_energy_ratio" {% if settings.features.energy_ratio %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_energy_ratio">High/Low Energy Ratio <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">Отношение сегментов энергии</div>
+                    </div>
+                </div>
+                <!-- Spectral Stats -->
+                <div class="col-12 col-md-6 col-lg-4 col-xl-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="features.spectral_stats" id="feature_spectral_stats" {% if settings.features.spectral_stats %}checked{% endif %}>
+                        <label class="form-check-label" for="feature_spectral_stats">Spectral Stats <span class="badge bg-warning text-dark setting-badge">[R]</span></label>
+                        <div class="form-text text-muted">min/max/median/std</div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- REKORDBOX SECTION -->
+        <hr>
+        <div class="mb-3">
+            <label>
+                <input type="checkbox" name="use_rekordbox" id="use_rekordbox" {% if settings.use_rekordbox %}checked{% endif %}>
+                Использовать данные из Rekordbox для обучения <span class="badge bg-warning text-dark setting-badge">[R]</span>
+            </label>
+            <div class="form-text text-muted">
+                Для многомерной модели рекомендуется включить: ручные Genre из JSON дают отдельные метки
+                стиля, языка, версии и настроения. Rating не используется в жанровой модели.
+            </div>
+            <div id="rekordbox-section" style="display: {% if settings.use_rekordbox %}block{% else %}none{% endif %}; margin-top:10px;">
+                <div>
+                    <label>
+                        <input type="radio" name="rekordbox_source" id="rekordbox-xml-radio" value="xml"
+                               {% if settings.rekordbox_source == 'xml' %}checked{% endif %}>
+                        XML <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                    <label class="ms-3">
+                        <input type="radio" name="rekordbox_source" id="rekordbox-json-radio" value="json"
+                               {% if settings.rekordbox_source != 'xml' %}checked{% endif %}>
+                        JSON <span class="badge bg-warning text-dark setting-badge">[R]</span>
+                    </label>
+                </div>
+                <div id="rekordbox-xml-section" style="margin-top:10px;">
+                    <div id="rekordbox-status-block"></div>
+                    <input type="file" id="rekordbox-xml" accept=".xml" class="form-control mt-2 mb-2">
+                    <button class="btn btn-primary" id="upload-rekordbox-btn" type="button">Загрузить XML</button>
+                    <button class="btn btn-secondary" id="parse-rekordbox-btn" type="button">Парсить XML</button>
+                    <div id="rekordbox-progress" class="mt-2"></div>
+                </div>
+                <div id="rekordbox-json-section" style="display:none; margin-top:10px;">
+                    <div id="rekordbox-json-status-block"></div>
+                    <input type="file" id="rekordbox-json" accept=".json" class="form-control mt-2 mb-2">
+                    <button class="btn btn-primary" id="upload-rekordbox-json-btn" type="button">Загрузить JSON</button>
+                    <button class="btn btn-secondary" id="parse-rekordbox-json-btn" type="button">Парсить JSON</button>
+                    <div id="rekordbox-json-progress" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Сохранить</button>
+        <div class="form-text mt-2">
+            Параметры с <span class="badge bg-warning text-dark setting-badge">[R]</span> требуют переобучения.<br>
+            Параметры с <span class="badge bg-info text-dark setting-badge">[RT]</span> применяются сразу (runtime override).
+        </div>
+    </form>
+
+    <div id="save-status" class="mt-2"></div>
+    <p class="mt-3">
+        <a href="/librosa-test" class="btn btn-outline-primary">Тестировать определение жанра &rarr;</a>
+    </p>
+
+    <hr>
+    <div class="alert alert-info mt-4">
+        <h5 class="mb-3">Инструкция по настройке аудиоанализа</h5>
+        <ul class="mb-3">
+            <li>Поля с <span class="badge bg-warning text-dark setting-badge">[R]</span> влияют на форму/смысл признаков и требуют переобучения модели.</li>
+            <li>Поля с <span class="badge bg-info text-dark setting-badge">[RT]</span> применяются при следующем предсказании без retrain.</li>
+            <li>После переобучения при необходимости пересканируйте библиотеку.</li>
+            <li>Сканирование и предсказания всегда используют параметры, сохранённые внутри модели, плюс runtime overrides.</li>
+            <li>YAMNet Fusion можно включать/отключать в любой момент.</li>
+        </ul>
+
+        <h6 class="mb-1">Требует переобучения:</h6>
+        <div class="mb-2">
+            <span class="fw-semibold">
+                sample_rate, duration, offset, n_mfcc, n_estimators, hop_length, n_fft, win_length, window,<br>
+                calibrate_probabilities, calibration_method, calibration_cv, target_class_precision,<br>
+                auto_tune_model, auto_tune_iterations, auto_tune_cv,<br>
+                multi_segment_enabled, multi_segment_offsets, multi_segment_duration,<br>
+                use_id3, use_folder, enable_learning_curve, все features.*, Rekordbox параметры
+            </span>
+        </div>
+
+        <h6 class="mb-1">Runtime (без переобучения):</h6>
+        <div class="mb-2">
+            <span class="fw-semibold">
+                genre_threshold, auto_class_thresholds_enabled, min_genre_margin, segment_disagreement_penalty, language_threshold,<br>
+                vocal_language_enabled, vocal_language_model, vocal_language_device,
+                vocal_language_min_probability, vocal_language_min_speech_seconds, vocal_language_mark_instrumental,
+                vocal_language_music_fallback_enabled, vocal_language_music_min_probability, vocal_language_segment_consensus_enabled,
+                yamnet_enabled, yamnet_alpha, yamnet_model_path
+            </span>
+        </div>
+
+        <h6 class="mb-1">Балансировка / фильтрация жанров (обучение):</h6>
+        <div class="mb-2">
+            <span class="fw-semibold">
+                min_tracks_per_genre, max_tracks_per_genre
+            </span>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/librosa_settings.js"></script>
+</body>
+</html>

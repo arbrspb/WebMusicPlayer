@@ -1,0 +1,22 @@
+{
+  "afro house": {"genre": "Afro House", "is_trainable": true},
+  "bass house": {"genre": "Bass House", "is_trainable": true},
+  "club house": {"genre": "Club House", "is_trainable": true},
+  "clubhouse": {"genre": "Club House", "is_trainable": true},
+  "deep house": {"genre": "Deep House", "is_trainable": true},
+  "disco": {"genre": "Disco", "is_trainable": true},
+  "drum & bass": {"genre": "Drum & Bass", "is_trainable": true},
+  "drum and bass": {"genre": "Drum & Bass", "is_trainable": true},
+  "future house": {"genre": "Future House", "is_trainable": true},
+  "hip-hop": {"genre": "Hip-Hop", "is_trainable": true},
+  "hip hop": {"genre": "Hip-Hop", "is_trainable": true},
+  "house": {"genre": "House", "is_trainable": true},
+  "lounge": {"genre": "Lounge", "is_trainable": true},
+  "moombahton": {"genre": "Moombahton", "is_trainable": true},
+  "pop": {"genre": "Pop", "is_trainable": true},
+  "rnb": {"genre": "RnB", "is_trainable": true},
+  "rock": {"genre": "Rock", "is_trainable": true},
+  "tech house": {"genre": "Tech House", "is_trainable": true},
+  "techno": {"genre": "Techno", "is_trainable": true},
+  "trap": {"genre": "Trap", "is_trainable": true}
+}

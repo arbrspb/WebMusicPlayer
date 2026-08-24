@@ -1,0 +1,106 @@
+# Python / tooling
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.idea/
+.vscode/
+.venv/
+venv/
+venv*/
+
+# Build output and local release staging
+build/
+dist/
+*.spec.bak
+*.zip
+*.7z
+github_release/
+release_backups/
+..bfg-report/
+
+# Local configuration and personal catalog/training state
+config.json
+librosa_config.json
+folder_keywords.json
+training_dataset.json
+training_dataset.backup.json
+genre_review_queue.json
+training_job.json
+.training_stop.json
+.web_music_player_server.lock
+bad_files.json
+scan_report.json
+info.txt
+project_files.txt
+PROJECT_TREE.txt
+
+# SQLite databases, sidecars and backups
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs and diagnostics
+*.log
+debug.txt
+whisper_debug_files/
+learning_curves/
+
+# Local audit/context documents that contain machine-specific diagnostics
+docs/PROJECT_CONTEXT_FOR_CHATGPT.md
+docs/PROJECT_STATUS_FULL_*.md
+docs/STAGE_*.md
+docs/TRAP_*.md
+docs/LOGGING_GUIDE_Version4.md
+docs/docs_LOGGING_HOWTO_Version5.md
+
+# User audio and temporary uploads
+samples/
+test_uploads/
+uploads/
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.wma
+
+# Trained user artifacts and third-party model weights
+models/
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+*.pb
+*.tflite
+*.pt
+*.pth
+*.safetensors
+models/faster-whisper/
+models/*.download
+runtime/onnx_cuda/
+
+# Local one-off diagnostics with machine-specific paths
+audio_feature_tester.py
+test_features.py
+
+# Personal Rekordbox exports (the parser source remains versioned)
+reckordbox_parcer_file_output/parsed_rekordbox.json
+reckordbox_parcer_file_output/uploaded_rekordbox.json
+reckordbox_parcer_file_output/*.xml
+
+# Local scratch/backup files
+*.bak
+*.backup
+*.tmp
+*.rejected.*
+*.backup.*
+*.pre_*.*

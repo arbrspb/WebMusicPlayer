@@ -1,0 +1,52 @@
+{
+  "music_dir": "D:\\Music",
+  "playback_mode": "host",
+  "default_volume": 70,
+  "scan_mode": "continue",
+  "favorite_mode": "stay",
+  "remember_recent_folders": false,
+  "recent_folders": [],
+  "autoplay_mode": "off",
+  "advanced_mode": false,
+  "force_model_for_recommend": false,
+  "intelligence_preferences": {
+    "weights": {
+      "deep": 40.0,
+      "acoustic": 25.0,
+      "character": 15.0,
+      "semantic": 5.0,
+      "bpm": 5.0,
+      "personal": 10.0
+    },
+    "result_limit": 20,
+    "exclude_versions": true
+  },
+  "model_pipeline": {
+    "effnet_enabled": false,
+    "effnet_device": "auto",
+    "effnet_segment_offsets": [30.0, 60.0, 90.0],
+    "effnet_segment_duration": 2.2,
+    "effnet_preprocess_workers": 0,
+    "effnet_genre_fusion_enabled": true,
+    "effnet_genre_fusion_alpha": 0.35,
+    "effnet_genre_pca_dimensions": 48,
+    "effnet_genre_min_coverage": 0.5,
+    "rekordbox_enabled": false,
+    "player_ratings_enabled": true
+  },
+  "scan_priority": "medium",
+  "log_flags": {
+    "status": false,
+    "owner": false,
+    "owner_status": false,
+    "vlc": false,
+    "audio_diag": false,
+    "player": false,
+    "model": false,
+    "numba": false,
+    "scan": false,
+    "resource": false
+  },
+  "debug_enabled": false,
+  "debugEnabled": false
+}

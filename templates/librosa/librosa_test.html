@@ -1,0 +1,315 @@
+<!-- librosa_test.html 14-08-25 01-50 -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест жанра (librosa)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+            <a href="/librosa-settings" class="btn btn-outline-secondary">
+            &larr; Назад к Librosa настройкам
+        </a>
+    <h3>Проверка трека на определение жанра</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input type="file" name="audiofile" accept=".mp3,audio/*" required>
+        </div>
+        <button type="submit" class="btn btn-success">Проверить</button>
+    </form>
+    {% if result %}
+        <div class="alert alert-info mt-3">
+            <b>Файл:</b> {{ result.filename }}<br>
+            <b>DJ-категория:</b> {{ result.genre }}<br>
+            <b>Уверенность:</b> {{ result.confidence|default(0)|round(3) }}
+            {% if result.taxonomy %}
+                <hr class="my-2">
+                <b>Базовый стиль:</b> {{ result.taxonomy.base_genre }}<br>
+                <b>Семейство:</b> {{ result.taxonomy.genre_family }}<br>
+                <b>Язык:</b> {{ result.taxonomy.language }}
+                ({{ result.taxonomy.language_confidence|default(0)|round(3) }},
+                источник: {{ result.taxonomy.language_source|default('unknown') }})<br>
+                {% if result.taxonomy.vocal_language %}
+                <b>Анализ вокала:</b> {{ result.taxonomy.vocal_language.status }}
+                {% if result.taxonomy.vocal_language.language_code %}
+                    ({{ result.taxonomy.vocal_language.language_code }})
+                {% endif %}<br>
+                {% endif %}
+                <b>Версия:</b> {{ result.taxonomy.version_type }}<br>
+                <b>Настроение:</b> {{ result.taxonomy.mood or 'не указано' }}
+            {% endif %}
+            {% if result.analysis and result.analysis.top_candidates %}
+                <hr class="my-2">
+                <b>Лучшие варианты модели:</b>
+                {% for candidate in result.analysis.top_candidates %}
+                    <span class="badge bg-secondary me-1">{{ candidate.genre }} {{ candidate.confidence|round(3) }}</span>
+                {% endfor %}<br>
+                {% if result.analysis.rejected_reasons %}
+                    <b>Почему отклонено:</b> {{ result.analysis.rejected_reasons|join('; ') }}
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="card border-primary mb-3">
+            <div class="card-header">Подтвердить правильную разметку</div>
+            <div class="card-body">
+                <form class="review-correction-form row g-2" data-path="{{ result.filepath }}">
+                    <div class="col-md-4">
+                        <label class="form-label">Базовый стиль</label>
+                        <select class="form-select correction-base-genre" required>
+                            <option value="">Выберите стиль</option>
+                            {% for genre_name in correction_base_genres %}
+                            <option value="{{ genre_name }}">{{ genre_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Язык</label>
+                        <select class="form-select correction-language">
+                            {% for language_name in correction_languages %}
+                            <option value="{{ language_name }}">{{ language_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Тип версии</label>
+                        <select class="form-select correction-version">
+                            {% for version_name in correction_version_types %}
+                            <option value="{{ version_name }}" {% if result.taxonomy and result.taxonomy.version_type == version_name %}selected{% endif %}>{{ version_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+                    </div>
+                    <div class="col-12">
+                        <input class="form-control correction-note" maxlength="1000" placeholder="Необязательный комментарий">
+                        <div class="form-text">MP3 не изменяется. Подтверждение получит приоритет при анализе и войдёт в следующее обучение, если стиль включён.</div>
+                    </div>
+                    <script type="application/json" class="correction-analysis">{{ result.analysis|tojson }}</script>
+                    <div class="correction-status col-12"></div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between">
+            <span>Очередь сомнительных треков</span>
+            <span class="badge bg-warning text-dark">{{ pending_reviews|length }}</span>
+        </div>
+        <div class="card-body">
+            {% if pending_reviews %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead><tr><th>Файл и варианты</th><th>Подтверждение</th></tr></thead>
+                    <tbody>
+                    {% for review in pending_reviews %}
+                    <tr>
+                        <td style="min-width:320px">
+                            <div class="fw-semibold text-break">{{ review.filename }}</div>
+                            {% for candidate in review.top_candidates or [] %}
+                                <span class="badge bg-secondary me-1">{{ candidate.genre }} {{ candidate.confidence|round(3) }}</span>
+                            {% endfor %}
+                            {% if review.rejected_reasons %}
+                                <div class="small text-danger mt-1">{{ review.rejected_reasons|join('; ') }}</div>
+                            {% endif %}
+                        </td>
+                        <td style="min-width:480px">
+                            <form class="review-correction-form row g-1" data-path="{{ review.path }}">
+                                <div class="col-5">
+                                    <select class="form-select form-select-sm correction-base-genre" required>
+                                        <option value="">Стиль</option>
+                                        {% for genre_name in correction_base_genres %}
+                                        <option value="{{ genre_name }}">{{ genre_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select form-select-sm correction-language">
+                                        {% for language_name in correction_languages %}
+                                        <option value="{{ language_name }}">{{ language_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select class="form-select form-select-sm correction-version">
+                                        {% for version_name in correction_version_types %}
+                                        <option value="{{ version_name }}">{{ version_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-1"><button class="btn btn-sm btn-success" type="submit">✓</button></div>
+                                <script type="application/json" class="correction-analysis">{{ {
+                                    'predicted_genre': review.predicted_genre,
+                                    'confidence': review.confidence,
+                                    'top_candidates': review.top_candidates,
+                                    'rejected_reasons': review.rejected_reasons,
+                                    'segment_disagreement': review.segment_disagreement
+                                }|tojson }}</script>
+                                <div class="correction-status col-12 small"></div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Очередь пуста. Неуверенные результаты появятся здесь после проверки треков.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if corrected_reviews %}
+    <div class="card mb-3">
+        <div class="card-header">Подтверждённые исправления</div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0 align-middle">
+                <thead><tr><th>Файл</th><th>Стиль</th><th>Язык</th><th>Версия</th><th></th></tr></thead>
+                <tbody>
+                {% for review in corrected_reviews %}
+                <tr id="review-row-{{ review.id }}">
+                    <td class="text-break">{{ review.filename }}</td>
+                    <td>{{ review.corrected_base_genre }}</td>
+                    <td>{{ review.corrected_language }}</td>
+                    <td>{{ review.corrected_version_type }}</td>
+                    <td><button class="btn btn-sm btn-outline-danger review-delete" data-id="{{ review.id }}">Удалить</button></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <hr>
+<form id="analyzeForm" method="POST" class="row g-3 align-items-center mb-3">
+    <div class="col-auto">
+        <label for="folder_path" class="col-form-label">Папка для анализа:</label>
+    </div>
+    <div class="col-auto">
+        <input type="text" id="folder_path" name="folder_path" class="form-control" placeholder="Например, Z:\2025\Prime Time DJ\06-03-25">
+    </div>
+    <div class="col-auto">
+        <label for="limit" class="col-form-label">Лимит треков:</label>
+    </div>
+    <div class="col-auto">
+        <input type="number" id="limit" name="limit" class="form-control" min="1" max="10000"
+        value="1000"
+        title="Лимит действует только для текущего анализа. После обновления страницы или нового запроса лимит сбросится.">
+    </div>
+    <div class="col-auto d-flex align-items-center">
+        <button type="submit" class="btn btn-primary">Показать статистику</button>
+        <button id="clearCacheBtn" class="btn btn-warning ms-2" type="button">
+            Обнулить статистику
+        </button>
+        <span id="clearCacheMsg" class="ms-2 text-success"></span>
+    </div>
+</form>
+<div id="progressBar" style="display:none;">
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+    <p>Анализируем папку, подождите...</p>
+</div>
+<script>
+document.getElementById('analyzeForm').onsubmit = function() {
+    document.getElementById('progressBar').style.display = 'block';
+};
+</script>
+
+    {# === БЛОК СТАТИСТИКИ ПО ЖАНРАМ (samples/) === #}
+    <h5>Статистика по жанрам (samples/):</h5>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Жанр</th>
+                <th>Треков</th>
+                <th>Папка</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for stat in samples_stats %}
+            <tr>
+                <td>{{ stat.genre }}</td>
+                <td>{{ stat.count }}</td>
+                <td>{{ stat.folder }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p><b>ВСЕГО треков:</b> {{ samples_total }}</p>
+
+   {% if user_genre_stats %}
+    <hr>
+    <h5>Статистика по определённым жанрам <div id="genreStatsRoot" data-folder="{{ current_folder }}"></div></h5>
+    <button id="exportJsonBtn" class="btn btn-outline-secondary btn-sm mb-2">Экспортировать в JSON</button>
+    <table id="genreStatsTable" class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Жанр</th>
+                <th>Треков</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for genre, cnt in user_genre_stats.items() %}
+            <tr class="genre-row" data-genre="{{ genre }}">
+                <td>{{ genre }}</td>
+                <td>{{ cnt }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <p><b>ВСЕГО треков проанализировано:</b> {{ user_total_files }}</p>
+    <p>Треков без "Other": {{ user_total_files - (user_genre_stats.get("Other", 0) or 0) }}<br>
+    Треков с "Other": {{ user_genre_stats.get("Other", 0) or 0 }}</p>
+{% endif %}
+
+<!-- Модальное окно для треков жанра -->
+<div class="modal fade" id="genreTracksModal" tabindex="-1" aria-labelledby="genreTracksModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="genreTracksModalLabel">Треки жанра</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body" id="genreTracksModalBody">
+        <!-- Сюда подгружаются треки -->
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/librosa_review.js') }}"></script>
+<script src="{{ url_for('static', filename='js/librosa_stats.js') }}"></script>
+
+    <hr>
+    <h5>Инструкция по тесту и работе с базой</h5>
+    <ul>
+        <li>Треки для теста можно загружать через форму выше (они не добавляются в основную библиотеку, только для анализа).</li>
+        <li>Для обучения модели положите треки по жанрам в подпапки папки <code>samples/</code> (например, <code>samples/House/</code> и т.д.).</li>
+        <li>Параметры анализа (librosa) настраиваются на странице <a href="/librosa-settings">/librosa-settings</a>.</li>
+        <li>После переобучения модели рекомендуется <b>просканировать библиотеку заново</b> (режим "Начать заново" или "Продолжить").</li>
+        <li>Если есть много треков с жанром <code>Unknown</code>, попробуйте:
+            <ul>
+                <li>Снизить порог уверенности (genre_threshold)</li>
+                <li>Увеличить количество MFCC (например, 20–40)</li>
+                <li>Переобучить модель с более разнообразным набором треков</li>
+                <li>Сделать "Продолжить сканирование" после удаления <code>Unknown</code> из базы</li>
+            </ul>
+        </li>
+        <li>Справка и рекомендации доступны в разделе ниже.</li>
+    </ul>
+    <hr>
+    <h5>Рекомендации</h5>
+    <ul>
+        <li>Для повышения качества распознавания увеличивайте количество обучающих треков на жанр (20+ на каждую папку).</li>
+        <li>Старайтесь, чтобы треки для обучения не были обрезками, имели хорошее качество.</li>
+        <li>Если трек определяется как <code>Unknown</code> &mdash; попробуйте изменить параметры анализа или добавить его в тренировочную выборку.</li>
+        <li>Для массовой корректировки можно удалить записи <code>Unknown</code> из базы и запустить "Продолжить сканирование".</li>
+    </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "version": 4,
+  "updated_at": null,
+  "settings": {
+    "max_tracks_per_style": 800,
+    "min_tracks_per_style": 200,
+    "excluded_styles": [],
+    "use_dataset_builder": true,
+    "use_reference_samples": false,
+    "reference_samples_path": "",
+    "use_rekordbox_training": false,
+    "review_preview_mode": "percent",
+    "review_preview_percent": 30,
+    "review_preview_seconds": 60
+  },
+  "sources": [],
+  "folders": []
+}

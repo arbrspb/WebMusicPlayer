@@ -1,0 +1,370 @@
+<!-- main.html 14-08-25 01-50 -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>My Music Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- jsTree CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
+  <!-- Plyr CSS (используется в режиме plyr) -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.2/plyr.css" />
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+</head>
+<body>
+<!-- Проерка готовности сканирования -->
+{% if config.advanced_mode and not scan_ready %}
+<div class="alert alert-warning text-center">
+  <b>База сканирования пуста или не отсканирована.</b><br>
+  Перейдите в <a href="{{ url_for('settings') }}">Настройки</a> и выполните сканирование библиотеки для корректной работы плеера
+</div>
+{% endif %}
+<!-- Проерка готовности сканирования -->
+  <!-- Навигационный бар -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <span class="navbar-brand">My Music Player</span>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+         <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+         <ul class="navbar-nav me-auto">
+           <li class="nav-item"><a class="nav-link active" href="/"><i class="bi bi-music-note-beamed me-1"></i>Плеер</a></li>
+           <li class="nav-item">
+             <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#favoritesModal"><i class="bi bi-heart me-1"></i>Моя музыка</a>
+           </li>
+           <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-gear me-1"></i>Настройки</a>
+             <ul class="dropdown-menu">
+               <li><a class="dropdown-item" href="/settings">Все настройки</a></li>
+               <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#autoplayModeModal">Автопроигрывание</button></li>
+               <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#themeModal">Оформление</button></li>
+             </ul>
+           </li>
+         </ul>
+         <span class="navbar-text text-white">
+            Режим: {{ config.playback_mode }} | Громкость: {{ config.default_volume }}%
+         </span>
+      </div>
+    </div>
+  </nav>
+
+<!-- {# === МОДАЛЬНОЕ ОКНО ДЛЯ РЕЖИМА АВТОПРОИГРЫВАНИЯ === #} -->
+  <div class="modal fade" id="autoplayModeModal" tabindex="-1" aria-labelledby="autoplayModeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="autoplayModeModalLabel">Режим автопроигрывания</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Выберите, как плеер должен вести себя по окончании текущего трека:</p>
+            <small class="text-muted d-block mb-3">
+            Если автопроигрывание выключено, при переходе к похожему треку он не будет выделяться и не запустится автоматически.<br>
+            При включённом автопроигрывании похожий трек будет запускаться и выделяться автоматически.
+            </small>
+          <div class="form-check">
+              <input class="form-check-input" type="radio" name="autoplayModeOption" id="autoplayPlaylist" value="playlist" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>
+              <label class="form-check-label" for="autoplayPlaylist">
+                  Продолжать играть плейлист (следующий трек)
+              </label>
+          </div>
+          <div class="form-check">
+              <input class="form-check-input" type="radio" name="autoplayModeOption" id="autoplayOff" value="off" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>
+              <label class="form-check-label" for="autoplayOff">
+                  Остановить воспроизведение после текущего трека
+              </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="applyAutoplayMode()" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>Сохранить и закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- {# === КОНЕЦ МОДАЛЬНОГО ОКНА === #} -->
+
+  <!-- Модальное окно для смены темы (без изменений) -->
+  <div class="modal fade" id="themeModal" tabindex="-1" aria-labelledby="themeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="themeModalLabel">Сменить тему</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+<div class="modal-body">
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="themeOption" id="lightTheme" value="light">
+    <label class="form-check-label" for="lightTheme">Светлая тема</label>
+  </div>
+  <div class="form-check mt-2">
+    <input class="form-check-input" type="radio" name="themeOption" id="darkTheme" value="dark">
+    <label class="form-check-label" for="darkTheme">Тёмная тема</label>
+  </div>
+  <hr>
+  <div class="mb-3">
+    <h6>Анимация фона</h6>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="energyAnimationToggle">
+      <label class="form-check-label" for="energyAnimationToggle">Включить анимацию</label>
+    </div>
+  </div>
+</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" onclick="applyTheme();">Применить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="container-fluid player-page-container" style="margin-top: 70px;">
+    <div class="row mb-3">
+      <!-- Форма выбора директории -->
+      <div class="col-md-6">
+        <div class="input-group">
+          <input type="text" name="path" id="pathInput" class="form-control" placeholder="Введите относительный путь" value="{{ current_path }}">
+          <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#folderModal" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-folder2-open me-1"></i>Выбрать папку</button>
+        </div>
+        <small class="form-text text-muted">(Выберите папку через проводник)</small>
+      </div>
+    </div>
+
+<div class="row flex-mobile-reverse">
+  <!-- Боковая панель с плейлистом -->
+      <div class="col-lg-4 col-md-5 library-column">
+        <h4 class="path-display-header-two-lines"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        title="{{ current_path or 'Корневая папка' }}">
+      Треки в {{ current_path or 'корневой папке' }}
+        </h4>
+    <ul class="list-group" id="playlist">
+      {% for file in files %}
+        {% set track_path = current_path ~ '/' ~ file %}
+        <li class="list-group-item d-flex justify-content-between align-items-center" data-track="{{ track_path }}">
+          <div class="track-row-main">
+            <span class="track-name-wrap">
+              {% if file and file.lower().endswith(".mp3") %}
+                  {{ file[:-4] }}
+              {% else %}
+                  {{ file }}
+              {% endif %}
+            </span>
+            {% set track_rating = favorite_ratings.get(track_path, 0) %}
+            <div class="quick-rating" data-rating-track-path="{{ track_path }}" data-rating="{{ track_rating }}" aria-label="Оценка трека">
+              {% for value in range(1, 6) %}
+              <button type="button" class="quick-rating-star {% if value <= track_rating %}is-rated{% endif %}" data-rating-value="{{ value }}" title="Оценить на {{ value }} из 5" aria-label="{{ value }} из 5">★</button>
+              {% endfor %}
+              <button type="button" class="quick-rating-reset {% if not track_rating %}invisible{% endif %}" data-rating-value="0" title="Сбросить оценку" aria-label="Сбросить оценку">×</button>
+            </div>
+          </div>
+          <div class="track-row-actions">
+              <button class="btn btn-sm btn-primary track-play-btn" title="Воспроизвести" aria-label="Воспроизвести {{ file }}" onclick="console.log('[ДИАГНОСТИКА CLICK] Клик по треку: {{ track_path|replace("'", "\\'") }}, текущий режим: ' + window.playerConfig.playbackMode); currentIndex={{ loop.index0 }}; playTrack('{{ track_path|replace("'", "\\'") }}');" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-play-fill"></i></button>
+              <button class="btn btn-sm fav-btn {% if track_path in favorites %}btn-danger is-favorite{% else %}btn-outline-danger{% endif %}"
+                      data-track-path="{{ track_path }}"
+                      aria-label="{% if track_path in favorites %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                      aria-pressed="{{ 'true' if track_path in favorites else 'false' }}"
+                      title="{% if track_path in favorites %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                      onclick="event.preventDefault(); toggleFavorite('{{ track_path|replace("'", "\\'")|replace('"', '\\"') }}', this);"
+                      {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi {% if track_path in favorites %}bi-heart-fill{% else %}bi-heart{% endif %}"></i></button>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <br>
+    <button id="favorites_btn" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#favoritesModal" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-heart me-1"></i>Моя музыка</button>
+  </div>
+
+      <!-- Панель управления плеером -->
+    <div class="col-lg-8 col-md-7 player-column">
+      <div class="card mb-3 player-card compact-player-card">
+        <!-- Энергетическая волна / canvas -->
+        <canvas id="energyWave" width="800" height="400"></canvas>
+        <div class="card-body compact-player-body">
+          <div class="compact-player-content">
+            <div class="now-playing-heading">
+              <div class="track-orb" aria-hidden="true"><i class="bi bi-music-note-beamed"></i></div>
+              <div class="track-heading-text">
+                <h5 class="card-title mb-0" id="now_playing">Не играет</h5>
+                <div class="track-meta-line">DJ-категория: <span id="genre">N/A</span></div>
+              </div>
+              <button id="current_favorite_btn" class="btn btn-outline-danger current-favorite-btn" type="button" disabled aria-label="Добавить текущий трек в избранное" aria-pressed="false" title="Добавить текущий трек в избранное"><i class="bi bi-heart"></i></button>
+            </div>
+            <div id="now-playing-rating" class="quick-rating now-playing-rating" data-rating-track-path="" data-rating="0" aria-label="Ваша оценка текущего трека">
+              <span class="quick-rating-label">Моя оценка</span>
+              {% for value in range(1, 6) %}
+              <button type="button" class="quick-rating-star" data-rating-value="{{ value }}" title="Оценить на {{ value }} из 5" aria-label="{{ value }} из 5" disabled>★</button>
+              {% endfor %}
+              <button type="button" class="quick-rating-reset invisible" data-rating-value="0" title="Сбросить оценку" aria-label="Сбросить оценку" disabled>×</button>
+            </div>
+            <p class="card-text small text-muted" id="track-taxonomy" style="display:none;"></p>
+            <div class="player-progress-block">
+              <input type="range" id="seekSlider" class="form-range" min="0" max="100" value="0" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>
+              <div id="time_display" class="player-time-display">0:00 / 0:00</div>
+            </div>
+            <div class="transport-controls">
+              <button id="prev_btn" class="btn btn-outline-secondary transport-side-btn" title="Предыдущий трек" aria-label="Предыдущий трек" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-skip-backward-fill"></i></button>
+              <button id="pause_button" class="btn btn-primary play-pause-main" title="Играть" aria-label="Играть" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-play-fill"></i><span>Играть</span></button>
+              <button id="next_btn" class="btn btn-outline-secondary transport-side-btn" title="Следующий трек" aria-label="Следующий трек" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-skip-forward-fill"></i></button>
+              <button id="stop_btn" class="btn btn-outline-secondary transport-stop-btn" title="Остановить" aria-label="Остановить" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-stop-fill"></i></button>
+            </div>
+            <div class="recommend-controls">
+              <span class="recommend-actions">
+                <button id="recommend_btn" class="btn btn-outline-info player-btn" title="Сразу найти один похожий трек" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-lightning-charge me-1"></i>Быстро похожий</button>
+                {% if config.advanced_mode %}
+                <button id="smart_select_btn" class="btn btn-info player-btn" type="button" title="Подбор с фильтрами и учётом личного вкуса" {% if not scan_ready %}disabled style="opacity:0.5;"{% endif %}><i class="bi bi-stars me-1"></i>Умный подбор</button>
+                {% endif %}
+              </span>
+            </div>
+            <!-- Показываем ползунок громкости для режимов host и plyr -->
+            {% if config.playback_mode == "host" or config.playback_mode == "plyr" %}
+            <div class="player-volume-row">
+              <i class="bi bi-volume-down" aria-hidden="true"></i>
+              <input type="range" id="volumeSlider" class="form-range" min="0" max="100"
+                     value="{{ session.get('current_volume', config.default_volume) }}"
+                     {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>
+              <span id="volume_display">
+                Громкость: {{ session.get('current_volume', config.default_volume) }}%
+              </span>
+            </div>
+            {% endif %}
+
+
+            <!-- Режимы плеера: оставляем только host и plyr -->
+            {% if config.playback_mode == "plyr" %}
+            <div id="plyrPlayerBlock" class="d-none">
+              <audio id="audioPlayerPlyr" style="width:100%;">
+                <source id="audioSourcePlyr" src="about:blank" type="audio/mp3">
+                Ваш браузер не поддерживает HTML5 аудио.
+              </audio>
+            </div>
+            {% endif %}
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- Модальное окно для избранного -->
+      <div class="modal fade" id="favoritesModal" tabindex="-1" aria-labelledby="favoritesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center flex-grow-1">
+                <h5 class="modal-title me-3" id="favoritesModalLabel"><i class="bi bi-heart-fill text-danger me-2"></i>Моя музыка</h5>
+              </div>
+              <button type="button" class="btn btn-close ms-2" data-bs-dismiss="modal" aria-label="Закрыть" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}></button>
+            </div>
+            <div class="modal-body">
+              <div class="favorites-toolbar mb-3">
+                <div class="input-group input-group-sm favorites-search">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input id="favoritesSearch" class="form-control" type="search" placeholder="Найти в избранном" aria-label="Найти в избранном">
+                </div>
+                <select id="favGenreFilter" class="form-select form-select-sm" {% if config.advanced_mode and not scan_ready %}disabled{% endif %}>
+                  <option value="all">Все стили</option>
+                </select>
+                <select id="favoritesSort" class="form-select form-select-sm" aria-label="Сортировка избранного">
+                  <option value="added">По добавлению</option>
+                  <option value="rating">Сначала с высокой оценкой</option>
+                  <option value="title">По названию</option>
+                </select>
+              </div>
+              <div id="favoritesContent"><p class="text-muted">Загрузка...</p></div>
+            </div>
+            <div class="modal-footer">
+              <span id="favoritesCount" class="text-muted small me-auto"></span>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>Закрыть</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Модальное окно для выбора папки (jsTree) -->
+      <div class="modal fade" id="folderModal" tabindex="-1" aria-labelledby="folderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+             <div class="modal-header">
+               <h5 class="modal-title" id="folderModalLabel">Выберите папку с музыкой</h5>
+               <div class="folder-modal-actions ms-auto">
+                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>Отмена</button>
+                 <button type="button" class="btn btn-sm btn-primary" id="selectFolderBtn" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}>Выбрать</button>
+                 <button type="button" class="btn btn-close ms-1" data-bs-dismiss="modal" aria-label="Закрыть" {% if config.advanced_mode and not scan_ready %}disabled style="opacity:0.5;"{% endif %}></button>
+               </div>
+             </div>
+             <div class="modal-body">
+               <div id="folderTree"></div>
+             </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  {% if config.advanced_mode %}
+  <aside id="smartCatalogPanel" class="smart-catalog-panel" aria-hidden="true" aria-labelledby="smartCatalogPanelLabel">
+    <header class="smart-catalog-panel-header">
+      <div class="smart-catalog-panel-heading">
+        <h5 id="smartCatalogPanelLabel"><i class="bi bi-stars me-2"></i>Умный подбор</h5>
+        <div class="smart-catalog-reference-line">Эталон: <span id="smartCatalogReference">текущий трек</span></div>
+      </div>
+      <div class="smart-catalog-panel-actions">
+        <button id="smartCatalogUseCurrent" class="btn btn-sm btn-primary" type="button" title="Начать новую ветку от играющего трека"><i class="bi bi-bullseye"></i><span>Взять играющий</span></button>
+        <a class="btn btn-sm btn-outline-secondary" href="/intelligence" title="Открыть каталог отдельно"><i class="bi bi-box-arrow-up-right"></i></a>
+        <button id="smartCatalogMinimize" class="btn btn-sm btn-outline-secondary" type="button" title="Свернуть"><i class="bi bi-dash-lg"></i></button>
+        <button id="smartCatalogClose" class="btn btn-close ms-1" type="button" title="Завершить сессию" aria-label="Закрыть"></button>
+      </div>
+    </header>
+    <div class="smart-catalog-panel-body">
+      <iframe id="smartCatalogFrame" title="Интеллектуальный каталог" src="about:blank"></iframe>
+    </div>
+  </aside>
+  <button id="smartCatalogDock" class="smart-catalog-dock" type="button" hidden>
+    <i class="bi bi-stars"></i>
+    <span class="smart-catalog-dock-text"><strong>Умный подбор</strong><small id="smartCatalogDockSummary">Сессия свёрнута</small></span>
+    <i class="bi bi-chevron-up"></i>
+  </button>
+  {% endif %}
+
+ <!-- библиотеки -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+  <script src="https://cdn.plyr.io/3.7.2/plyr.polyfilled.js"></script>
+
+<script>
+  window.playerConfig = {
+    playbackMode: "{{ config.playback_mode }}",
+    playlist: [
+      {% for file in files %}
+        "{{ (current_path ~ '/' ~ file)|safe }}"{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ],
+    currentPath: "{{ current_path }}",
+    favoriteMode: "{{ session.get('favorite_mode', config.favorite_mode) }}",
+    autoplay: "{{ autoplay|default('')|safe }}",
+    autoplayMode: "{{ config.autoplay_mode }}",
+    defaultVolume: {{ session.get('current_volume', config.default_volume) }},
+    favoritePaths: {{ favorites|tojson }},
+    favoriteRatings: {{ favorite_ratings|tojson }}
+  };
+  /* console.log("playerConfig:", window.playerConfig); */
+</script>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="uiToastContainer" aria-live="polite" aria-atomic="true"></div>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "Club House": {
+    "House music": 1.0,
+    "Electronic dance music": 0.3,
+    "Dance music": 0.2
+  },
+  "Drum & Bass": {
+    "Drum and bass": 1.0,
+    "Breakbeat": 0.45,
+    "Electronic dance music": 0.2
+  },
+  "Hip-Hop": {
+    "Hip hop music": 1.0,
+    "Rapping": 0.65,
+    "Beatboxing": 0.2
+  },
+  "Русские Ремиксы": {}
+}

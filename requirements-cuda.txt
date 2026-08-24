@@ -1,0 +1,5 @@
+# Optional NVIDIA runtime for YAMNet and Discogs Multi-EffNet (CUDA 12 feed).
+# Install requirements.txt first, remove a previously installed CPU ORT once,
+# then install this file. Do not keep both ORT variants in one environment.
+--extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+onnxruntime-gpu==1.17.0
